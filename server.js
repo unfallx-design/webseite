@@ -58,8 +58,36 @@ function applyPartials(html) {
   });
 }
 
+/**
+ * Asset-Versionierung gegen veraltete Browser-Caches.
+ * Beim Start wird je Datei in assets/ eine Pruefsumme gebildet und beim
+ * Ausliefern an die URL gehaengt (/assets/styles.css?v=ab12cd34). Aendert
+ * sich eine Datei, aendert sich die URL - der Browser laedt sie zwingend neu.
+ */
+const ASSET_VERSIONS = (function () {
+  const crypto = require('crypto');
+  const out = {};
+  const dir = path.join(ROOT, 'assets');
+  let files = [];
+  try { files = fs.readdirSync(dir); } catch (e) { return out; }
+  files.forEach((f) => {
+    try {
+      const buf = fs.readFileSync(path.join(dir, f));
+      out['/assets/' + f] = crypto.createHash('sha1').update(buf).digest('hex').slice(0, 8);
+    } catch (e) { /* ignorieren */ }
+  });
+  return out;
+})();
+
+function versionAssets(html) {
+  return html.replace(/(["'(])(\/assets\/[A-Za-z0-9._-]+)(["')])/g, (match, before, url, after) => {
+    const v = ASSET_VERSIONS[url];
+    return v ? before + url + '?v=' + v + after : match;
+  });
+}
+
 function renderPage(file) {
-  return applyPartials(fs.readFileSync(file, 'utf8'));
+  return versionAssets(applyPartials(fs.readFileSync(file, 'utf8')));
 }
 
 /**
@@ -77,7 +105,7 @@ function inlineScriptHashes() {
 
   files.forEach((file) => {
     let html = '';
-    try { html = applyPartials(fs.readFileSync(path.join(ROOT, file), 'utf8')); } catch (e) { return; }
+    try { html = versionAssets(applyPartials(fs.readFileSync(path.join(ROOT, file), 'utf8'))); } catch (e) { return; }
     const re = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/gi;
     let m;
     while ((m = re.exec(html)) !== null) {
@@ -102,9 +130,10 @@ const SECURITY_HEADERS = {
     "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
 
-function cacheFor(ext) {
+function cacheFor(ext, versioniert) {
   if (ext === '.html' || ext === '') return 'public, max-age=0, must-revalidate';
-  return 'public, max-age=604800';
+  if (versioniert) return 'public, max-age=31536000, immutable';
+  return 'public, max-age=3600';
 }
 
 function send(res, status, headers, body, isHead) {
@@ -137,10 +166,11 @@ const server = http.createServer((req, res) => {
   }
 
   let urlPath;
+  let hatVersion = false;
   try {
-    urlPath = decodeURIComponent(
-      new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname
-    );
+    const parsed = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    urlPath = decodeURIComponent(parsed.pathname);
+    hatVersion = parsed.searchParams.has('v');
   } catch (e) {
     return sendError(res, 400, isHead);
   }
@@ -196,7 +226,7 @@ const server = http.createServer((req, res) => {
         return send(res, 200, {
           'Content-Type': MIME[ext],
           'Content-Length': page.length,
-          'Cache-Control': cacheFor(ext)
+          'Cache-Control': cacheFor(ext, false)
         }, page, isHead);
       }
 
@@ -205,7 +235,7 @@ const server = http.createServer((req, res) => {
         send(res, 200, {
           'Content-Type': MIME[ext] || 'application/octet-stream',
           'Content-Length': data.length,
-          'Cache-Control': cacheFor(ext)
+          'Cache-Control': cacheFor(ext, hatVersion)
         }, data, isHead);
       });
     });
