@@ -1,0 +1,15 @@
+{
+  "name": "unfallx-webseite",
+  "version": "1.0.0",
+  "description": "Webseite von UNFALLX - Unfall- und Schadenservice",
+  "main": "server.js",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["unfallx", "unfall", "schadenservice"],
+  "license": "UNLICENSED"
+}
