@@ -175,12 +175,12 @@ p:last-child{margin-bottom:0}
 
 .site-header{
   position:sticky;top:0;z-index:40;
-  background:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.94);
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   border-bottom:1px solid rgba(11,16,24,.07);
   transition:background .2s ease, box-shadow .2s ease;
 }
-.site-header.is-scrolled{background:rgba(255,255,255,.86);box-shadow:0 10px 30px -22px rgba(11,16,24,.5)}
+.site-header.is-scrolled{background:rgba(255,255,255,.985);box-shadow:0 10px 30px -22px rgba(11,16,24,.5)}
 .nav{display:flex;align-items:center;gap:24px;height:76px}
 .nav > .logo{margin-right:auto}
 
@@ -211,7 +211,7 @@ p:last-child{margin-bottom:0}
 }
 .mobile-menu{
   display:none;border-top:1px solid var(--line);
-  background:rgba(255,255,255,.9);
+  background:rgba(255,255,255,.97);
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   padding:14px var(--gutter) 24px;
 }
@@ -358,7 +358,7 @@ section{padding:var(--section-y) 0;position:relative}
 
 /* ---------- FAQ ----------------------------------------------------------- */
 
-.faq{display:grid;gap:12px;max-width:840px}
+.faq{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));align-items:start}
 .faq details{
   background:var(--glass);border:1px solid rgba(255,255,255,.9);
   outline:1px solid rgba(11,16,24,.05);outline-offset:-1px;
@@ -479,8 +479,8 @@ section{padding:var(--section-y) 0;position:relative}
 .prose hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
 
 .todo{
-  background:#fff6d6;border:1px dashed #d9a400;color:#7a5b00;
-  padding:2px 8px;border-radius:6px;font-weight:600;font-size:.94em;white-space:nowrap;
+  color:var(--muted);font-style:italic;font-weight:500;font-size:.96em;
+  opacity:.85;
 }
 
 /* ---------- 404 ----------------------------------------------------------- */
