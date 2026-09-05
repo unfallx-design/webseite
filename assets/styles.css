@@ -175,12 +175,12 @@ p:last-child{margin-bottom:0}
 
 .site-header{
   position:sticky;top:0;z-index:40;
-  background:rgba(255,255,255,.94);
+  background:rgba(255,255,255,.72);
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   border-bottom:1px solid rgba(11,16,24,.07);
   transition:background .2s ease, box-shadow .2s ease;
 }
-.site-header.is-scrolled{background:rgba(255,255,255,.985);box-shadow:0 10px 30px -22px rgba(11,16,24,.5)}
+.site-header.is-scrolled{background:rgba(255,255,255,.86);box-shadow:0 10px 30px -22px rgba(11,16,24,.5)}
 .nav{display:flex;align-items:center;gap:24px;height:76px}
 .nav > .logo{margin-right:auto}
 
@@ -211,7 +211,7 @@ p:last-child{margin-bottom:0}
 }
 .mobile-menu{
   display:none;border-top:1px solid var(--line);
-  background:rgba(255,255,255,.97);
+  background:rgba(255,255,255,.9);
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   padding:14px var(--gutter) 24px;
 }
@@ -358,7 +358,7 @@ section{padding:var(--section-y) 0;position:relative}
 
 /* ---------- FAQ ----------------------------------------------------------- */
 
-.faq{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));align-items:start}
+.faq{display:grid;gap:12px;max-width:840px}
 .faq details{
   background:var(--glass);border:1px solid rgba(255,255,255,.9);
   outline:1px solid rgba(11,16,24,.05);outline-offset:-1px;
@@ -479,8 +479,8 @@ section{padding:var(--section-y) 0;position:relative}
 .prose hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
 
 .todo{
-  color:var(--muted);font-style:italic;font-weight:500;font-size:.96em;
-  opacity:.85;
+  background:#fff6d6;border:1px dashed #d9a400;color:#7a5b00;
+  padding:2px 8px;border-radius:6px;font-weight:600;font-size:.94em;white-space:nowrap;
 }
 
 /* ---------- 404 ----------------------------------------------------------- */
@@ -507,3 +507,120 @@ section{padding:var(--section-y) 0;position:relative}
   .hero-card,.glass-dark{background:rgba(255,255,255,.1)}
   .btn-glass{background:rgba(255,255,255,.16)}
 }
+
+/* ==========================================================================
+   Bewegung
+   ========================================================================== */
+
+/* Lesefortschritt oben */
+.progress{
+  position:fixed;top:0;left:0;right:0;height:3px;z-index:60;
+  background:linear-gradient(90deg,var(--brand),#ff6a4d);
+  transform:scaleX(0);transform-origin:0 50%;
+  will-change:transform;pointer-events:none;
+}
+
+/* Treibende Farbflaechen */
+@keyframes drift-a{
+  from{transform:translate3d(0,0,0) scale(1)}
+  to  {transform:translate3d(-6%,5%,0) scale(1.12)}
+}
+@keyframes drift-b{
+  from{transform:translate3d(0,0,0) scale(1.05)}
+  to  {transform:translate3d(7%,-6%,0) scale(.92)}
+}
+@keyframes drift-c{
+  from{transform:translate3d(0,0,0) scale(.95)}
+  to  {transform:translate3d(-8%,-4%,0) scale(1.15)}
+}
+.blob-a{animation:drift-a 26s ease-in-out infinite alternate}
+.blob-b{animation:drift-b 32s ease-in-out infinite alternate}
+.blob-c{animation:drift-c 22s ease-in-out infinite alternate}
+
+/* Einblenden beim Scrollen (nur wenn JS laeuft) */
+.js .reveal{
+  opacity:0;transform:translate3d(0,26px,0);
+  transition:opacity .75s cubic-bezier(.22,.7,.2,1), transform .75s cubic-bezier(.22,.7,.2,1);
+  transition-delay:var(--d,0ms);will-change:opacity,transform;
+}
+.js .reveal.is-visible{opacity:1;transform:none}
+
+/* Auftritt im Hero */
+@keyframes rise{
+  from{opacity:0;transform:translate3d(0,24px,0)}
+  to  {opacity:1;transform:none}
+}
+@keyframes riseCard{
+  from{opacity:0;transform:translate3d(0,34px,0) scale(.985)}
+  to  {opacity:1;transform:none}
+}
+.js .hero .eyebrow{animation:rise .7s cubic-bezier(.22,.7,.2,1) both}
+.js .hero h1{animation:rise .8s cubic-bezier(.22,.7,.2,1) .08s both}
+.js .hero-text{animation:rise .8s cubic-bezier(.22,.7,.2,1) .16s both}
+.js .hero-actions{animation:rise .8s cubic-bezier(.22,.7,.2,1) .24s both}
+.js .hero-points{animation:rise .8s cubic-bezier(.22,.7,.2,1) .32s both}
+.js .hero-card{animation:riseCard .9s cubic-bezier(.22,.7,.2,1) .18s both}
+
+/* Erster Schritt pulsiert dezent */
+@keyframes ring{
+  0%,100%{box-shadow:0 0 0 9px var(--bg-soft),0 0 0 0 rgba(255,0,0,.34)}
+  70%    {box-shadow:0 0 0 9px var(--bg-soft),0 0 0 16px rgba(255,0,0,0)}
+}
+.step:first-child .step-num{animation:ring 3.4s ease-out infinite 1.5s}
+
+/* Kleine Interaktionen */
+.card-icon{transition:transform .25s cubic-bezier(.22,.7,.2,1), background .25s ease}
+.card:hover .card-icon{transform:translateY(-2px) scale(1.06)}
+.nav-links a{position:relative}
+.nav-links a::after{
+  content:"";position:absolute;left:15px;right:15px;bottom:6px;height:2px;
+  background:var(--brand);border-radius:2px;
+  transform:scaleX(0);transform-origin:50%;transition:transform .25s cubic-bezier(.22,.7,.2,1);
+}
+.nav-links a:hover::after{transform:scaleX(1)}
+.logo{transition:transform .25s cubic-bezier(.22,.7,.2,1)}
+.logo:hover{transform:translateY(-1px)}
+.faq summary{transition:color .18s ease}
+.faq summary:hover{color:var(--brand)}
+.contact-panel a.link{transition:border-color .2s ease, color .2s ease}
+.contact-panel a.link:hover{color:var(--brand)}
+
+@media (prefers-reduced-motion: reduce){
+  .blob-a,.blob-b,.blob-c,.step:first-child .step-num{animation:none}
+  .js .reveal{opacity:1;transform:none;transition:none}
+  .js .hero .eyebrow,.js .hero h1,.js .hero-text,
+  .js .hero-actions,.js .hero-points,.js .hero-card{animation:none}
+  .progress{display:none}
+}
+
+/* ==========================================================================
+   Team
+   ========================================================================== */
+
+.team-grid{
+  display:grid;gap:24px;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+}
+.member{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.member-photo{
+  position:relative;aspect-ratio:4/5;overflow:hidden;
+  background:linear-gradient(150deg,#101a26 0%,#1d2b3c 100%);
+  display:grid;place-items:center;
+}
+.member-photo img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s cubic-bezier(.22,.7,.2,1);
+}
+.member:hover .member-photo img{transform:scale(1.05)}
+.member-photo .mark{width:52px;height:52px;color:rgba(255,0,0,.55)}
+.member-photo .todo{position:absolute;bottom:14px;left:50%;transform:translateX(-50%)}
+.member-body{padding:22px clamp(20px,2.4vw,26px) clamp(24px,2.6vw,28px)}
+.member-body h3{margin:0 0 2px}
+.member-role{
+  color:var(--brand);font-size:.86rem;font-weight:650;
+  letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px;
+}
+.member-body p{color:var(--muted);font-size:.95rem;margin:0}
+.member-links{display:flex;gap:14px;margin-top:14px;font-size:.9rem}
+.member-links a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong)}
+.member-links a:hover{color:var(--brand);border-color:var(--brand)}
