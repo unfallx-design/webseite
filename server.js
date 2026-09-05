@@ -1,3 +1,7 @@
+/**
+ * UNFALLX – statischer Webserver
+ * Node-Standardbibliothek, keine externen Abhängigkeiten.
+ */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -11,53 +15,159 @@ const MIME = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
+  '.avif': 'image/avif',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2'
 };
 
+/* Dateien, die nie ausgeliefert werden dürfen */
+const BLOCKED = /(^|[\\/])(\.git|\.env|node_modules|package(-lock)?\.json)([\\/]|$)/i;
+
+/**
+ * Inline-Skripte (z. B. der JSON-LD-Block für Suchmaschinen) werden beim Start
+ * gehasht, damit die Content-Security-Policy ohne 'unsafe-inline' auskommt.
+ * Neue Inline-Skripte werden dadurch automatisch berücksichtigt.
+ */
+function inlineScriptHashes() {
+  const crypto = require('crypto');
+  const hashes = new Set();
+  let files = [];
+  try {
+    files = fs.readdirSync(ROOT).filter((f) => f.toLowerCase().endsWith('.html'));
+  } catch (e) { /* ignorieren */ }
+
+  files.forEach((file) => {
+    let html = '';
+    try { html = fs.readFileSync(path.join(ROOT, file), 'utf8'); } catch (e) { return; }
+    const re = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/gi;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const code = m[1];
+      if (!code.trim()) continue;
+      hashes.add("'sha256-" + crypto.createHash('sha256').update(code, 'utf8').digest('base64') + "'");
+    }
+  });
+  return Array.from(hashes).join(' ');
+}
+
+const SCRIPT_HASHES = inlineScriptHashes();
+
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  'Content-Security-Policy':
+    "default-src 'self'; img-src 'self' data:; style-src 'self'; " +
+    ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
+    "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
+};
+
+function cacheFor(ext) {
+  if (ext === '.html' || ext === '') return 'public, max-age=0, must-revalidate';
+  return 'public, max-age=604800';
+}
+
+function send(res, status, headers, body, isHead) {
+  res.writeHead(status, Object.assign({}, SECURITY_HEADERS, headers));
+  if (isHead) return res.end();
+  res.end(body);
+}
+
+function sendError(res, status, isHead) {
+  const file = status === 404 ? path.join(ROOT, '404.html') : null;
+  if (file && fs.existsSync(file)) {
+    const body = fs.readFileSync(file);
+    return send(res, status, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store'
+    }, body, isHead);
+  }
+  send(res, status, { 'Content-Type': 'text/plain; charset=utf-8' },
+    status === 404 ? 'Nicht gefunden' : 'Fehler', isHead);
+}
+
 const server = http.createServer((req, res) => {
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.writeHead(405, { 'Content-Type': 'text/plain; charset=utf-8' });
-    return res.end('Method Not Allowed');
+  const isHead = req.method === 'HEAD';
+
+  if (req.method !== 'GET' && !isHead) {
+    return send(res, 405, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Allow': 'GET, HEAD'
+    }, 'Methode nicht erlaubt', false);
   }
 
-  const urlPath = decodeURIComponent(new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname);
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent(
+      new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname
+    );
+  } catch (e) {
+    return sendError(res, 400, isHead);
+  }
 
+  /* Healthcheck für Hostinger */
   if (urlPath === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    return res.end(JSON.stringify({ status: 'ok' }));
+    return send(res, 200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store'
+    }, JSON.stringify({ status: 'ok' }), isHead);
   }
+
+  /* Nachgestellten Slash entfernen: /impressum/ -> /impressum */
+  if (urlPath.length > 1 && urlPath.endsWith('/')) {
+    const target = urlPath.replace(/\/+$/, '');
+    return send(res, 301, { Location: target }, '', isHead);
+  }
+
+  /* .html in der URL auf saubere Adresse umleiten */
+  if (/\.html$/i.test(urlPath) && urlPath !== '/index.html') {
+    return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
+  }
+  if (urlPath === '/index.html') {
+    return send(res, 301, { Location: '/' }, '', isHead);
+  }
+
+  if (BLOCKED.test(urlPath)) return sendError(res, 404, isHead);
 
   const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
-  const filePath = path.join(ROOT, relative);
+  const resolved = path.resolve(ROOT, relative);
 
-  // Verzeichnis-Traversal verhindern
-  if (!filePath.startsWith(ROOT)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    return res.end('Forbidden');
+  /* Verzeichnis-Traversal verhindern */
+  if (resolved !== ROOT && !resolved.startsWith(ROOT + path.sep)) {
+    return send(res, 403, { 'Content-Type': 'text/plain; charset=utf-8' }, 'Verboten', isHead);
   }
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      fs.readFile(path.join(ROOT, 'index.html'), (fallbackErr, fallbackData) => {
-        if (fallbackErr) {
-          res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-          return res.end('Not Found');
-        }
-        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(fallbackData);
+  /* Kandidaten: exakter Pfad, dann .html-Variante (saubere URLs) */
+  const candidates = path.extname(resolved)
+    ? [resolved]
+    : [resolved, resolved + '.html', path.join(resolved, 'index.html')];
+
+  const tryNext = (i) => {
+    if (i >= candidates.length) return sendError(res, 404, isHead);
+    const file = candidates[i];
+    fs.stat(file, (err, stat) => {
+      if (err || !stat.isFile()) return tryNext(i + 1);
+      fs.readFile(file, (readErr, data) => {
+        if (readErr) return sendError(res, 500, isHead);
+        const ext = path.extname(file).toLowerCase();
+        send(res, 200, {
+          'Content-Type': MIME[ext] || 'application/octet-stream',
+          'Content-Length': data.length,
+          'Cache-Control': cacheFor(ext)
+        }, data, isHead);
       });
-      return;
-    }
-    const type = MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'public, max-age=3600' });
-    res.end(data);
-  });
+    });
+  };
+
+  tryNext(0);
 });
 
 server.listen(PORT, HOST, () => {
