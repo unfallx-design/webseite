@@ -28,7 +28,39 @@ const MIME = {
 };
 
 /* Dateien, die nie ausgeliefert werden dürfen */
-const BLOCKED = /(^|[\\/])(\.git|\.env|node_modules|package(-lock)?\.json)([\\/]|$)/i;
+const BLOCKED = /(^|[\\/])(\.git|\.env|node_modules|partials|package(-lock)?\.json)([\\/]|$)/i;
+
+/**
+ * Gemeinsame Bausteine aus partials/ werden in die Seiten eingesetzt.
+ * In den HTML-Dateien steht dafuer z. B. <!--#include:header-->.
+ * So sind Kopf- und Fussbereich auf allen Seiten garantiert identisch.
+ */
+const PARTIAL_DIR = path.join(ROOT, 'partials');
+
+function loadPartials() {
+  const out = {};
+  let files = [];
+  try { files = fs.readdirSync(PARTIAL_DIR); } catch (e) { return out; }
+  files.filter((f) => f.toLowerCase().endsWith('.html')).forEach((f) => {
+    try {
+      out[path.basename(f, '.html')] = fs.readFileSync(path.join(PARTIAL_DIR, f), 'utf8').trim();
+    } catch (e) { /* ignorieren */ }
+  });
+  return out;
+}
+
+const PARTIALS = loadPartials();
+
+function applyPartials(html) {
+  return html.replace(/<!--#include:([a-z0-9_-]+)-->/gi, (match, name) => {
+    const key = name.toLowerCase();
+    return Object.prototype.hasOwnProperty.call(PARTIALS, key) ? PARTIALS[key] : '';
+  });
+}
+
+function renderPage(file) {
+  return applyPartials(fs.readFileSync(file, 'utf8'));
+}
 
 /**
  * Inline-Skripte (z. B. der JSON-LD-Block für Suchmaschinen) werden beim Start
@@ -45,7 +77,7 @@ function inlineScriptHashes() {
 
   files.forEach((file) => {
     let html = '';
-    try { html = fs.readFileSync(path.join(ROOT, file), 'utf8'); } catch (e) { return; }
+    try { html = applyPartials(fs.readFileSync(path.join(ROOT, file), 'utf8')); } catch (e) { return; }
     const re = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/gi;
     let m;
     while ((m = re.exec(html)) !== null) {
@@ -84,7 +116,7 @@ function send(res, status, headers, body, isHead) {
 function sendError(res, status, isHead) {
   const file = status === 404 ? path.join(ROOT, '404.html') : null;
   if (file && fs.existsSync(file)) {
-    const body = fs.readFileSync(file);
+    const body = Buffer.from(renderPage(file), 'utf8');
     return send(res, status, {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-store'
@@ -127,6 +159,8 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: target }, '', isHead);
   }
 
+  if (BLOCKED.test(urlPath)) return sendError(res, 404, isHead);
+
   /* .html in der URL auf saubere Adresse umleiten */
   if (/\.html$/i.test(urlPath) && urlPath !== '/index.html') {
     return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
@@ -134,8 +168,6 @@ const server = http.createServer((req, res) => {
   if (urlPath === '/index.html') {
     return send(res, 301, { Location: '/' }, '', isHead);
   }
-
-  if (BLOCKED.test(urlPath)) return sendError(res, 404, isHead);
 
   const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
   const resolved = path.resolve(ROOT, relative);
@@ -155,9 +187,21 @@ const server = http.createServer((req, res) => {
     const file = candidates[i];
     fs.stat(file, (err, stat) => {
       if (err || !stat.isFile()) return tryNext(i + 1);
+      const ext = path.extname(file).toLowerCase();
+
+      if (ext === '.html') {
+        let page;
+        try { page = Buffer.from(renderPage(file), 'utf8'); }
+        catch (e) { return sendError(res, 500, isHead); }
+        return send(res, 200, {
+          'Content-Type': MIME[ext],
+          'Content-Length': page.length,
+          'Cache-Control': cacheFor(ext)
+        }, page, isHead);
+      }
+
       fs.readFile(file, (readErr, data) => {
         if (readErr) return sendError(res, 500, isHead);
-        const ext = path.extname(file).toLowerCase();
         send(res, 200, {
           'Content-Type': MIME[ext] || 'application/octet-stream',
           'Content-Length': data.length,
