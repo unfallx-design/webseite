@@ -1,1 +1,533 @@
-PLACEHOLDER
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UNFALLX – Kfz-Gutachten nach Unfall vom unabhängigen Sachverständigen</title>
+<meta name="description" content="Unabhängiges Kfz-Gutachten nach dem Unfall: Unfallgutachten, Reparaturkosten und Wertminderung sicher geltend machen. UNFALLX übernimmt Gutachten, Werkstatt und Regulierung.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://unfallx.com/">
+<meta name="theme-color" content="#0b1018">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/styles.css">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:site_name" content="UNFALLX">
+<meta property="og:title" content="UNFALLX – Kfz-Gutachten nach dem Unfall vom unabhängigen Sachverständigen">
+<meta property="og:description" content="Unfallgutachten, Werkstatt, Mobilität und Versicherungsabwicklung aus einer Hand. Sie melden den Schaden, wir übernehmen den Rest.">
+<meta property="og:url" content="https://unfallx.com/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "UNFALLX",
+  "description": "Kfz-Gutachten und Unfallgutachten vom unabhängigen Kfz-Sachverständigen: Schadengutachten, Reparaturkosten, Wertminderung, Werkstattabwicklung, Ersatzmobilität und Schadensregulierung nach Verkehrsunfällen.",
+  "url": "https://unfallx.com/",
+  "logo": "https://unfallx.com/assets/logo-full.svg",
+  "email": "info@unfallx.com",
+  "telephone": "+49 176 64365185",
+  "areaServed": "DE",
+  "serviceType": ["Kfz-Gutachten", "Unfallgutachten", "Kfz-Sachverständiger", "Kfz-Unfallabwicklung", "Schadengutachten", "Schadensregulierung"]
+}
+</script>
+</head>
+<body>
+
+<!--#include:topbar-->
+<!--#include:header-->
+
+<main id="main">
+
+<!-- Hero -->
+<div class="hero">
+  <div class="blobs" aria-hidden="true"><span class="blob blob-a"></span><span class="blob blob-b"></span><span class="blob blob-c"></span></div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow" data-i18n="hero.eyebrow">Unfallgutachten &amp; Schadenservice</span>
+      <h1 data-i18n="hero.h1">Nach dem Unfall kümmern wir uns.</h1>
+      <p class="hero-text" data-i18n="hero.text">
+        Gutachten, Werkstatt, Ersatzfahrzeug und der gesamte Schriftverkehr mit der
+        Versicherung: Sie machen eine Meldung, wir übernehmen den Rest – und halten
+        Sie auf dem Laufenden.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn" href="#melden">
+          <span data-i18n="hero.cta1">Schaden melden</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-glass" href="#ablauf" data-i18n="hero.cta2">So läuft es ab</a>
+      </div>
+
+      <ul class="hero-points">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg>
+          <span data-i18n="hero.point1">Unabhängiges Gutachten</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg>
+          <span data-i18n="hero.point2">Werkstatt &amp; Ersatzfahrzeug organisiert</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg>
+          <span data-i18n="hero.point3">Fristen im Blick</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Schnellmeldung -->
+    <div class="hero-card" id="melden">
+      <h2 data-i18n="heroCard.h2">Schaden in zwei Minuten melden</h2>
+      <p data-i18n="heroCard.lead">Kurz beschreiben, was passiert ist – wir melden uns zurück.</p>
+
+      <form id="schadenform" class="form-grid" novalidate>
+        <div class="field field-full">
+          <label for="f-name" data-i18n="form.name">Name</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Vor- und Nachname" data-i18n-placeholder="form.name.ph" required>
+        </div>
+        <div class="field">
+          <label for="f-tel" data-i18n="form.tel">Telefon</label>
+          <input id="f-tel" name="telefon" type="tel" autocomplete="tel" placeholder="für den Rückruf" data-i18n-placeholder="form.tel.ph">
+        </div>
+        <div class="field">
+          <label for="f-mail" data-i18n="form.mail">E-Mail</label>
+          <input id="f-mail" name="email" type="email" autocomplete="email" placeholder="name@beispiel.de" required>
+        </div>
+        <div class="field">
+          <label for="f-datum" data-i18n="form.datum">Unfalldatum</label>
+          <input id="f-datum" name="datum" type="date">
+        </div>
+        <div class="field">
+          <label for="f-fahrzeug" data-i18n="form.fahrzeug">Fahrzeug</label>
+          <input id="f-fahrzeug" name="fahrzeug" type="text" placeholder="Marke, Modell" data-i18n-placeholder="form.fahrzeug.ph">
+        </div>
+        <div class="field field-full">
+          <label for="f-text" data-i18n="form.was">Was ist passiert?</label>
+          <textarea id="f-text" name="beschreibung" placeholder="Kurze Schilderung des Unfallhergangs" data-i18n-placeholder="form.was.ph" required></textarea>
+        </div>
+        <div class="field field-full">
+          <button class="btn btn-block" type="submit">
+            <span data-i18n="form.submit">Meldung vorbereiten</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </button>
+        </div>
+      </form>
+
+      <p class="form-note" id="form-status" role="status">
+        <span data-i18n="form.note">Der Button öffnet Ihr E-Mail-Programm mit den Angaben – Sie schicken die
+        Nachricht selbst ab. Lieber direkt schreiben?</span>
+        <a href="mailto:info@unfallx.com?subject=Schadenmeldung">info@unfallx.com</a>
+      </p>
+
+      <ul class="mini-trust">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+          <span data-i18n="mini.sicher">Sicher übertragen</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6.5v5c0 4.5 3.2 8.3 8 9.5 4.8-1.2 8-5 8-9.5v-5L12 3Z"/></svg>
+          <span data-i18n="mini.vertraulich">Vertraulich behandelt</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span data-i18n="mini.rueckmeldung">Rückmeldung zeitnah</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Vertrauensleiste -->
+<div class="trustbar">
+  <div class="wrap">
+    <div class="trust-item reveal" data-group="trust">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <div><strong data-i18n="trust1.h">Schnelle Rückmeldung</strong><span data-i18n="trust1.p">Wir melden uns nach Ihrer Meldung zeitnah zurück.</span></div>
+    </div>
+    <div class="trust-item reveal" data-group="trust">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6.5v5c0 4.5 3.2 8.3 8 9.5 4.8-1.2 8-5 8-9.5v-5L12 3Z"/></svg>
+      <div><strong data-i18n="trust2.h">Unabhängige Gutachter</strong><span data-i18n="trust2.p">Die Begutachtung erfolgt nicht im Auftrag der Versicherung.</span></div>
+    </div>
+    <div class="trust-item reveal" data-group="trust">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>
+      <div><strong data-i18n="trust3.h">Alles aus einer Hand</strong><span data-i18n="trust3.p">Gutachten, Werkstatt, Mobilität und Regulierung koordiniert.</span></div>
+    </div>
+    <div class="trust-item reveal" data-group="trust">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg>
+      <div><strong data-i18n="trust4.h">Laufender Status</strong><span data-i18n="trust4.p">Sie wissen jederzeit, wo Ihr Vorgang gerade steht.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Leistungen -->
+<section id="leistungen" class="section-tinted">
+  <div class="blobs blobs-light" aria-hidden="true"><span class="blob blob-a"></span><span class="blob blob-b"></span><span class="blob blob-c"></span></div>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="leistungen.eyebrow">Leistungen</span>
+      <h2 data-i18n="leistungen.h2">Kfz-Gutachten und mehr: Alles, was nach dem Unfall zu tun ist</h2>
+      <p class="lead" data-i18n="leistungen.lead">
+        Sechs Bausteine, die ineinandergreifen – vom unabhängigen Kfz-Gutachten
+        bis zur Regulierung. Sie behalten den Überblick, die Arbeit liegt bei uns.
+      </p>
+    </div>
+
+    <div class="grid grid-3">
+      <article class="card reveal" data-group="leistungen">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>
+        <h3 data-i18n="leistungen.c1.h">Kfz-Gutachten nach dem Unfall</h3>
+        <p data-i18n="leistungen.c1.p">Unabhängiger Kfz-Sachverständiger erstellt Ihr Unfallgutachten: Reparaturkosten, Wertminderung und Nutzungsausfall werden vollständig dokumentiert und gegenüber der Versicherung durchgesetzt.</p>
+      </article>
+
+      <article class="card reveal" data-group="leistungen">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5a4 4 0 0 0 5 5L21 9l-6.5 6.5"/><path d="m9.5 8.5-6 6a2.1 2.1 0 0 0 3 3l6-6"/><path d="M14.5 5.5 12 8"/></svg></div>
+        <h3 data-i18n="leistungen.c2.h">Werkstattabwicklung</h3>
+        <p data-i18n="leistungen.c2.p">Wir stimmen Reparatur und Termine mit dem Partnerbetrieb ab und behalten den Fortschritt im Auge.</p>
+      </article>
+
+      <article class="card reveal" data-group="leistungen">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6.5 17V9.8L8 6h8l1.5 3.8V17"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/><path d="M6.5 11.5h11"/></svg></div>
+        <h3 data-i18n="leistungen.c3.h">Ersatzmobilität</h3>
+        <p data-i18n="leistungen.c3.p">Organisation eines Ersatzfahrzeugs, damit Sie im Alltag beweglich bleiben.</p>
+      </article>
+
+      <article class="card reveal" data-group="leistungen">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg></div>
+        <h3 data-i18n="leistungen.c4.h">Schriftverkehr mit der Versicherung</h3>
+        <p data-i18n="leistungen.c4.p">Meldungen, Rückfragen, Unterlagen und Fristen laufen über uns – nicht über Sie.</p>
+      </article>
+
+      <article class="card reveal" data-group="leistungen">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4 7h16"/><path d="m4 7-2 6a3.2 3.2 0 0 0 4 0Z"/><path d="m20 7-2 6a3.2 3.2 0 0 0 4 0Z"/><path d="M8 21h8"/></svg></div>
+        <h3 data-i18n="leistungen.c5.h">Rechtliche Begleitung</h3>
+        <p data-i18n="leistungen.c5.p">Auf Wunsch vermitteln wir an eine spezialisierte Kanzlei, die Ihre Ansprüche durchsetzt.</p>
+      </article>
+
+      <article class="card reveal" data-group="leistungen">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div>
+        <h3 data-i18n="leistungen.c6.h">Statusübersicht</h3>
+        <p data-i18n="leistungen.c6.p">Ein fester Ansprechpartner sagt Ihnen jederzeit, an welcher Stelle Ihr Fall gerade steht.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Ablauf -->
+<section class="section-soft" id="ablauf">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="ablauf.eyebrow">Ablauf</span>
+      <h2 data-i18n="ablauf.h2">In vier Schritten zur abgeschlossenen Regulierung</h2>
+      <p class="lead" data-i18n="ablauf.lead">Vom ersten Kontakt bis zur Auszahlung – hier sehen Sie, was wann passiert.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal" data-group="steps">
+        <div class="step-num">1</div>
+        <h3 data-i18n="ablauf.s1.h">Schaden melden</h3>
+        <p data-i18n="ablauf.s1.p">Sie schildern kurz den Unfallhergang und schicken vorhandene Fotos und Unterlagen mit.</p>
+      </div>
+      <div class="step reveal" data-group="steps">
+        <div class="step-num">2</div>
+        <h3 data-i18n="ablauf.s2.h">Prüfen &amp; beauftragen</h3>
+        <p data-i18n="ablauf.s2.p">Wir sichten den Fall, beauftragen das Gutachten und stimmen das weitere Vorgehen mit Ihnen ab.</p>
+      </div>
+      <div class="step reveal" data-group="steps">
+        <div class="step-num">3</div>
+        <h3 data-i18n="ablauf.s3.h">Reparatur &amp; Mobilität</h3>
+        <p data-i18n="ablauf.s3.p">Werkstatttermin und Ersatzfahrzeug werden organisiert, die Reparatur wird begleitet.</p>
+      </div>
+      <div class="step reveal" data-group="steps">
+        <div class="step-num">4</div>
+        <h3 data-i18n="ablauf.s4.h">Regulierung</h3>
+        <p data-i18n="ablauf.s4.p">Wir führen den Schriftverkehr mit der Versicherung bis zum Abschluss des Vorgangs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Vorteile -->
+<section id="vorteile">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow" data-i18n="vorteile.eyebrow">Warum UNFALLX</span>
+      <h2 data-i18n="vorteile.h2">Sie haben genug um die Ohren</h2>
+      <p class="lead lead-tight" data-i18n="vorteile.lead">
+        Nach einem Unfall kommen Termine, Formulare und Rückfragen zusammen –
+        meist genau dann, wenn das Auto fehlt. Wir nehmen Ihnen diesen Teil ab.
+      </p>
+      <ul class="checklist">
+        <li class="reveal" data-group="vorteile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+          <div><strong data-i18n="vorteile.v1.h">Ein Ansprechpartner statt fünf Nummern</strong>
+          <span data-i18n="vorteile.v1.p">Gutachter, Werkstatt, Mietwagen, Versicherung – die Abstimmung läuft über eine Stelle.</span></div>
+        </li>
+        <li class="reveal" data-group="vorteile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+          <div><strong data-i18n="vorteile.v2.h">Unabhängige Begutachtung</strong>
+          <span data-i18n="vorteile.v2.p">Das Gutachten wird nicht von der gegnerischen Versicherung beauftragt, sondern in Ihrem Interesse erstellt.</span></div>
+        </li>
+        <li class="reveal" data-group="vorteile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+          <div><strong data-i18n="vorteile.v3.h">Keine übersehenen Positionen</strong>
+          <span data-i18n="vorteile.v3.p">Wertminderung, Nutzungsausfall, Abschlepp- und Nebenkosten werden mit angemeldet.</span></div>
+        </li>
+        <li class="reveal" data-group="vorteile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+          <div><strong data-i18n="vorteile.v4.h">Klare Sprache</strong>
+          <span data-i18n="vorteile.v4.p">Sie bekommen den Stand Ihres Falls verständlich erklärt – ohne Versicherungsdeutsch.</span></div>
+        </li>
+      </ul>
+    </div>
+
+    <aside class="card card-lg reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M17 7.5C17 5.6 14.8 4.5 12 4.5S7 5.6 7 7.5s2.2 2.8 5 3.3 5 1.4 5 3.3-2.2 3-5 3-5-1.1-5-3"/></svg></div>
+      <h3 data-i18n="kosten.h">Was kostet das?</h3>
+      <p data-i18n="kosten.p1">
+        Bei einem unverschuldeten Unfall gehören die Kosten für Gutachten,
+        Ersatzfahrzeug und die Beauftragung eines Anwalts in der Regel zum
+        erstattungsfähigen Schaden und werden von der gegnerischen Versicherung
+        getragen.
+      </p>
+      <p data-i18n="kosten.p2">
+        Wie es in Ihrem Fall aussieht, klären wir vorab und sagen es Ihnen
+        offen – bevor etwas beauftragt wird.
+      </p>
+      <a class="btn btn-outline" href="#melden" data-i18n="kosten.cta">Fall kostenfrei einschätzen lassen</a>
+    </aside>
+  </div>
+</section>
+
+<!-- Team -->
+<section id="team" class="section-tinted">
+  <div class="blobs blobs-light" aria-hidden="true"><span class="blob blob-a"></span><span class="blob blob-b"></span><span class="blob blob-c"></span></div>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="team.eyebrow">Team</span>
+      <h2 data-i18n="team.h2">Die Menschen hinter UNFALLX</h2>
+      <p class="lead" data-i18n="team.lead">
+        Sie haben bei uns feste Ansprechpartner – keine wechselnde Hotline.
+      </p>
+    </div>
+
+    <!-- FOTOS EINSETZEN:
+         1. Bilder als JPG unter assets/team/ ablegen, moeglichst hochkant
+            im Verhaeltnis 4:5 (z. B. 800 x 1000 Pixel).
+         2. Im jeweiligen Block den Kommentar entfernen und das Bild eintragen:
+            <img src="/assets/team/vorname.jpg" alt="Vorname Nachname" width="800" height="1000" loading="lazy">
+         3. Die gelben Platzhalter durch Name, Funktion und Text ersetzen.
+         Weitere Personen: einen der Bloecke kopieren. -->
+
+    <div class="team-grid">
+      <article class="card member reveal" data-group="team">
+        <div class="member-photo">
+          <!-- <img src="/assets/team/person-1.jpg" alt="" width="800" height="1000" loading="lazy"> -->
+          <svg class="mark" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M17.12 0 5.88 39.51 31.37 85.28 56.95 71.64Z"/><path d="M70.54 18.28 44.76 31.52 82.82 99.97 94.09 60.52Z"/></svg>
+          <span class="todo">Foto eintragen</span>
+        </div>
+        <div class="member-body">
+          <h3><span class="todo">Name eintragen</span></h3>
+          <p class="member-role"><span class="todo">Funktion</span></p>
+          <p data-i18n="team.role1">Erste Ansprechperson bei der Schadenmeldung und Begleitung des Falls bis zur Regulierung.</p>
+        </div>
+      </article>
+
+      <article class="card member reveal" data-group="team">
+        <div class="member-photo">
+          <!-- <img src="/assets/team/person-2.jpg" alt="" width="800" height="1000" loading="lazy"> -->
+          <svg class="mark" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M17.12 0 5.88 39.51 31.37 85.28 56.95 71.64Z"/><path d="M70.54 18.28 44.76 31.52 82.82 99.97 94.09 60.52Z"/></svg>
+          <span class="todo">Foto eintragen</span>
+        </div>
+        <div class="member-body">
+          <h3><span class="todo">Name eintragen</span></h3>
+          <p class="member-role"><span class="todo">Funktion</span></p>
+          <p data-i18n="team.role2">Koordination von Gutachten, Werkstatt und Ersatzfahrzeug – hält die Termine zusammen.</p>
+        </div>
+      </article>
+
+      <article class="card member reveal" data-group="team">
+        <div class="member-photo">
+          <!-- <img src="/assets/team/person-3.jpg" alt="" width="800" height="1000" loading="lazy"> -->
+          <svg class="mark" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M17.12 0 5.88 39.51 31.37 85.28 56.95 71.64Z"/><path d="M70.54 18.28 44.76 31.52 82.82 99.97 94.09 60.52Z"/></svg>
+          <span class="todo">Foto eintragen</span>
+        </div>
+        <div class="member-body">
+          <h3><span class="todo">Name eintragen</span></h3>
+          <p class="member-role"><span class="todo">Funktion</span></p>
+          <p data-i18n="team.role3">Schriftverkehr mit der Versicherung, Fristen und Nachfassen bei offenen Positionen.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Soforthilfe -->
+<section class="section-dark" id="soforthilfe">
+  <div class="blobs" aria-hidden="true"><span class="blob blob-a"></span><span class="blob blob-b"></span><span class="blob blob-c"></span></div>
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow" data-i18n="sofort.eyebrow">Soforthilfe</span>
+      <h2 data-i18n="sofort.h2">Die ersten Schritte an der Unfallstelle</h2>
+      <p class="lead" data-i18n="sofort.lead">
+        Wenn es gerade passiert ist: In dieser Reihenfolge machen Sie nichts falsch.
+      </p>
+      <a class="btn" href="#melden" data-i18n="sofort.cta">Danach: Schaden melden</a>
+    </div>
+
+    <ol class="checklist">
+      <li class="reveal" data-group="soforthilfe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5M12 17h.01"/></svg>
+        <div><strong data-i18n="sofort.s1.h">Unfallstelle sichern</strong>
+        <span data-i18n="sofort.s1.p">Warnblinker, Warnweste, Warndreieck. Verletzte versorgen, im Zweifel 112 rufen.</span></div>
+      </li>
+      <li class="reveal" data-group="soforthilfe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6.5v5c0 4.5 3.2 8.3 8 9.5 4.8-1.2 8-5 8-9.5v-5L12 3Z"/></svg>
+        <div><strong data-i18n="sofort.s2.h">Polizei rufen, wenn nötig</strong>
+        <span data-i18n="sofort.s2.p">Bei Verletzten, Streit über den Hergang, unklarer Schuld oder Fahrerflucht: 110.</span></div>
+      </li>
+      <li class="reveal" data-group="soforthilfe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h3l1.5-2.5h7L17 8.5h3a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 20 18.5H4A1.5 1.5 0 0 1 2.5 17v-7A1.5 1.5 0 0 1 4 8.5Z"/><circle cx="12" cy="13" r="3.2"/></svg>
+        <div><strong data-i18n="sofort.s3.h">Fotos machen</strong>
+        <span data-i18n="sofort.s3.p">Gesamtsituation, Endstellung der Fahrzeuge, Schäden aus mehreren Winkeln, Kennzeichen.</span></div>
+      </li>
+      <li class="reveal" data-group="soforthilfe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+        <div><strong data-i18n="sofort.s4.h">Daten austauschen</strong>
+        <span data-i18n="sofort.s4.p">Name, Anschrift, Kennzeichen, Versicherung und Versicherungsnummer – auch von Zeugen.</span></div>
+      </li>
+      <li class="reveal" data-group="soforthilfe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 15.5 7-7M8.5 8.5l7 7"/></svg>
+        <div><strong data-i18n="sofort.s5.h">Keine Schuld anerkennen</strong>
+        <span data-i18n="sofort.s5.p">Unterschreiben Sie nichts, was den Hergang bewertet. Die Bewertung kommt später.</span></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section-soft" id="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="faq.eyebrow">Häufige Fragen</span>
+      <h2 data-i18n="faq.h2">Das wird uns oft gefragt</h2>
+      <p class="lead" data-i18n="faq.lead">Wenn Ihre Frage nicht dabei ist, schreiben Sie uns einfach.</p>
+    </div>
+
+    <div class="faq">
+      <details class="reveal" data-group="faq">
+        <summary data-i18n="faq.q1.h">Darf ich den Kfz-Gutachter selbst aussuchen?</summary>
+        <div class="faq-body" data-i18n="faq.q1.p">
+          Bei einem unverschuldeten Unfall wählen in der Regel Sie als Geschädigter
+          den Kfz-Sachverständigen aus – nicht die gegnerische Versicherung. Genau dafür
+          sind wir da: Wir beauftragen einen unabhängigen Kfz-Gutachter in Ihrem Interesse,
+          der Ihr Unfallgutachten unabhängig von der Versicherung erstellt.
+        </div>
+      </details>
+
+      <details class="reveal" data-group="faq">
+        <summary data-i18n="faq.q2.h">Muss ich in eine bestimmte Werkstatt?</summary>
+        <div class="faq-body" data-i18n="faq.q2.p">
+          Die Werkstattwahl liegt grundsätzlich bei Ihnen. Wenn Sie möchten,
+          organisieren wir den Termin bei einem Partnerbetrieb und stimmen die
+          Reparatur direkt mit der Werkstatt ab. Eine eigene Wunschwerkstatt ist
+          ebenso möglich.
+        </div>
+      </details>
+
+      <details class="reveal" data-group="faq">
+        <summary data-i18n="faq.q3.h">Was kostet mich die Abwicklung?</summary>
+        <div class="faq-body" data-i18n="faq.q3.p">
+          Bei einem unverschuldeten Unfall gehören Gutachterkosten, Ersatzmobilität
+          und Anwaltskosten in der Regel zum ersatzfähigen Schaden und werden von der
+          gegnerischen Versicherung übernommen. Bei Teilschuld oder unklarer
+          Haftungslage besprechen wir das vorher offen mit Ihnen.
+        </div>
+      </details>
+
+      <details class="reveal" data-group="faq">
+        <summary data-i18n="faq.q4.h">Wie schnell bekomme ich ein Ersatzfahrzeug?</summary>
+        <div class="faq-body" data-i18n="faq.q4.p">
+          Sobald der Fall aufgenommen ist, kümmern wir uns um die Ersatzmobilität.
+          Wie schnell ein Fahrzeug bereitsteht, hängt von Region, Fahrzeugklasse und
+          Verfügbarkeit ab – wir sagen Ihnen bei der ersten Rückmeldung, womit Sie
+          rechnen können.
+        </div>
+      </details>
+
+      <details class="reveal" data-group="faq">
+        <summary data-i18n="faq.q5.h">Was brauchen Sie von mir?</summary>
+        <div class="faq-body" data-i18n="faq.q5.p">
+          Für den Start reichen eine kurze Schilderung des Unfallhergangs, Ihre
+          Kontaktdaten und – falls vorhanden – Fotos, das Aktenzeichen der Polizei
+          sowie die Daten des Unfallgegners. Alles Weitere fragen wir gezielt ab.
+        </div>
+      </details>
+
+      <details class="reveal" data-group="faq">
+        <summary data-i18n="faq.q6.h">Ich bin selbst schuld – hilft mir UNFALLX trotzdem?</summary>
+        <div class="faq-body" data-i18n="faq.q6.p">
+          Ja. Auch dann können wir die Abwicklung über Ihre Kaskoversicherung
+          begleiten und Werkstatt sowie Gutachten koordinieren. Die Kostenfrage
+          klären wir in diesem Fall vorab.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Kontakt -->
+<section id="kontakt">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="kontakt.eyebrow">Kontakt</span>
+      <h2 data-i18n="kontakt.h2">So erreichen Sie uns</h2>
+      <p class="lead" data-i18n="kontakt.lead">Melden Sie sich auf dem Weg, der Ihnen am liebsten ist.</p>
+    </div>
+
+    <div class="contact-panels">
+      <div class="card contact-panel reveal" data-group="kontakt">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg></div>
+        <h3 data-i18n="kontakt.mail.h">E-Mail</h3>
+        <p data-i18n="kontakt.mail.p">Schreiben Sie uns – wir melden uns zeitnah zurück.</p>
+        <a class="link" href="mailto:info@unfallx.com?subject=Schadenmeldung">info@unfallx.com</a>
+      </div>
+
+      <div class="card contact-panel reveal" data-group="kontakt">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z"/></svg></div>
+        <h3 data-i18n="kontakt.tel.h">Telefon</h3>
+        <p data-i18n="kontakt.tel.p">Direkter Draht, wenn es eilig ist.</p>
+        <a class="link" href="tel:+4917664365185">0176 64 365 185</a>
+      </div>
+
+      <div class="card contact-panel reveal" data-group="kontakt">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <h3 data-i18n="kontakt.adr.h">Anschrift</h3>
+        <p data-i18n="kontakt.adr.p">Post und persönliche Termine nach Absprache.</p>
+        <!-- TODO: Straße, PLZ und Ort eintragen -->
+        <span class="todo">Anschrift eintragen</span>
+      </div>
+    </div>
+
+    <div class="cta-band is-spaced reveal">
+      <div>
+        <h2 data-i18n="ctaband.h2">Unfall gehabt? Melden Sie ihn jetzt.</h2>
+        <p data-i18n="ctaband.p">Ein paar Angaben genügen – den Rest klären wir im Rückruf.</p>
+      </div>
+      <a class="btn" href="#melden">
+        <span data-i18n="hero.cta1">Schaden melden</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!--#include:footer-->
+
+<script src="/assets/i18n.js" defer></script>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>
