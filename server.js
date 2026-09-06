@@ -125,7 +125,7 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
   'Content-Security-Policy':
-    "default-src 'self'; img-src 'self' data:; style-src 'self'; " +
+    "default-src 'self'; img-src 'self' data: https://images.unsplash.com; style-src 'self'; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
     "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
