@@ -88,22 +88,41 @@
     });
   }
 
-  /* Mobiles Menü */
+  /* Mobiles Menü (Glas-Overlay unter dem Header) */
   var toggle = document.querySelector('[data-nav-toggle]');
   var menu = document.getElementById('mobile-menu');
   if (toggle && menu) {
+    var setzeMenue = function (offen) {
+      if (offen && header) {
+        var unten = Math.max(0, Math.round(header.getBoundingClientRect().bottom));
+        menu.style.setProperty('--mm-top', unten + 'px');
+      }
+      toggle.setAttribute('aria-expanded', String(offen));
+      menu.setAttribute('data-open', String(offen));
+      document.documentElement.classList.toggle('menu-open', offen);
+      var label = toggle.querySelector('.sr-only');
+      if (label) label.textContent = offen ? 'Menü schließen' : 'Menü öffnen';
+    };
     toggle.addEventListener('click', function () {
-      var open = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!open));
-      menu.setAttribute('data-open', String(!open));
+      setzeMenue(toggle.getAttribute('aria-expanded') !== 'true');
     });
     menu.addEventListener('click', function (e) {
-      if (e.target.tagName === 'A') {
-        toggle.setAttribute('aria-expanded', 'false');
-        menu.setAttribute('data-open', 'false');
-      }
+      if (e.target.closest('a')) setzeMenue(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menu.getAttribute('data-open') === 'true') { setzeMenue(false); toggle.focus(); }
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 1080 && menu.getAttribute('data-open') === 'true') setzeMenue(false);
     });
   }
+
+  /* Aktiven Navigationspunkt markieren */
+  var pfad = window.location.pathname.replace(/\/$/, '') || '/';
+  document.querySelectorAll('.nav-links a[href]').forEach(function (a) {
+    var ziel = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
+    if (ziel !== '/' && ziel === pfad) a.classList.add('is-active');
+  });
 
   /* Theme-Umschalter (Tag/Nacht) */
   var themeButtons = document.querySelectorAll('[data-theme-toggle]');
