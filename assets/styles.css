@@ -1134,14 +1134,12 @@ button[aria-busy="true"]{opacity:.7;cursor:progress}
    ========================================================================== */
 
 :root{
-  --glass:        rgba(255,255,255,.72);
+  --glass:        rgba(255,255,255,.8);
   --glass-strong: rgba(255,255,255,.88);
   --surface-a:    rgba(255,255,255,.84);
   --bg-soft-a:    rgba(247,245,241,.66);
-  --fx-1: rgba(255,0,0,.30);
-  --fx-2: rgba(255,122,0,.24);
-  --fx-3: rgba(96,84,255,.26);
-  --fx-4: rgba(0,170,200,.22);
+  --fx-1: rgba(255,0,0,.08);
+  --fx-2: rgba(40,64,120,.07);
   --header-h: 76px;
 }
 :root[data-theme="dark"]{
@@ -1149,44 +1147,37 @@ button[aria-busy="true"]{opacity:.7;cursor:progress}
   --glass-strong: rgba(27,29,33,.86);
   --surface-a:    rgba(36,38,43,.82);
   --bg-soft-a:    rgba(35,37,41,.62);
-  --fx-1: rgba(255,0,0,.26);
-  --fx-2: rgba(255,122,0,.16);
-  --fx-3: rgba(120,90,255,.22);
-  --fx-4: rgba(0,190,220,.16);
+  --fx-1: rgba(255,0,0,.16);
+  --fx-2: rgba(70,100,200,.16);
 }
 
-/* ---------- Animierter Farb-Blur-Hintergrund ------------------------------ */
+/* ---------- Ruhiger, cineastischer Hintergrund ------------------------------
+   Kein Farbteppich mehr: warmer Grund, ein weiches rotes Licht oben links,
+   ein kühler Gegenschein unten rechts, feines Filmkorn. Alles sehr langsam. */
 
 html{background:var(--bg)}
 .bg-fx{
   position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+  background:
+    radial-gradient(70vw 55vh at 8% -10%, var(--fx-1), transparent 70%),
+    radial-gradient(60vw 50vh at 100% 105%, var(--fx-2), transparent 70%);
 }
 .bg-fx::after{
-  content:"";position:absolute;inset:0;
-  background-image:radial-gradient(rgba(20,23,28,.045) 1px,transparent 1px);
-  background-size:26px 26px;opacity:.5;
+  content:"";position:absolute;inset:0;opacity:.32;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;mix-blend-mode:multiply;
 }
-:root[data-theme="dark"] .bg-fx::after{background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px)}
-.bg-blob{
-  position:absolute;border-radius:50%;
-  filter:blur(90px);will-change:transform;
-  mix-blend-mode:multiply;
-}
-:root[data-theme="dark"] .bg-blob{mix-blend-mode:screen}
-.bg-blob-1{width:62vw;height:62vw;left:-18vw;top:-22vw;background:var(--fx-1);animation:fxDrift1 34s ease-in-out infinite alternate}
-.bg-blob-2{width:52vw;height:52vw;right:-14vw;top:4vh;background:var(--fx-3);animation:fxDrift2 42s ease-in-out infinite alternate}
-.bg-blob-3{width:44vw;height:44vw;left:22vw;bottom:-22vw;background:var(--fx-2);animation:fxDrift3 38s ease-in-out infinite alternate}
-.bg-blob-4{width:34vw;height:34vw;right:8vw;bottom:-10vw;background:var(--fx-4);animation:fxDrift4 46s ease-in-out infinite alternate}
-@keyframes fxDrift1{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(26vw,18vh,0) scale(1.2)}}
-@keyframes fxDrift2{from{transform:translate3d(0,0,0) scale(1.05)}to{transform:translate3d(-24vw,26vh,0) scale(.92)}}
-@keyframes fxDrift3{from{transform:translate3d(0,0,0) scale(.95)}to{transform:translate3d(18vw,-30vh,0) scale(1.2)}}
-@keyframes fxDrift4{from{transform:translate3d(0,0,0)}to{transform:translate3d(-10vw,-16vh,0) scale(1.12)}}
+:root[data-theme="dark"] .bg-fx::after{mix-blend-mode:screen;opacity:.22}
+.bg-blob{position:absolute;border-radius:50%;filter:blur(110px);will-change:transform,opacity}
+.bg-blob-1{width:70vw;height:70vw;left:-25vw;top:-35vw;background:var(--fx-1);animation:fxBreath1 28s ease-in-out infinite alternate}
+.bg-blob-2{width:60vw;height:60vw;right:-25vw;bottom:-30vw;background:var(--fx-2);animation:fxBreath2 34s ease-in-out infinite alternate}
+.bg-blob-3,.bg-blob-4{display:none}
+@keyframes fxBreath1{from{transform:translate3d(0,0,0) scale(1);opacity:.7}to{transform:translate3d(10vw,8vh,0) scale(1.18);opacity:1}}
+@keyframes fxBreath2{from{transform:translate3d(0,0,0) scale(1.1);opacity:.6}to{transform:translate3d(-8vw,-10vh,0) scale(.95);opacity:1}}
 @media (max-width:760px){
-  .bg-blob{filter:blur(60px)}
-  .bg-blob-1{width:120vw;height:120vw;left:-40vw;top:-50vw}
-  .bg-blob-2{width:90vw;height:90vw;right:-40vw;top:30vh}
-  .bg-blob-3{width:90vw;height:90vw;left:-20vw;bottom:-40vw}
-  .bg-blob-4{display:none}
+  .bg-blob{filter:blur(70px)}
+  .bg-blob-1{width:140vw;height:140vw;left:-60vw;top:-80vw}
+  .bg-blob-2{width:120vw;height:120vw;right:-60vw;bottom:-70vw}
 }
 @media (prefers-reduced-motion: reduce){ .bg-blob{animation:none} }
 
@@ -1439,3 +1430,127 @@ html.menu-open .sticky-bar{animation:none;transform:translateY(120%)}
 /* Radio-Labels nicht umbrechen */
 .radio{white-space:nowrap}
 @media (max-width:400px){ .radio{white-space:normal} }
+
+/* ==========================================================================
+   Cinematic Look – Bildbausteine (Karten-Medien, Foto-Sektionen, Seitenköpfe)
+   ========================================================================== */
+
+/* Grundbaustein: Bild mit Kontrast, dunklem Verlauf, Vignette und Filmkorn */
+.cine{position:relative;overflow:hidden;isolation:isolate;background:#0d0f14}
+.cine img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.08) saturate(1.15)}
+.cine::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(8,10,16,.08) 0%,rgba(8,10,16,0) 35%,rgba(8,10,16,.62) 100%),
+    radial-gradient(130% 100% at 50% 35%,transparent 55%,rgba(8,10,16,.45) 100%);
+}
+.cine::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.cine .cine-tag{
+  position:absolute;left:14px;bottom:12px;z-index:3;
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:var(--r-pill);
+  background:rgba(8,10,16,.55);border:1px solid rgba(255,255,255,.18);color:#fff;
+  font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.cine .cine-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px rgba(255,0,0,.25)}
+
+/* Karten mit Bildkopf (Leistungen, Regionen) */
+.service-card,.region-card{padding:0;overflow:hidden}
+.card-media{aspect-ratio:16/10;flex:none}
+.card-media img{transition:transform 1.2s cubic-bezier(.22,.7,.2,1)}
+.service-card:hover .card-media img,.region-card:hover .card-media img{transform:scale(1.06)}
+.service-body{display:flex;flex-direction:column;flex:1;padding:clamp(22px,2.6vw,30px)}
+.service-body > p{flex:1}
+.region-body{display:flex;flex-direction:column;gap:8px;flex:1;padding:clamp(22px,2.6vw,30px)}
+.region-card .card-media{aspect-ratio:16/9}
+
+/* Ratgeber-Kacheln mit Vorschaubild */
+.ratgeber-grid a{padding:0;overflow:hidden}
+.ratgeber-grid .thumb{display:block;aspect-ratio:16/9;flex:none}
+.ratgeber-grid .thumb img{transition:transform 1.2s cubic-bezier(.22,.7,.2,1)}
+.ratgeber-grid a:hover .thumb img{transform:scale(1.06)}
+.rg-body{display:flex;flex-direction:column;gap:4px;padding:16px 18px 18px;flex:1}
+.ratgeber-grid{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))}
+@media (min-width:1100px){ .ratgeber-grid{grid-template-columns:repeat(5,minmax(0,1fr))} }
+
+/* Foto-Collage: gleiche Bildbehandlung */
+.gallery-collage .cine{border-radius:var(--r)}
+.gallery-collage a:nth-child(5){grid-column:1/-1}
+.gallery-collage .cine img{border-radius:0;box-shadow:none}
+
+/* Sektionen mit Foto als Hintergrund (Text hell) */
+.photo-section{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#0d0f14;border-block:0}
+.photo-section > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;filter:contrast(1.08) saturate(1.1)}
+.photo-section::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:
+    linear-gradient(180deg,rgba(8,10,16,.82) 0%,rgba(8,10,16,.7) 50%,rgba(8,10,16,.86) 100%),
+    radial-gradient(90% 70% at 15% 0%,rgba(255,0,0,.22),transparent 60%);
+}
+.photo-section h2,.photo-section h3{color:#fff}
+.photo-section .lead{color:rgba(255,255,255,.8)}
+.photo-section .eyebrow{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.12)}
+.photo-section .card{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);color:#fff;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:none}
+.photo-section .card:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.24)}
+.photo-section .card p{color:rgba(255,255,255,.76)}
+.photo-section .card-icon{background:rgba(255,0,0,.2);color:#fff}
+.photo-section .section-note{color:rgba(255,255,255,.7)}
+.photo-section .section-note a{color:#fff}
+
+/* Breites Foto-Band mit Aussage und Handlungsaufforderung */
+.photo-band{padding:clamp(72px,9vw,120px) 0}
+.photo-band .band-inner{max-width:640px}
+.photo-band h2{font-size:clamp(1.7rem,1.2rem + 2.2vw,2.6rem);margin-bottom:14px}
+.photo-band p{color:rgba(255,255,255,.82);font-size:clamp(1rem,.96rem + .3vw,1.12rem);margin:0 0 26px;max-width:52ch}
+.photo-band .band-actions{display:flex;flex-wrap:wrap;gap:12px}
+.photo-band .btn-glass{--btn-fg:#fff}
+@media (max-width:600px){ .photo-band .band-actions .btn{width:100%;white-space:normal} }
+
+/* Seitenkopf mit Foto (Leistungs-, Standort- und Ratgeberseiten) */
+.page-head-photo{color:#fff;border-bottom:0;background:#0d0f14;padding:clamp(64px,8vw,110px) 0 clamp(52px,6.5vw,84px)}
+.page-head-photo .page-photo{position:absolute;inset:0;z-index:-1;background:#0d0f14}
+.page-head-photo .page-photo img{width:100%;height:100%;object-fit:cover;filter:contrast(1.08) saturate(1.12)}
+.js .page-head-photo .page-photo img{animation:kenburns 30s ease-in-out infinite alternate}
+.page-head-photo .page-photo::before{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(100deg,rgba(8,10,16,.88) 0%,rgba(8,10,16,.72) 40%,rgba(8,10,16,.36) 75%,rgba(8,10,16,.2) 100%),
+    linear-gradient(0deg,rgba(8,10,16,.55),transparent 45%);
+}
+.page-head-photo .page-photo::after{
+  content:"";position:absolute;inset:0;opacity:.3;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.page-head-photo h1,.page-head-photo p,.page-head-photo .page-lead{color:#fff}
+.page-head-photo .page-lead,.page-head-photo > .wrap > p{color:rgba(255,255,255,.84)}
+.page-head-photo .eyebrow{color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.13)}
+.page-head-photo .breadcrumb ol{color:rgba(255,255,255,.7)}
+.page-head-photo .breadcrumb a{color:rgba(255,255,255,.78)}
+.page-head-photo .breadcrumb a:hover{color:#fff}
+.page-head-photo .breadcrumb li+li::before{color:rgba(255,255,255,.45)}
+.page-head-photo .breadcrumb [aria-current]{color:#fff}
+.page-head-photo .btn-outline{--btn-fg:#fff;border-color:rgba(255,255,255,.5)}
+.page-head-photo .btn-outline:hover{background:rgba(255,255,255,.14);border-color:#fff}
+.page-head-photo .page-lead{max-width:60ch}
+.page-head-photo + .wrap .lang-notice{margin-top:28px}
+
+/* Hero der Startseite: gleiche Filmanmutung */
+.hero-photo img{filter:contrast(1.08) saturate(1.12)}
+.hero-photo .grain{
+  position:absolute;inset:0;z-index:-1;opacity:.28;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.cta-photo img{filter:contrast(1.08) saturate(1.12)}
+.intro-photo .frame{background:#0d0f14}
+
+@media (prefers-reduced-motion: reduce){
+  .js .page-head-photo .page-photo img{animation:none}
+  .card-media img,.ratgeber-grid .thumb img{transition:none}
+}
