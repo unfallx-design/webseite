@@ -41,6 +41,20 @@ package.json             start-Skript für Hostinger
 Neue Seite anlegen: `name.html` ins Projektverzeichnis legen – sie ist danach
 automatisch unter `/name` erreichbar (`.html`-URLs werden umgeleitet).
 
+## Sprachen (Deutsch / Russisch)
+
+Jede Seite gibt es zweimal: deutsch im Projektverzeichnis (`/name`) und russisch
+unter `ru/` mit gleichem Dateinamen (`/ru/name`, Startseite `/ru`). Kopf- und
+Fußbereich liegen als eigene Bausteine vor: `partials/topbar.html`, `header.html`,
+`footer.html` (deutsch) und `partials/topbar-ru.html`, `header-ru.html`,
+`footer-ru.html` (russisch). Der Sprachumschalter im Header ist ein Link auf die
+jeweils andere Fassung derselben Seite; `server.js` setzt die Adresse über die
+Platzhalter `<!--#langlink:de-->` / `<!--#langlink:ru-->` ein. Beide Fassungen
+verweisen per `hreflang` aufeinander und stehen in `sitemap.xml`. Bei einer
+inhaltlichen Änderung immer beide Dateien anpassen (`name.html` und `ru/name.html`).
+Fehlermeldungen des Formulars kommen je nach Sprache aus `anfrage.js`
+(Feld `sprache`) und `assets/site.js`.
+
 ## Noch einzutragen
 
 Alle offenen Stellen sind im Browser gelb markiert (`<span class="todo">…</span>`)
