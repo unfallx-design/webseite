@@ -63,6 +63,31 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
+  /* Mega-Menü */
+  var megaTriggers = document.querySelectorAll('[data-mega-trigger]');
+  if (megaTriggers.length) {
+    var schliesseAlleMegas = function () {
+      megaTriggers.forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+    };
+    megaTriggers.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var offen = btn.getAttribute('aria-expanded') === 'true';
+        schliesseAlleMegas();
+        btn.setAttribute('aria-expanded', String(!offen));
+      });
+    });
+    document.querySelectorAll('.mega').forEach(function (m) {
+      m.addEventListener('click', function (e) {
+        if (e.target.closest('a')) schliesseAlleMegas();
+      });
+    });
+    document.addEventListener('click', schliesseAlleMegas);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') schliesseAlleMegas();
+    });
+  }
+
   /* Mobiles Menü */
   var toggle = document.querySelector('[data-nav-toggle]');
   var menu = document.getElementById('mobile-menu');
