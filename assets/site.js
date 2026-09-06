@@ -2,6 +2,36 @@
 (function () {
   'use strict';
 
+  /* Texte, die per Skript gesetzt werden – je nach Sprache der Seite */
+  var istRu = (document.documentElement.getAttribute('lang') || 'de').toLowerCase().indexOf('ru') === 0;
+  var T = istRu ? {
+    menuAuf: 'Открыть меню', menuZu: 'Закрыть меню',
+    formatNicht: ' — формат не поддерживается', zuGross: ' — слишком большой файл (макс. 5 МБ)',
+    nurFotos: 'Загружайте только фото в формате JPG, PNG или WebP.',
+    fotoGross: 'Каждое фото должно быть не больше 5 МБ.',
+    fotoLesen: 'Не удалось прочитать одно из фото.',
+    sendet: 'Отправляем вашу заявку …',
+    danke: 'Спасибо! Ваша заявка успешно отправлена. Мы свяжемся с вами в ближайшее время.',
+    felder: 'Пожалуйста, проверьте отмеченные поля.',
+    zuGrossAnfrage: 'Заявка слишком большая. Пожалуйста, используйте фото меньшего размера.',
+    zuViele: 'Слишком много запросов. Попробуйте через несколько минут или позвоните нам.',
+    nichtGesendet: 'Не удалось отправить заявку. Пожалуйста, позвоните нам: 0176 64 365 185.',
+    keinNetz: 'Нет соединения. Проверьте интернет или позвоните нам: 0176 64 365 185.'
+  } : {
+    menuAuf: 'Menü öffnen', menuZu: 'Menü schließen',
+    formatNicht: ' – Format nicht unterstützt', zuGross: ' – zu groß (max. 5 MB)',
+    nurFotos: 'Bitte nur Fotos im Format JPG, PNG oder WebP hochladen.',
+    fotoGross: 'Jedes Foto darf höchstens 5 MB groß sein.',
+    fotoLesen: 'Ein Foto konnte nicht gelesen werden.',
+    sendet: 'Ihre Anfrage wird übermittelt …',
+    danke: 'Vielen Dank. Ihre Anfrage wurde erfolgreich übermittelt. Wir melden uns schnellstmöglich bei Ihnen.',
+    felder: 'Bitte prüfen Sie die markierten Felder.',
+    zuGrossAnfrage: 'Die Anfrage ist zu groß. Bitte kleinere Fotos verwenden.',
+    zuViele: 'Zu viele Anfragen. Bitte versuchen Sie es in einigen Minuten erneut oder rufen Sie uns an.',
+    nichtGesendet: 'Die Anfrage konnte gerade nicht übermittelt werden. Bitte rufen Sie uns an: 0176 64 365 185.',
+    keinNetz: 'Keine Verbindung. Bitte prüfen Sie Ihr Netz oder rufen Sie uns an: 0176 64 365 185.'
+  };
+
   /* Jahreszahl im Footer */
   document.querySelectorAll('[data-year]').forEach(function (el) {
     el.textContent = new Date().getFullYear();
@@ -101,7 +131,7 @@
       menu.setAttribute('data-open', String(offen));
       document.documentElement.classList.toggle('menu-open', offen);
       var label = toggle.querySelector('.sr-only');
-      if (label) label.textContent = offen ? 'Menü schließen' : 'Menü öffnen';
+      if (label) label.textContent = offen ? T.menuZu : T.menuAuf;
     };
     toggle.addEventListener('click', function () {
       setzeMenue(toggle.getAttribute('aria-expanded') !== 'true');
@@ -135,7 +165,7 @@
   var pfad = window.location.pathname.replace(/\/$/, '') || '/';
   document.querySelectorAll('.nav-links a[href]').forEach(function (a) {
     var ziel = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
-    if (ziel !== '/' && ziel === pfad) a.classList.add('is-active');
+    if (ziel !== '/' && ziel !== '/ru' && ziel === pfad) a.classList.add('is-active');
   });
 
   /* Theme-Umschalter (Tag/Nacht) */
@@ -158,58 +188,21 @@
     themeButtons.forEach(function (b) { b.addEventListener('click', wendeTheme); });
   }
 
-  /* Sprachumschalter (Deutsch/Englisch/Russisch) */
-  var langButtons = document.querySelectorAll('[data-lang-switch] button');
-  if (langButtons.length && window.UNFALLX_I18N) {
-    var woerterbuch = window.UNFALLX_I18N;
-    var i18nElemente = document.querySelectorAll('[data-i18n]');
-    var i18nPlatzhalter = document.querySelectorAll('[data-i18n-placeholder]');
-    var original = {};
-    var originalPlatzhalter = {};
-    i18nElemente.forEach(function (el) {
-      var key = el.getAttribute('data-i18n');
-      if (!(key in original)) original[key] = el.innerHTML;
-    });
-    i18nPlatzhalter.forEach(function (el) {
-      var key = el.getAttribute('data-i18n-placeholder');
-      if (!(key in originalPlatzhalter)) originalPlatzhalter[key] = el.getAttribute('placeholder');
-    });
-
-    var setzeSprache = function (lang) {
-      i18nElemente.forEach(function (el) {
-        var key = el.getAttribute('data-i18n');
-        if (lang === 'de') {
-          el.innerHTML = original[key];
-        } else if (woerterbuch[lang] && woerterbuch[lang][key] != null) {
-          el.innerHTML = woerterbuch[lang][key];
-        }
+  /* Sprachumschalter (Deutsch/Russisch): jede Sprache ist eine eigene Seite,
+     der Server setzt die Zieladresse ein. Hier wird nur der Anker (#faq usw.)
+     mitgenommen, damit man in der anderen Sprache an derselben Stelle landet. */
+  var langLinks = document.querySelectorAll('[data-lang-switch] a[href]');
+  if (langLinks.length) {
+    var setzeAnker = function () {
+      langLinks.forEach(function (a) {
+        var basis = (a.getAttribute('href') || '').split('#')[0];
+        a.setAttribute('href', basis + (window.location.hash || ''));
       });
-      i18nPlatzhalter.forEach(function (el) {
-        var key = el.getAttribute('data-i18n-placeholder');
-        if (lang === 'de') {
-          el.setAttribute('placeholder', originalPlatzhalter[key]);
-        } else if (woerterbuch[lang] && woerterbuch[lang][key] != null) {
-          el.setAttribute('placeholder', woerterbuch[lang][key]);
-        }
-      });
-      langButtons.forEach(function (b) {
-        b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === lang));
-      });
-      document.documentElement.setAttribute('lang', lang);
-      document.querySelectorAll('[data-lang-notice]').forEach(function (n) {
-        n.hidden = (lang === 'de');
-      });
-      try { localStorage.setItem('unfallx-lang', lang); } catch (e) {}
     };
-
-    langButtons.forEach(function (b) {
-      b.addEventListener('click', function () { setzeSprache(b.getAttribute('data-lang')); });
-    });
-
-    var gespeicherteSprache = 'de';
-    try { gespeicherteSprache = localStorage.getItem('unfallx-lang') || 'de'; } catch (e) {}
-    if (gespeicherteSprache !== 'de') setzeSprache(gespeicherteSprache);
+    setzeAnker();
+    window.addEventListener('hashchange', setzeAnker);
   }
+
 
   /* Anfrageformular: sendet die Angaben an /api/anfrage */
   var form = document.getElementById('schadenform');
@@ -263,8 +256,8 @@
       Array.prototype.slice.call(fotoInput.files || []).slice(0, 3).forEach(function (f) {
         var li = document.createElement('li');
         li.textContent = f.name + ' (' + Math.round(f.size / 1024) + ' KB)';
-        if (erlaubt.indexOf(f.type) < 0) { li.textContent += ' – Format nicht unterstützt'; li.className = 'is-error'; }
-        else if (f.size > 5 * 1024 * 1024) { li.textContent += ' – zu groß (max. 5 MB)'; li.className = 'is-error'; }
+        if (erlaubt.indexOf(f.type) < 0) { li.textContent += T.formatNicht; li.className = 'is-error'; }
+        else if (f.size > 5 * 1024 * 1024) { li.textContent += T.zuGross; li.className = 'is-error'; }
         fotoListe.appendChild(li);
       });
     };
@@ -275,14 +268,14 @@
       var dateien = Array.prototype.slice.call(fotoInput.files).slice(0, 3);
       return Promise.all(dateien.map(function (f) {
         return new Promise(function (resolve, reject) {
-          if (erlaubt.indexOf(f.type) < 0) return reject(new Error('Bitte nur Fotos im Format JPG, PNG oder WebP hochladen.'));
-          if (f.size > 5 * 1024 * 1024) return reject(new Error('Jedes Foto darf höchstens 5 MB groß sein.'));
+          if (erlaubt.indexOf(f.type) < 0) return reject(new Error(T.nurFotos));
+          if (f.size > 5 * 1024 * 1024) return reject(new Error(T.fotoGross));
           var r = new FileReader();
           r.onload = function () {
             var data = String(r.result || '');
             resolve({ name: f.name, type: f.type, data: data.slice(data.indexOf(',') + 1) });
           };
-          r.onerror = function () { reject(new Error('Ein Foto konnte nicht gelesen werden.')); };
+          r.onerror = function () { reject(new Error(T.fotoLesen)); };
           r.readAsDataURL(f);
         });
       }));
@@ -297,7 +290,8 @@
         beschreibung: get('beschreibung'), anliegen: get('anliegen'),
         kontaktweg: get('kontaktweg') || 'telefon',
         datenschutz: !!form.querySelector('[name="datenschutz"]:checked'),
-        website: get('website'), t0: get('t0')
+        website: get('website'), t0: get('t0'),
+        sprache: istRu ? 'ru' : 'de'
       };
     };
 
@@ -306,7 +300,7 @@
       if (form.getAttribute('data-sending') === 'true') return;
       form.setAttribute('data-sending', 'true');
       if (submit) { submit.disabled = true; submit.setAttribute('aria-busy', 'true'); }
-      setzeStatus('Ihre Anfrage wird übermittelt …', 'pending');
+      setzeStatus(T.sendet, 'pending');
 
       var daten = sammle();
       leseFotos().then(function (fotos) {
@@ -329,18 +323,23 @@
             erfolg.setAttribute('tabindex', '-1');
             erfolg.focus();
           } else {
-            setzeStatus('Vielen Dank. Ihre Anfrage wurde erfolgreich übermittelt. Wir melden uns schnellstmöglich bei Ihnen.', 'success');
+            setzeStatus(T.danke, 'success');
           }
           return;
         }
         if (r.status === 422 && r.json && r.json.felder) {
           markiere(r.json.felder);
-          setzeStatus(r.json.error || 'Bitte prüfen Sie die markierten Felder.', 'error');
+          setzeStatus(T.felder, 'error');
           return;
         }
-        setzeStatus((r.json && r.json.error) || 'Die Anfrage konnte gerade nicht übermittelt werden. Bitte rufen Sie uns an: 0176 64 365 185.', 'error');
+        /* Allgemeine Fehler: auf der russischen Seite eigene Texte, sonst die des Servers */
+        if (istRu) {
+          setzeStatus(r.status === 413 ? T.zuGrossAnfrage : r.status === 429 ? T.zuViele : T.nichtGesendet, 'error');
+          return;
+        }
+        setzeStatus((r.json && r.json.error) || T.nichtGesendet, 'error');
       }).catch(function (err) {
-        setzeStatus((err && err.message) || 'Keine Verbindung. Bitte prüfen Sie Ihr Netz oder rufen Sie uns an: 0176 64 365 185.', 'error');
+        setzeStatus((err && err.message) || T.keinNetz, 'error');
       }).then(function () {
         form.removeAttribute('data-sending');
         if (submit) { submit.disabled = false; submit.removeAttribute('aria-busy'); }
