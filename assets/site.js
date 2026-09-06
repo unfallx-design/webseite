@@ -117,6 +117,20 @@
     });
   }
 
+  /* Hero-Video: nur auf grossen Displays, ohne Datensparmodus und ohne reduzierte Bewegung */
+  var heroVideo = document.querySelector('.hero-vid[data-src]');
+  if (heroVideo) {
+    var conn = navigator.connection || {};
+    var gross = window.matchMedia('(min-width: 1024px)').matches;
+    if (gross && !sanft && !conn.saveData) {
+      heroVideo.src = heroVideo.getAttribute('data-src');
+      var abspielen = heroVideo.play();
+      var zeige = function () { heroVideo.classList.add('is-playing'); };
+      heroVideo.addEventListener('playing', zeige, { once: true });
+      if (abspielen && abspielen.catch) abspielen.catch(function () {});
+    }
+  }
+
   /* Aktiven Navigationspunkt markieren */
   var pfad = window.location.pathname.replace(/\/$/, '') || '/';
   document.querySelectorAll('.nav-links a[href]').forEach(function (a) {

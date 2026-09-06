@@ -11,6 +11,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/favicon.svg">
 <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+<link rel="preconnect" href="https://videos.pexels.com" crossorigin>
 <link rel="stylesheet" href="/assets/styles.css">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
@@ -95,7 +96,8 @@
 
 <!-- 1. Hero -->
 <section class="hero-photo" id="start" aria-labelledby="hero-title">
-  <img src="https://images.unsplash.com/photo-1708109353962-3b8262147aa6?auto=format&fit=crop&w=1920&q=75" alt="" width="1920" height="1080" loading="eager" fetchpriority="high" decoding="async">
+  <img src="https://images.unsplash.com/photo-1777251530844-1fafb9403bbd?auto=format&fit=crop&w=1920&q=75" alt="" width="1920" height="1080" loading="eager" fetchpriority="high" decoding="async">
+  <video class="hero-vid" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="https://videos.pexels.com/video-files/863860/863860-hd_1920_1080_30fps.mp4"></video>
   <div class="grain" aria-hidden="true"></div>
   <div class="wrap on-photo">
     <div class="hero-inner">
@@ -242,6 +244,25 @@
       </div>
     </div>
   </div>
+
+  <ul class="trust-strip reveal" aria-label="Das zeichnet UNFALLX aus">
+    <li>
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6.5v5c0 4.5 3.2 8.3 8 9.5 4.8-1.2 8-5 8-9.5v-5L12 3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <div><strong>Unabhängig</strong><span>Das Gutachten entsteht in Ihrem Auftrag – nicht im Auftrag der Versicherung.</span></div>
+    </li>
+    <li>
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+      <div><strong>Vor Ort</strong><span>Termin am Fahrzeug – in Berlin und im Brandenburger Umland.</span></div>
+    </li>
+    <li>
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6"/></svg></span>
+      <div><strong>Ein Ansprechpartner</strong><span>Von der Anfrage bis zur Abwicklung sprechen Sie mit derselben Person.</span></div>
+    </li>
+    <li>
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
+      <div><strong>Eingetragenes Unternehmen</strong><span>Unext GmbH · Amtsgericht Berlin Charlottenburg, HRB 265091 B.</span></div>
+    </li>
+  </ul>
 </div>
 
 <!-- 2. Hauptleistungen -->
@@ -484,6 +505,50 @@
             <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.5"/><path d="M12 17h.01"/></svg></span>
             <div><strong>Klare Sprache</strong><span>Sie bekommen den Stand Ihres Falls verständlich erklärt – ohne Versicherungsdeutsch.</span></div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6b. Vertrauen & Transparenz -->
+<section id="vertrauen" class="section-soft" aria-labelledby="vertrauen-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Vertrauen &amp; Transparenz</span>
+      <h2 id="vertrauen-title">Woran Sie uns messen können</h2>
+      <p class="lead">Keine Sternchen, keine Versprechen, die wir nicht halten können – dafür klare Zusagen, die Sie überprüfen können.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-col">
+        <h3>Unsere Zusagen</h3>
+        <ul class="checklist trust-list">
+          <li class="reveal" data-group="trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg><div><strong>Kostenfrage vor dem Termin geklärt</strong><span>Sie wissen vorab, was auf Sie zukommt – keine versteckten Positionen.</span></div></li>
+          <li class="reveal" data-group="trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg><div><strong>Jede Position begründet und belegt</strong><span>Reparaturkosten, Wertminderung, Restwert – nachvollziehbar hergeleitet und mit Fotos dokumentiert.</span></div></li>
+          <li class="reveal" data-group="trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg><div><strong>Wir sagen auch, wenn ein Kostenvoranschlag reicht</strong><span>Sie beauftragen weder zu viel noch zu wenig – die Einschätzung anhand von Fotos ist unverbindlich.</span></div></li>
+          <li class="reveal" data-group="trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg><div><strong>Ihre Daten bleiben bei uns</strong><span>Verschlüsselte Übertragung, Nutzung nur zur Bearbeitung Ihrer Anfrage – Details in der <a href="/datenschutz">Datenschutzerklärung</a>.</span></div></li>
+          <li class="reveal" data-group="trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg><div><strong>Eine Person statt Hotline</strong><span>Sie erreichen uns direkt – per Telefon, WhatsApp oder Formular – und wissen jederzeit, wo Ihr Fall steht.</span></div></li>
+        </ul>
+      </div>
+      <div class="trust-col">
+        <div class="trust-card reveal">
+          <h3>Ehrlich gesagt</h3>
+          <ul>
+            <li><strong>Keine Rechtsberatung.</strong> Wird es rechtlich, vermitteln wir auf Wunsch an eine spezialisierte Verkehrsrechtskanzlei.</li>
+            <li><strong>Keine Erfolgsgarantie.</strong> Wie eine Versicherung reguliert, entscheiden nicht wir – wir liefern die belastbare Grundlage dafür.</li>
+            <li><strong>Keine geschönten Zahlen.</strong> Kundenzahlen oder Bewertungen zeigen wir erst, wenn sie belegbar sind.</li>
+          </ul>
+        </div>
+        <div class="trust-card trust-company reveal">
+          <h3>Das Unternehmen hinter UNFALLX</h3>
+          <dl>
+            <dt>Firma</dt><dd>Unext GmbH</dd>
+            <dt>Sitz</dt><dd>Emmentaler Str. 76E, 13407 Berlin</dd>
+            <dt>Handelsregister</dt><dd>Amtsgericht Berlin Charlottenburg, HRB 265091 B</dd>
+            <dt>USt-IdNr.</dt><dd>DE369354416</dd>
+            <dt>Geschäftsführung</dt><dd>Selimchan Kasumov</dd>
+          </dl>
+          <a class="text-link" href="/impressum">Zum Impressum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
         </div>
       </div>
     </div>
