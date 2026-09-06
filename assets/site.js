@@ -178,36 +178,141 @@
     if (gespeicherteSprache !== 'de') setzeSprache(gespeicherteSprache);
   }
 
-  /* Schadenmeldung: baut aus den Angaben eine vorbereitete E-Mail */
+  /* Anfrageformular: sendet die Angaben an /api/anfrage */
   var form = document.getElementById('schadenform');
   if (form) {
+    var status = document.getElementById('form-status');
+    var submit = form.querySelector('button[type="submit"]');
+    var t0 = form.querySelector('[name="t0"]');
+    if (t0) t0.value = String(Date.now());
+
+    var setzeStatus = function (text, art) {
+      if (!status) return;
+      status.textContent = text;
+      status.className = 'form-note field-full' + (art ? ' is-' + art : '');
+    };
+    var markiere = function (felder) {
+      form.querySelectorAll('.field.has-error').forEach(function (f) { f.classList.remove('has-error'); });
+      form.querySelectorAll('.field-error').forEach(function (e) { e.remove(); });
+      var erstes = null;
+      Object.keys(felder || {}).forEach(function (name) {
+        var input = form.querySelector('[name="' + name + '"]');
+        var feld = input && input.closest('.field');
+        if (!feld) return;
+        feld.classList.add('has-error');
+        var hint = document.createElement('span');
+        hint.className = 'field-error';
+        hint.setAttribute('role', 'alert');
+        hint.textContent = felder[name];
+        feld.appendChild(hint);
+        input.setAttribute('aria-invalid', 'true');
+        if (!erstes) erstes = input;
+      });
+      if (erstes) erstes.focus();
+    };
+    form.addEventListener('input', function (e) {
+      var feld = e.target.closest && e.target.closest('.field.has-error');
+      if (feld) {
+        feld.classList.remove('has-error');
+        var err = feld.querySelector('.field-error');
+        if (err) err.remove();
+        e.target.removeAttribute('aria-invalid');
+      }
+    });
+
+    /* Fotos als Base64 einlesen (nur JPG/PNG/WebP, max. 3 Stueck, je 5 MB) */
+    var fotoInput = form.querySelector('input[type="file"]');
+    var fotoListe = form.querySelector('[data-foto-liste]');
+    var erlaubt = ['image/jpeg', 'image/png', 'image/webp'];
+    var zeigeFotos = function () {
+      if (!fotoListe || !fotoInput) return;
+      fotoListe.textContent = '';
+      Array.prototype.slice.call(fotoInput.files || []).slice(0, 3).forEach(function (f) {
+        var li = document.createElement('li');
+        li.textContent = f.name + ' (' + Math.round(f.size / 1024) + ' KB)';
+        if (erlaubt.indexOf(f.type) < 0) { li.textContent += ' – Format nicht unterstützt'; li.className = 'is-error'; }
+        else if (f.size > 5 * 1024 * 1024) { li.textContent += ' – zu groß (max. 5 MB)'; li.className = 'is-error'; }
+        fotoListe.appendChild(li);
+      });
+    };
+    if (fotoInput) fotoInput.addEventListener('change', zeigeFotos);
+
+    var leseFotos = function () {
+      if (!fotoInput || !fotoInput.files || !fotoInput.files.length) return Promise.resolve([]);
+      var dateien = Array.prototype.slice.call(fotoInput.files).slice(0, 3);
+      return Promise.all(dateien.map(function (f) {
+        return new Promise(function (resolve, reject) {
+          if (erlaubt.indexOf(f.type) < 0) return reject(new Error('Bitte nur Fotos im Format JPG, PNG oder WebP hochladen.'));
+          if (f.size > 5 * 1024 * 1024) return reject(new Error('Jedes Foto darf höchstens 5 MB groß sein.'));
+          var r = new FileReader();
+          r.onload = function () {
+            var data = String(r.result || '');
+            resolve({ name: f.name, type: f.type, data: data.slice(data.indexOf(',') + 1) });
+          };
+          r.onerror = function () { reject(new Error('Ein Foto konnte nicht gelesen werden.')); };
+          r.readAsDataURL(f);
+        });
+      }));
+    };
+
+    var sammle = function () {
+      var fd = new FormData(form);
+      var get = function (k) { return (fd.get(k) || '').toString(); };
+      return {
+        name: get('name'), telefon: get('telefon'), email: get('email'),
+        ort: get('ort'), datum: get('datum'), fahrzeug: get('fahrzeug'),
+        beschreibung: get('beschreibung'), anliegen: get('anliegen'),
+        kontaktweg: get('kontaktweg') || 'telefon',
+        datenschutz: !!form.querySelector('[name="datenschutz"]:checked'),
+        website: get('website'), t0: get('t0')
+      };
+    };
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var data = new FormData(form);
-      var get = function (k) { return (data.get(k) || '').toString().trim(); };
+      if (form.getAttribute('data-sending') === 'true') return;
+      form.setAttribute('data-sending', 'true');
+      if (submit) { submit.disabled = true; submit.setAttribute('aria-busy', 'true'); }
+      setzeStatus('Ihre Anfrage wird übermittelt …', 'pending');
 
-      var lines = [];
-      [['Name', 'name'], ['Telefon', 'telefon'], ['E-Mail', 'email'],
-       ['Unfalldatum', 'datum'], ['Fahrzeug', 'fahrzeug']].forEach(function (pair) {
-        if (get(pair[1])) lines.push(pair[0] + ': ' + get(pair[1]));
+      var daten = sammle();
+      leseFotos().then(function (fotos) {
+        daten.fotos = fotos;
+        return fetch('/api/anfrage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(daten)
+        });
+      }).then(function (res) {
+        return res.json().then(function (json) { return { status: res.status, json: json }; });
+      }).then(function (r) {
+        if (r.json && r.json.ok) {
+          form.reset();
+          if (fotoListe) fotoListe.textContent = '';
+          var erfolg = form.parentNode.querySelector('[data-form-success]');
+          if (erfolg) {
+            form.hidden = true;
+            erfolg.hidden = false;
+            erfolg.setAttribute('tabindex', '-1');
+            erfolg.focus();
+          } else {
+            setzeStatus('Vielen Dank. Ihre Anfrage wurde erfolgreich übermittelt. Wir melden uns schnellstmöglich bei Ihnen.', 'success');
+          }
+          return;
+        }
+        if (r.status === 422 && r.json && r.json.felder) {
+          markiere(r.json.felder);
+          setzeStatus(r.json.error || 'Bitte prüfen Sie die markierten Felder.', 'error');
+          return;
+        }
+        setzeStatus((r.json && r.json.error) || 'Die Anfrage konnte gerade nicht übermittelt werden. Bitte rufen Sie uns an: 0176 64 365 185.', 'error');
+      }).catch(function (err) {
+        setzeStatus((err && err.message) || 'Keine Verbindung. Bitte prüfen Sie Ihr Netz oder rufen Sie uns an: 0176 64 365 185.', 'error');
+      }).then(function () {
+        form.removeAttribute('data-sending');
+        if (submit) { submit.disabled = false; submit.removeAttribute('aria-busy'); }
+        if (t0) t0.value = String(Date.now());
       });
-      if (get('beschreibung')) {
-        lines.push('', 'Was ist passiert:', get('beschreibung'));
-      }
-      lines.push('', '— gesendet über unfallx.com');
-
-      var betreff = 'Schadenmeldung' + (get('name') ? ' – ' + get('name') : '');
-      var href = 'mailto:info@unfallx.com'
-        + '?subject=' + encodeURIComponent(betreff)
-        + '&body=' + encodeURIComponent(lines.join('\n'));
-
-      window.location.href = href;
-
-      var status = document.getElementById('form-status');
-      if (status) {
-        status.textContent = 'Ihr E-Mail-Programm wurde mit den Angaben geöffnet. '
-          + 'Falls sich nichts tut, schreiben Sie bitte direkt an info@unfallx.com.';
-      }
     });
   }
 })();

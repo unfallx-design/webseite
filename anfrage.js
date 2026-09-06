@@ -106,7 +106,7 @@ function pruefe(body) {
   const fehler = {};
   const d = {};
 
-  if (typeof body !== 'object' || body === null) return { fehler: { allgemein: 'Ungueltige Anfrage.' } };
+  if (typeof body !== 'object' || body === null) return { fehler: { allgemein: 'Ungültige Anfrage.' } };
 
   /* Honeypot: das Feld ist fuer Menschen unsichtbar und muss leer bleiben */
   if (text(body.website, 200)) return { spam: true };
@@ -119,14 +119,14 @@ function pruefe(body) {
   if (d.name.length < 2) fehler.name = 'Bitte geben Sie Ihren Namen an.';
 
   d.telefon = einzeilig(body.telefon, 30);
-  if (!istTelefon(d.telefon)) fehler.telefon = 'Bitte geben Sie eine gueltige Telefonnummer an.';
+  if (!istTelefon(d.telefon)) fehler.telefon = 'Bitte geben Sie eine gültige Telefonnummer an.';
 
   d.email = einzeilig(body.email, 120).toLowerCase();
   if (d.email && !istEmail(d.email)) fehler.email = 'Die E-Mail-Adresse sieht nicht richtig aus.';
 
   d.ort = einzeilig(body.ort, 120);
   d.datum = einzeilig(body.datum, 10);
-  if (d.datum && !istDatum(d.datum)) fehler.datum = 'Bitte pruefen Sie das Unfalldatum.';
+  if (d.datum && !istDatum(d.datum)) fehler.datum = 'Bitte prüfen Sie das Unfalldatum.';
 
   d.fahrzeug = einzeilig(body.fahrzeug, 120);
 
@@ -138,10 +138,10 @@ function pruefe(body) {
 
   d.kontaktweg = einzeilig(body.kontaktweg, 20);
   if (!['telefon', 'whatsapp', 'email'].includes(d.kontaktweg)) d.kontaktweg = 'telefon';
-  if (d.kontaktweg === 'email' && !d.email) fehler.email = 'Fuer eine Antwort per E-Mail brauchen wir Ihre E-Mail-Adresse.';
+  if (d.kontaktweg === 'email' && !d.email) fehler.email = 'Für eine Antwort per E-Mail brauchen wir Ihre E-Mail-Adresse.';
 
   if (body.datenschutz !== true && body.datenschutz !== 'true' && body.datenschutz !== 'on') {
-    fehler.datenschutz = 'Bitte bestaetigen Sie den Hinweis zum Datenschutz.';
+    fehler.datenschutz = 'Bitte bestätigen Sie den Hinweis zum Datenschutz.';
   }
 
   /* Fotos */
@@ -155,7 +155,7 @@ function pruefe(body) {
     let buf;
     try { buf = Buffer.from(String(f.data || ''), 'base64'); } catch (e) { buf = null; }
     if (!buf || !buf.length) continue;
-    if (buf.length > MAX_FILE_BYTES) { fehler.fotos = 'Jedes Foto darf hoechstens 5 MB gross sein.'; break; }
+    if (buf.length > MAX_FILE_BYTES) { fehler.fotos = 'Jedes Foto darf höchstens 5 MB groß sein.'; break; }
     if (!magicOk(buf, typ)) { fehler.fotos = 'Eine Datei konnte nicht als Bild erkannt werden.'; break; }
     d.fotos.push({ name, typ, buf });
   }
@@ -268,7 +268,7 @@ function handle(req, res, securityHeaders) {
   }
   const laenge = parseInt(req.headers['content-length'] || '0', 10);
   if (laenge > MAX_BODY) {
-    return antwort(res, 413, { ok: false, error: 'Die Anfrage ist zu gross. Bitte kleinere Fotos verwenden.' }, securityHeaders);
+    return antwort(res, 413, { ok: false, error: 'Die Anfrage ist zu groß. Bitte kleinere Fotos verwenden.' }, securityHeaders);
   }
   if (rateLimited(ip)) {
     return antwort(res, 429, { ok: false, error: 'Zu viele Anfragen. Bitte versuchen Sie es in einigen Minuten erneut oder rufen Sie uns an.' }, securityHeaders);
@@ -281,7 +281,7 @@ function handle(req, res, securityHeaders) {
     bytes += chunk.length;
     if (bytes > MAX_BODY) {
       abgebrochen = true;
-      antwort(res, 413, { ok: false, error: 'Die Anfrage ist zu gross. Bitte kleinere Fotos verwenden.' }, securityHeaders);
+      antwort(res, 413, { ok: false, error: 'Die Anfrage ist zu groß. Bitte kleinere Fotos verwenden.' }, securityHeaders);
       req.destroy();
       return;
     }
@@ -299,7 +299,7 @@ function handle(req, res, securityHeaders) {
       return antwort(res, 200, { ok: true }, securityHeaders);
     }
     if (ergebnis.fehler) {
-      return antwort(res, 422, { ok: false, error: 'Bitte pruefen Sie die markierten Felder.', felder: ergebnis.fehler }, securityHeaders);
+      return antwort(res, 422, { ok: false, error: 'Bitte prüfen Sie die markierten Felder.', felder: ergebnis.fehler }, securityHeaders);
     }
 
     const d = ergebnis.daten;
@@ -323,7 +323,7 @@ function handle(req, res, securityHeaders) {
       return antwort(res, 200, { ok: true }, securityHeaders);
     } catch (e) {
       console.error('[anfrage] Speichern fehlgeschlagen:', e && e.message);
-      return antwort(res, 503, { ok: false, error: 'Die Anfrage konnte gerade nicht uebermittelt werden. Bitte rufen Sie uns an oder schreiben Sie an info@unfallx.com.' }, securityHeaders);
+      return antwort(res, 503, { ok: false, error: 'Die Anfrage konnte gerade nicht übermittelt werden. Bitte rufen Sie uns an oder schreiben Sie an info@unfallx.com.' }, securityHeaders);
     }
   });
   req.on('error', () => {
