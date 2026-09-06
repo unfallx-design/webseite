@@ -102,11 +102,48 @@ function magicOk(buf, typ) {
 
 /* ---------- Validierung --------------------------------------------------- */
 
+/* Fehlertexte fuer das Formular – Deutsch (Standard) und Russisch (/ru) */
+const MELDUNGEN = {
+  de: {
+    ungueltig: 'Ungültige Anfrage.',
+    name: 'Bitte geben Sie Ihren Namen an.',
+    telefon: 'Bitte geben Sie eine gültige Telefonnummer an.',
+    email: 'Die E-Mail-Adresse sieht nicht richtig aus.',
+    datum: 'Bitte prüfen Sie das Unfalldatum.',
+    beschreibung: 'Bitte beschreiben Sie kurz, was passiert ist.',
+    emailNoetig: 'Für eine Antwort per E-Mail brauchen wir Ihre E-Mail-Adresse.',
+    datenschutz: 'Bitte bestätigen Sie den Hinweis zum Datenschutz.',
+    fotoFormat: 'Bitte nur Fotos im Format JPG, PNG oder WebP hochladen.',
+    fotoGroesse: 'Jedes Foto darf höchstens 5 MB groß sein.',
+    fotoKeinBild: 'Eine Datei konnte nicht als Bild erkannt werden.',
+    felder: 'Bitte prüfen Sie die markierten Felder.'
+  },
+  ru: {
+    ungueltig: 'Некорректный запрос.',
+    name: 'Пожалуйста, укажите ваше имя.',
+    telefon: 'Пожалуйста, укажите действующий номер телефона.',
+    email: 'Адрес электронной почты выглядит некорректно.',
+    datum: 'Пожалуйста, проверьте дату ДТП.',
+    beschreibung: 'Пожалуйста, коротко опишите, что произошло.',
+    emailNoetig: 'Чтобы ответить по электронной почте, нам нужен ваш адрес.',
+    datenschutz: 'Пожалуйста, подтвердите согласие с правилами защиты данных.',
+    fotoFormat: 'Загружайте только фото в формате JPG, PNG или WebP.',
+    fotoGroesse: 'Каждое фото должно быть не больше 5 МБ.',
+    fotoKeinBild: 'Один из файлов не удалось распознать как изображение.',
+    felder: 'Пожалуйста, проверьте отмеченные поля.'
+  }
+};
+
+function sprache(body) {
+  return body && body.sprache === 'ru' ? 'ru' : 'de';
+}
+
 function pruefe(body) {
   const fehler = {};
   const d = {};
+  const M = MELDUNGEN[sprache(body)];
 
-  if (typeof body !== 'object' || body === null) return { fehler: { allgemein: 'Ungültige Anfrage.' } };
+  if (typeof body !== 'object' || body === null) return { fehler: { allgemein: MELDUNGEN.de.ungueltig } };
 
   /* Honeypot: das Feld ist fuer Menschen unsichtbar und muss leer bleiben */
   if (text(body.website, 200)) return { spam: true };
@@ -116,32 +153,33 @@ function pruefe(body) {
   if (!t0 || Date.now() - t0 < MIN_FORM_MS) return { spam: true };
 
   d.name = einzeilig(body.name, 100);
-  if (d.name.length < 2) fehler.name = 'Bitte geben Sie Ihren Namen an.';
+  if (d.name.length < 2) fehler.name = M.name;
 
   d.telefon = einzeilig(body.telefon, 30);
-  if (!istTelefon(d.telefon)) fehler.telefon = 'Bitte geben Sie eine gültige Telefonnummer an.';
+  if (!istTelefon(d.telefon)) fehler.telefon = M.telefon;
 
   d.email = einzeilig(body.email, 120).toLowerCase();
-  if (d.email && !istEmail(d.email)) fehler.email = 'Die E-Mail-Adresse sieht nicht richtig aus.';
+  if (d.email && !istEmail(d.email)) fehler.email = M.email;
 
   d.ort = einzeilig(body.ort, 120);
   d.datum = einzeilig(body.datum, 10);
-  if (d.datum && !istDatum(d.datum)) fehler.datum = 'Bitte prüfen Sie das Unfalldatum.';
+  if (d.datum && !istDatum(d.datum)) fehler.datum = M.datum;
 
   d.fahrzeug = einzeilig(body.fahrzeug, 120);
+  d.sprache = sprache(body);
 
   d.beschreibung = text(body.beschreibung, 4000);
-  if (d.beschreibung.length < 10) fehler.beschreibung = 'Bitte beschreiben Sie kurz, was passiert ist.';
+  if (d.beschreibung.length < 10) fehler.beschreibung = M.beschreibung;
 
   d.anliegen = einzeilig(body.anliegen, 40);
   if (!['unfallgutachten', 'wertgutachten', 'kostenvoranschlag', 'sonstiges', ''].includes(d.anliegen)) d.anliegen = 'sonstiges';
 
   d.kontaktweg = einzeilig(body.kontaktweg, 20);
   if (!['telefon', 'whatsapp', 'email'].includes(d.kontaktweg)) d.kontaktweg = 'telefon';
-  if (d.kontaktweg === 'email' && !d.email) fehler.email = 'Für eine Antwort per E-Mail brauchen wir Ihre E-Mail-Adresse.';
+  if (d.kontaktweg === 'email' && !d.email) fehler.email = M.emailNoetig;
 
   if (body.datenschutz !== true && body.datenschutz !== 'true' && body.datenschutz !== 'on') {
-    fehler.datenschutz = 'Bitte bestätigen Sie den Hinweis zum Datenschutz.';
+    fehler.datenschutz = M.datenschutz;
   }
 
   /* Fotos */
@@ -151,12 +189,12 @@ function pruefe(body) {
     if (!f || typeof f !== 'object') continue;
     const typ = einzeilig(f.type, 40).toLowerCase();
     const name = einzeilig(f.name, 120).replace(/[^\w.\- ]+/g, '_') || 'foto';
-    if (!BILDTYPEN[typ]) { fehler.fotos = 'Bitte nur Fotos im Format JPG, PNG oder WebP hochladen.'; break; }
+    if (!BILDTYPEN[typ]) { fehler.fotos = M.fotoFormat; break; }
     let buf;
     try { buf = Buffer.from(String(f.data || ''), 'base64'); } catch (e) { buf = null; }
     if (!buf || !buf.length) continue;
-    if (buf.length > MAX_FILE_BYTES) { fehler.fotos = 'Jedes Foto darf höchstens 5 MB groß sein.'; break; }
-    if (!magicOk(buf, typ)) { fehler.fotos = 'Eine Datei konnte nicht als Bild erkannt werden.'; break; }
+    if (buf.length > MAX_FILE_BYTES) { fehler.fotos = M.fotoGroesse; break; }
+    if (!magicOk(buf, typ)) { fehler.fotos = M.fotoKeinBild; break; }
     d.fotos.push({ name, typ, buf });
   }
 
@@ -175,6 +213,7 @@ function mailText(d, meta) {
   z.push('Neue Anfrage ueber unfallx.com');
   z.push('================================');
   z.push('Anliegen:        ' + LABEL.anliegen[d.anliegen]);
+  if (d.sprache === 'ru') z.push('Sprache:         Russisch (Anfrage ueber unfallx.com/ru)');
   z.push('Name:            ' + d.name);
   z.push('Telefon:         ' + d.telefon);
   if (d.email) z.push('E-Mail:          ' + d.email);
@@ -198,6 +237,7 @@ function mailHtml(d, meta) {
 <h2 style="margin:0 0 14px;font-size:18px">Neue Anfrage &uuml;ber unfallx.com</h2>
 <table style="border-collapse:collapse;font-size:15px">
 ${row('Anliegen', LABEL.anliegen[d.anliegen])}
+${row('Sprache', d.sprache === 'ru' ? 'Russisch (Anfrage über unfallx.com/ru)' : '')}
 ${row('Name', d.name)}
 ${row('Telefon', d.telefon)}
 ${row('E-Mail', d.email)}
@@ -220,7 +260,7 @@ async function sendeMail(d, meta) {
     secure: String(process.env.SMTP_SECURE || 'true') === 'true',
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
   });
-  const betreff = `[UNFALLX] ${LABEL.anliegen[d.anliegen]} – ${d.name}`;
+  const betreff = `[UNFALLX${d.sprache === 'ru' ? ' RU' : ''}] ${LABEL.anliegen[d.anliegen]} – ${d.name}`;
   await transport.sendMail({
     from: process.env.MAIL_FROM || process.env.SMTP_USER,
     to: MAIL_TO,
@@ -299,7 +339,7 @@ function handle(req, res, securityHeaders) {
       return antwort(res, 200, { ok: true }, securityHeaders);
     }
     if (ergebnis.fehler) {
-      return antwort(res, 422, { ok: false, error: 'Bitte prüfen Sie die markierten Felder.', felder: ergebnis.fehler }, securityHeaders);
+      return antwort(res, 422, { ok: false, error: MELDUNGEN[sprache(body)].felder, felder: ergebnis.fehler }, securityHeaders);
     }
 
     const d = ergebnis.daten;

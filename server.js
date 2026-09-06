@@ -89,8 +89,30 @@ function versionAssets(html) {
   });
 }
 
+/**
+ * Sprachversionen: Die deutschen Seiten liegen im Wurzelverzeichnis, die
+ * russischen unter ru/ (gleicher Dateiname). Der Sprachumschalter in den
+ * Partials enthaelt Platzhalter <!--#langlink:de--> und <!--#langlink:ru-->,
+ * die hier durch die passende Adresse der jeweils anderen Fassung ersetzt
+ * werden (z. B. /unfallgutachten <-> /ru/unfallgutachten).
+ */
+function langLinks(file) {
+  const rel = path.relative(ROOT, file).split(path.sep).join('/');
+  let slug = rel.replace(/^ru\//, '').replace(/\.html$/i, '');
+  if (slug === 'index' || slug === '404') slug = '';
+  return {
+    de: slug ? '/' + slug : '/',
+    ru: slug ? '/ru/' + slug : '/ru'
+  };
+}
+
+function applyLangLinks(html, file) {
+  const links = langLinks(file);
+  return html.replace(/<!--#langlink:(de|ru)-->/gi, (match, lang) => links[lang.toLowerCase()]);
+}
+
 function renderPage(file) {
-  return versionAssets(applyPartials(fs.readFileSync(file, 'utf8')));
+  return versionAssets(applyLangLinks(applyPartials(fs.readFileSync(file, 'utf8')), file));
 }
 
 /**
@@ -102,13 +124,17 @@ function inlineScriptHashes() {
   const crypto = require('crypto');
   const hashes = new Set();
   let files = [];
-  try {
-    files = fs.readdirSync(ROOT).filter((f) => f.toLowerCase().endsWith('.html'));
-  } catch (e) { /* ignorieren */ }
+  ['', 'ru'].forEach((dir) => {
+    try {
+      fs.readdirSync(path.join(ROOT, dir))
+        .filter((f) => f.toLowerCase().endsWith('.html'))
+        .forEach((f) => files.push(path.join(ROOT, dir, f)));
+    } catch (e) { /* ignorieren */ }
+  });
 
   files.forEach((file) => {
     let html = '';
-    try { html = versionAssets(applyPartials(fs.readFileSync(path.join(ROOT, file), 'utf8'))); } catch (e) { return; }
+    try { html = renderPage(file); } catch (e) { return; }
     const re = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/gi;
     let m;
     while ((m = re.exec(html)) !== null) {
@@ -145,8 +171,10 @@ function send(res, status, headers, body, isHead) {
   res.end(body);
 }
 
-function sendError(res, status, isHead) {
-  const file = status === 404 ? path.join(ROOT, '404.html') : null;
+function sendError(res, status, isHead, urlPath) {
+  /* 404-Seite in der Sprache des aufgerufenen Bereichs (/ru/... -> russisch) */
+  const istRu = typeof urlPath === 'string' && /^\/ru(\/|$)/i.test(urlPath);
+  const file = status === 404 ? path.join(ROOT, istRu ? 'ru' : '', '404.html') : null;
   if (file && fs.existsSync(file)) {
     const body = Buffer.from(renderPage(file), 'utf8');
     return send(res, status, {
@@ -203,14 +231,19 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: target }, '', isHead);
   }
 
-  if (BLOCKED.test(urlPath)) return sendError(res, 404, isHead);
+  if (BLOCKED.test(urlPath)) return sendError(res, 404, isHead, urlPath);
+
+  /* Startseiten: /index.html -> /, /ru/index(.html) -> /ru */
+  if (urlPath === '/index.html' || urlPath === '/index') {
+    return send(res, 301, { Location: '/' }, '', isHead);
+  }
+  if (/^\/ru\/index(\.html)?$/i.test(urlPath)) {
+    return send(res, 301, { Location: '/ru' }, '', isHead);
+  }
 
   /* .html in der URL auf saubere Adresse umleiten */
-  if (/\.html$/i.test(urlPath) && urlPath !== '/index.html') {
+  if (/\.html$/i.test(urlPath)) {
     return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
-  }
-  if (urlPath === '/index.html') {
-    return send(res, 301, { Location: '/' }, '', isHead);
   }
 
   const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
@@ -227,7 +260,7 @@ const server = http.createServer((req, res) => {
     : [resolved, resolved + '.html', path.join(resolved, 'index.html')];
 
   const tryNext = (i) => {
-    if (i >= candidates.length) return sendError(res, 404, isHead);
+    if (i >= candidates.length) return sendError(res, 404, isHead, urlPath);
     const file = candidates[i];
     fs.stat(file, (err, stat) => {
       if (err || !stat.isFile()) return tryNext(i + 1);
