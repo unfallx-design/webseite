@@ -36,7 +36,7 @@
 
   --maxw: 1180px;
   --gutter: clamp(20px, 5vw, 44px);
-  --section-y: clamp(64px, 8vw, 108px);
+  --section-y: clamp(72px, 9vw, 124px);
 
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
@@ -70,7 +70,7 @@ html{scroll-behavior:smooth; scroll-padding-top:88px}
 
 body{
   margin:0;background:var(--bg);color:var(--text);
-  font-family:var(--font);font-size:17px;line-height:1.65;
+  font-family:var(--font);font-size:17px;line-height:1.7;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
   overflow-x:hidden;
   transition:background .25s ease, color .25s ease;
@@ -716,14 +716,15 @@ section{padding:var(--section-y) 0;position:relative}
   background:var(--brand-soft);border:1px solid var(--brand-soft);border-radius:var(--r-sm);
   color:var(--text);font-size:.92rem;
 }
-.prose{max-width:74ch;padding:clamp(48px,6vw,80px) 0}
-.prose h2{font-size:clamp(1.3rem,1.1rem + .8vw,1.62rem);margin:2.2em 0 .6em}
+.prose{max-width:72ch;padding:clamp(56px,7vw,96px) 0;font-size:1.06rem;line-height:1.75}
+.prose h2{font-size:clamp(1.36rem,1.12rem + .9vw,1.78rem);margin:2.4em 0 .7em;letter-spacing:-.02em}
 .prose h2:first-child{margin-top:0}
-.prose h3{margin:1.8em 0 .5em;font-size:1.05rem}
-.prose p,.prose li{color:var(--text);font-size:1rem}
+.prose h3{margin:2em 0 .55em;font-size:1.12rem}
+.prose p,.prose li{color:var(--text);font-size:inherit}
+.prose p{margin:0 0 1.25em}
 .prose ul,.prose ol{padding-left:1.3em;margin:0 0 1.1em}
-.prose li{margin-bottom:.45em}
-.prose a{color:var(--brand-dark);text-underline-offset:3px}
+.prose li{margin-bottom:.6em}
+.prose a{color:var(--brand-dark);text-underline-offset:3px;text-decoration-thickness:1px}
 .prose address{font-style:normal;line-height:1.8}
 .prose hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
 
@@ -790,4 +791,70 @@ section{padding:var(--section-y) 0;position:relative}
   .js .hero-inner .eyebrow,.js .hero-photo h1,.js .hero-photo .hero-text,
   .js .hero-actions,.js .hero-points{animation:none}
   .progress{display:none}
+}
+
+/* ==========================================================================
+   Ratgeberseiten – Inhaltsverzeichnis, Tabellen, Hinweise, Inline-CTA
+   ========================================================================== */
+
+.toc{
+  background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px clamp(20px,2.4vw,28px);margin:0 0 2.6em;
+}
+.toc strong{
+  display:block;color:var(--muted);font-size:.74rem;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:12px;
+}
+.toc ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.toc li{margin:0}
+.toc a{
+  display:inline-flex;align-items:center;gap:9px;
+  color:var(--text);text-decoration:none;font-size:.96rem;font-weight:600;
+}
+.toc a::before{content:"";width:6px;height:6px;flex:none;border-radius:50%;background:var(--brand)}
+.toc a:hover{color:var(--brand-dark);text-decoration:underline}
+
+.table-scroll{overflow-x:auto;margin:0 0 1.6em;-webkit-overflow-scrolling:touch}
+.prose table{
+  border-collapse:collapse;width:100%;min-width:420px;
+  font-size:.97rem;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
+}
+.prose caption{
+  caption-side:top;text-align:left;color:var(--muted);
+  font-size:.86rem;padding:0 0 10px;
+}
+.prose th,.prose td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+.prose thead th{
+  background:var(--bg-soft);color:var(--heading);font-weight:700;
+  font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;
+}
+.prose tbody tr:last-child td{border-bottom:0}
+.prose tbody tr:hover{background:var(--bg-soft)}
+
+.disclaimer{
+  color:var(--muted);font-size:.92rem;line-height:1.65;
+  border-left:3px solid var(--line-strong);padding:2px 0 2px 18px;margin:0 0 2.4em;
+}
+
+.cta-inline{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  background:var(--brand-soft);border:1px solid var(--brand-soft);
+  border-radius:var(--r-lg);padding:clamp(24px,3vw,34px);margin:0 0 2.6em;
+}
+.cta-inline h2{margin:0 0 6px;font-size:1.24rem}
+.prose .cta-inline h2{margin-top:0}
+.cta-inline p{margin:0;color:var(--text);font-size:.96rem}
+
+.linklist{list-style:none;padding:0;margin:0}
+.linklist li{margin-bottom:10px}
+.linklist a{
+  display:block;padding:14px 18px;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--surface);color:var(--heading);text-decoration:none;font-weight:600;
+  font-size:.98rem;transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.linklist a:hover{
+  border-color:var(--brand-soft);transform:translateY(-2px);box-shadow:var(--shadow-sm);
+  color:var(--brand-dark);
 }
