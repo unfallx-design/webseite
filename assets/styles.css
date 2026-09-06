@@ -1647,3 +1647,15 @@ html.menu-open .sticky-bar{animation:none;transform:translateY(120%)}
 .footer-trust li{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;color:var(--text);line-height:1.45}
 .footer-trust svg{width:18px;height:18px;flex:none;color:var(--brand);margin-top:2px}
 .footer-register{display:block;margin-top:8px;font-size:.84rem;color:var(--muted);line-height:1.6}
+
+/* ===== Halle & Google-Profil ===== */
+.intro-rev{grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr)}
+.intro-rev .intro-photo{order:2}
+@media (max-width:900px){ .intro-rev{grid-template-columns:1fr} .intro-rev .intro-photo{order:0} }
+.intro-photo .frame.cine{border-radius:32px}
+.intro-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+@media (max-width:600px){ .intro-actions .btn{width:100%;white-space:normal} }
+.trust-card .btn{margin-top:18px}
+.btn-ext svg:last-child{width:15px;height:15px;opacity:.85}
+.footer-google{display:inline-flex;align-items:center;gap:6px;margin-top:6px}
+.footer-google svg{width:15px;height:15px;color:var(--brand)}
