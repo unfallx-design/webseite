@@ -45,6 +45,17 @@
         "addressLocality": "Berlin",
         "addressCountry": "DE"
       },
+      "location": {
+        "@type": "Place",
+        "name": "UNFALLX Halle – Fotodokumentation und Begutachtung",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Lübarser Str. 25",
+          "postalCode": "13435",
+          "addressLocality": "Berlin",
+          "addressCountry": "DE"
+        }
+      },
       "areaServed": [
         { "@type": "AdministrativeArea", "name": "Berlin" },
         { "@type": "AdministrativeArea", "name": "Brandenburg" }
@@ -77,7 +88,7 @@
         { "@type": "Question", "name": "Wann reicht ein Kostenvoranschlag?", "acceptedAnswer": { "@type": "Answer", "text": "Bei kleinen Schäden im Bereich weniger hundert Euro kann ein Kostenvoranschlag oder ein Kurzgutachten ausreichen. Ab welcher Höhe ein vollständiges Gutachten sinnvoll ist, prüfen wir gern anhand von Fotos." } },
         { "@type": "Question", "name": "Was enthält ein Unfallgutachten?", "acceptedAnswer": { "@type": "Answer", "text": "Schadendokumentation mit Fotos, Reparaturkalkulation, Reparaturdauer, Wiederbeschaffungswert, Restwert, merkantile Wertminderung sowie die Fahrzeuggruppe für den Nutzungsausfall." } },
         { "@type": "Question", "name": "Wie läuft eine Begutachtung ab?", "acceptedAnswer": { "@type": "Answer", "text": "Sie melden den Schaden, wir vereinbaren einen Termin, das Fahrzeug wird vor Ort oder in der Werkstatt aufgenommen und Sie erhalten das fertige Gutachten – auf Wunsch übernehmen wir danach die Organisation der Abwicklung." } },
-        { "@type": "Question", "name": "Kann mein Fahrzeug vor Ort begutachtet werden?", "acceptedAnswer": { "@type": "Answer", "text": "Ja. In Berlin und Brandenburg kommen wir zum Fahrzeug – nach Hause, zur Arbeit oder in die Werkstatt. Alternativ nehmen wir es in unserer Halle auf, wo wir es bei Bedarf zerlegen, um verdeckte Schäden zu dokumentieren." } },
+        { "@type": "Question", "name": "Kann mein Fahrzeug vor Ort begutachtet werden?", "acceptedAnswer": { "@type": "Answer", "text": "Ja. In Berlin und Brandenburg kommen wir zum Fahrzeug – nach Hause, zur Arbeit oder in die Werkstatt. Alternativ nehmen wir es in unserer Halle in Berlin-Reinickendorf (Lübarser Str. 25, 13435 Berlin) auf, wo wir es bei Bedarf zerlegen, um verdeckte Schäden zu dokumentieren." } },
         { "@type": "Question", "name": "Wie schnell kann ein Termin vereinbart werden?", "acceptedAnswer": { "@type": "Answer", "text": "Melden Sie sich per Telefon, WhatsApp oder Formular – wir melden uns zeitnah zurück und stimmen den Termin mit Ihnen ab." } },
         { "@type": "Question", "name": "Was ist Wertminderung?", "acceptedAnswer": { "@type": "Answer", "text": "Der Verlust an Verkaufswert, der trotz fachgerechter Reparatur bleibt, weil das Fahrzeug nun ein Unfallwagen ist. Sie wird im Gutachten beziffert." } },
         { "@type": "Question", "name": "Was passiert bei einem Totalschaden?", "acceptedAnswer": { "@type": "Answer", "text": "Das Gutachten weist Wiederbeschaffungswert und Restwert aus. Daraus ergibt sich, ob und bis zu welcher Höhe eine Reparatur wirtschaftlich ist – einschließlich der sogenannten 130-Prozent-Regel." } }
@@ -176,11 +187,11 @@
           </div>
           <div class="field field-full">
             <label for="f-name">Name <span class="req" aria-hidden="true">*</span></label>
-            <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Vor- und Nachname" required aria-required="true">
+            <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Vor- und Nachname" required>
           </div>
           <div class="field">
             <label for="f-tel">Telefon <span class="req" aria-hidden="true">*</span></label>
-            <input id="f-tel" name="telefon" type="tel" autocomplete="tel" inputmode="tel" placeholder="für Rückruf oder WhatsApp" required aria-required="true">
+            <input id="f-tel" name="telefon" type="tel" autocomplete="tel" inputmode="tel" placeholder="für Rückruf oder WhatsApp" required>
           </div>
           <div class="field">
             <label for="f-mail">E-Mail <span class="opt">(optional)</span></label>
@@ -200,7 +211,7 @@
           </div>
           <div class="field field-full">
             <label for="f-text">Was ist passiert? <span class="req" aria-hidden="true">*</span></label>
-            <textarea id="f-text" name="beschreibung" placeholder="Kurze Schilderung des Unfallhergangs und des Schadens" required aria-required="true"></textarea>
+            <textarea id="f-text" name="beschreibung" placeholder="Kurze Schilderung des Unfallhergangs und des Schadens" required></textarea>
           </div>
           <div class="field field-full">
             <label for="f-fotos">Fotos vom Schaden <span class="opt">(optional, bis zu 3 Bilder)</span></label>
@@ -215,7 +226,7 @@
           </fieldset>
           <div class="field field-full">
             <label class="checkbox">
-              <input type="checkbox" name="datenschutz" value="on" required aria-required="true">
+              <input type="checkbox" name="datenschutz" value="on" required>
               <span>Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> gelesen und bin mit der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage einverstanden. <span class="req" aria-hidden="true">*</span></span>
             </label>
           </div>
@@ -428,8 +439,8 @@
         <span class="eyebrow">Unsere Halle</span>
         <h2 id="halle-title">Verdeckte Schäden sichtbar machen</h2>
         <p class="lead lead-tight">
-          Nicht jeder Schaden ist von außen zu sehen. In unserer Halle nehmen wir Ihr Fahrzeug
-          in Ruhe auf – mit professioneller Fotodokumentation und, wenn nötig, Demontage von
+          Nicht jeder Schaden ist von außen zu sehen. In unserer Halle in Berlin-Reinickendorf nehmen wir
+          Ihr Fahrzeug in Ruhe auf – mit professioneller Fotodokumentation und, wenn nötig, Demontage von
           Stoßfänger und Verkleidungen. So kommen auch die Schäden dahinter ins Gutachten.
         </p>
         <div class="intro-facts">
@@ -449,6 +460,15 @@
         <div class="intro-actions">
           <a class="btn" href="#anfrage">Termin in der Halle anfragen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
           <a class="btn btn-outline" href="tel:+4917664365185"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z"/></svg> 0176 64 365 185</a>
+        </div>
+        <div class="company-card reveal">
+          <div>
+            <strong>Unsere Halle</strong>
+            <address>Lübarser Str. 25<br>13435 Berlin (Reinickendorf)<span class="address-note">Termine in der Halle nach Vereinbarung</span></address>
+          </div>
+          <div class="company-contact">
+            <a href="https://www.google.com/maps/search/?api=1&amp;query=L%C3%BCbarser+Str.+25%2C+13435+Berlin" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>Route planen</a>
+          </div>
         </div>
       </div>
     </div>
@@ -530,7 +550,7 @@
         <div class="company-card reveal">
           <div>
             <strong>UNFALLX – ein Angebot der Unext GmbH</strong>
-            <address>Emmentaler Str. 76E<br>13407 Berlin</address>
+            <address>Emmentaler Str. 76E<br>13407 Berlin<span class="address-note">Halle: Lübarser Str. 25, 13435 Berlin-Reinickendorf</span></address>
           </div>
           <div class="company-contact">
             <a href="tel:+4917664365185"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z"/></svg>0176 64 365 185</a>
@@ -690,7 +710,7 @@
       </details>
       <details class="reveal" data-group="faq">
         <summary>Kann mein Fahrzeug vor Ort begutachtet werden?</summary>
-        <div class="faq-body">Ja. In Berlin und Brandenburg kommen wir zum Fahrzeug – nach Hause, zur Arbeit oder in die Werkstatt. Das Fahrzeug muss dafür nicht fahrbereit sein. Alternativ nehmen wir es in <a href="#halle">unserer Halle</a> auf – dort können wir es bei Bedarf zerlegen, um verdeckte Schäden zu dokumentieren.</div>
+        <div class="faq-body">Ja. In Berlin und Brandenburg kommen wir zum Fahrzeug – nach Hause, zur Arbeit oder in die Werkstatt. Das Fahrzeug muss dafür nicht fahrbereit sein. Alternativ nehmen wir es in <a href="#halle">unserer Halle</a> in Berlin-Reinickendorf (Lübarser Str. 25) auf – dort können wir es bei Bedarf zerlegen, um verdeckte Schäden zu dokumentieren.</div>
       </details>
       <details class="reveal" data-group="faq">
         <summary>Wie schnell kann ein Termin vereinbart werden?</summary>
