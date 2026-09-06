@@ -1,10 +1,13 @@
 /**
- * UNFALLX – statischer Webserver
- * Node-Standardbibliothek, keine externen Abhängigkeiten.
+ * UNFALLX – Webserver
+ * Liefert die statischen Seiten aus und nimmt Anfragen des Formulars
+ * unter POST /api/anfrage entgegen (siehe anfrage.js).
+ * Node-Standardbibliothek; nodemailer ist optional (Mailversand).
  */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const anfrage = require('./anfrage');
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -28,7 +31,7 @@ const MIME = {
 };
 
 /* Dateien, die nie ausgeliefert werden dürfen */
-const BLOCKED = /(^|[\\/])(\.git|\.env|node_modules|partials|package(-lock)?\.json)([\\/]|$)/i;
+const BLOCKED = /(^|[\\/])(\.git|\.env[^\\/]*|node_modules|partials|data|anfrage\.js|server\.js|package(-lock)?\.json)([\\/]|$)/i;
 
 /**
  * Gemeinsame Bausteine aus partials/ werden in die Seiten eingesetzt.
@@ -125,7 +128,7 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
   'Content-Security-Policy':
-    "default-src 'self'; img-src 'self' data: https://images.unsplash.com; style-src 'self'; " +
+    "default-src 'self'; img-src 'self' data: blob: https://images.unsplash.com; style-src 'self'; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
     "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
@@ -158,10 +161,21 @@ function sendError(res, status, isHead) {
 const server = http.createServer((req, res) => {
   const isHead = req.method === 'HEAD';
 
+  /* Anfrageformular: POST /api/anfrage (JSON) */
+  if (req.method === 'POST') {
+    let p = '';
+    try { p = new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname; } catch (e) {}
+    if (p === '/api/anfrage') {
+      return anfrage.handle(req, res, SECURITY_HEADERS);
+    }
+    return send(res, 404, { 'Content-Type': 'application/json; charset=utf-8' },
+      JSON.stringify({ ok: false, error: 'Nicht gefunden' }), false);
+  }
+
   if (req.method !== 'GET' && !isHead) {
     return send(res, 405, {
       'Content-Type': 'text/plain; charset=utf-8',
-      'Allow': 'GET, HEAD'
+      'Allow': 'GET, HEAD, POST'
     }, 'Methode nicht erlaubt', false);
   }
 
