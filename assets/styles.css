@@ -78,6 +78,7 @@ body{
 html:not(.theme-ready) body,html:not(.theme-ready) *{transition:none !important}
 
 img,svg{max-width:100%;display:block}
+[hidden],svg[hidden]{display:none !important}
 a{color:inherit}
 
 :focus-visible{outline:3px solid var(--brand);outline-offset:3px;border-radius:4px}
@@ -1126,3 +1127,315 @@ button[aria-busy="true"]{opacity:.7;cursor:progress}
 .checklist-2col{grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:22px 36px}
 /* Buttons innerhalb von Fliesstext-Containern behalten ihre eigene Textfarbe */
 .prose a.btn,.text-col a.btn,.card p a.btn,.faq-body a.btn{color:var(--btn-fg);text-decoration:none}
+
+/* ==========================================================================
+   Modern 2026 – animierter Blur-Hintergrund, Glas-Header, neue Menüs,
+   Segment-Controls, Mikro-Animationen
+   ========================================================================== */
+
+:root{
+  --glass:        rgba(255,255,255,.72);
+  --glass-strong: rgba(255,255,255,.88);
+  --surface-a:    rgba(255,255,255,.84);
+  --bg-soft-a:    rgba(247,245,241,.66);
+  --fx-1: rgba(255,0,0,.30);
+  --fx-2: rgba(255,122,0,.24);
+  --fx-3: rgba(96,84,255,.26);
+  --fx-4: rgba(0,170,200,.22);
+  --header-h: 76px;
+}
+:root[data-theme="dark"]{
+  --glass:        rgba(27,29,33,.66);
+  --glass-strong: rgba(27,29,33,.86);
+  --surface-a:    rgba(36,38,43,.82);
+  --bg-soft-a:    rgba(35,37,41,.62);
+  --fx-1: rgba(255,0,0,.26);
+  --fx-2: rgba(255,122,0,.16);
+  --fx-3: rgba(120,90,255,.22);
+  --fx-4: rgba(0,190,220,.16);
+}
+
+/* ---------- Animierter Farb-Blur-Hintergrund ------------------------------ */
+
+html{background:var(--bg)}
+.bg-fx{
+  position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+}
+.bg-fx::after{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(rgba(20,23,28,.045) 1px,transparent 1px);
+  background-size:26px 26px;opacity:.5;
+}
+:root[data-theme="dark"] .bg-fx::after{background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px)}
+.bg-blob{
+  position:absolute;border-radius:50%;
+  filter:blur(90px);will-change:transform;
+  mix-blend-mode:multiply;
+}
+:root[data-theme="dark"] .bg-blob{mix-blend-mode:screen}
+.bg-blob-1{width:62vw;height:62vw;left:-18vw;top:-22vw;background:var(--fx-1);animation:fxDrift1 34s ease-in-out infinite alternate}
+.bg-blob-2{width:52vw;height:52vw;right:-14vw;top:4vh;background:var(--fx-3);animation:fxDrift2 42s ease-in-out infinite alternate}
+.bg-blob-3{width:44vw;height:44vw;left:22vw;bottom:-22vw;background:var(--fx-2);animation:fxDrift3 38s ease-in-out infinite alternate}
+.bg-blob-4{width:34vw;height:34vw;right:8vw;bottom:-10vw;background:var(--fx-4);animation:fxDrift4 46s ease-in-out infinite alternate}
+@keyframes fxDrift1{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(26vw,18vh,0) scale(1.2)}}
+@keyframes fxDrift2{from{transform:translate3d(0,0,0) scale(1.05)}to{transform:translate3d(-24vw,26vh,0) scale(.92)}}
+@keyframes fxDrift3{from{transform:translate3d(0,0,0) scale(.95)}to{transform:translate3d(18vw,-30vh,0) scale(1.2)}}
+@keyframes fxDrift4{from{transform:translate3d(0,0,0)}to{transform:translate3d(-10vw,-16vh,0) scale(1.12)}}
+@media (max-width:760px){
+  .bg-blob{filter:blur(60px)}
+  .bg-blob-1{width:120vw;height:120vw;left:-40vw;top:-50vw}
+  .bg-blob-2{width:90vw;height:90vw;right:-40vw;top:30vh}
+  .bg-blob-3{width:90vw;height:90vw;left:-20vw;bottom:-40vw}
+  .bg-blob-4{display:none}
+}
+@media (prefers-reduced-motion: reduce){ .bg-blob{animation:none} }
+
+/* Flächen leicht transparent, damit die Farben dezent durchscheinen */
+body{background:transparent}
+.section-soft{background:var(--bg-soft-a)}
+.page-head{background:var(--bg-soft-a)}
+.site-footer{background:var(--bg-soft-a)}
+.topbar{background:var(--glass)}
+.card,.why-card,.service-card,.region-card,.ratgeber-grid a,.linklist a,.faq details,
+.company-card,.aside-card,.toc,.chip-list li,.step-num,.intro-badge,.form-success{background:var(--surface-a)}
+.hero-card{background:var(--glass-strong);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3)}
+.aside-card{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+
+/* ---------- Glas-Header ---------------------------------------------------- */
+
+.site-header{
+  background:var(--glass);
+  backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
+  border-bottom:1px solid transparent;
+}
+.site-header.is-scrolled{background:var(--glass-strong);border-color:var(--line);box-shadow:0 12px 40px -24px rgba(20,23,28,.4)}
+.nav{height:var(--header-h);gap:18px}
+@media (max-width:760px){ :root{--header-h:66px} .logo .wordmark{width:112px} }
+
+/* Navigation: Pill-Links mit animiertem Hintergrund und Aktiv-Zustand */
+.nav-links{gap:4px}
+.nav-links a,.nav-mega-trigger{
+  position:relative;isolation:isolate;padding:10px 14px;border-radius:var(--r-pill);
+  transition:color .18s ease;
+}
+.nav-links a::before,.nav-mega-trigger::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;
+  background:var(--brand-soft);opacity:0;transform:scale(.85);
+  transition:opacity .2s ease, transform .25s cubic-bezier(.22,.7,.2,1);
+}
+.nav-links a:hover::before,.nav-links a.is-active::before,
+.nav-mega-trigger:hover::before,.nav-mega-trigger[aria-expanded="true"]::before{opacity:1;transform:scale(1)}
+.nav-links a:hover,.nav-links a.is-active,.nav-mega-trigger:hover,.nav-mega-trigger[aria-expanded="true"]{background:transparent;color:var(--brand-dark)}
+.nav-links a.is-active::after{
+  content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;border-radius:50%;
+  background:var(--brand);transform:translateX(-50%);
+}
+
+/* Mega-Menü: weich einblenden statt hart umschalten */
+.mega{
+  display:block;opacity:0;visibility:hidden;pointer-events:none;
+  transform:translateY(10px) scale(.985);transform-origin:top center;
+  transition:opacity .22s ease, transform .28s cubic-bezier(.22,.7,.2,1), visibility 0s linear .28s;
+  background:var(--surface);
+}
+.nav-mega-trigger[aria-expanded="true"] ~ .mega{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s}
+@media (hover:hover){ .has-mega:hover .mega{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s} }
+.mega-col{opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s cubic-bezier(.22,.7,.2,1)}
+.nav-mega-trigger[aria-expanded="true"] ~ .mega .mega-col,.has-mega:hover .mega .mega-col{opacity:1;transform:none}
+.mega-col:nth-child(2){transition-delay:.05s}
+.mega-col:nth-child(3){transition-delay:.1s}
+.mega-col:nth-child(4){transition-delay:.15s}
+.mega-col a{transition:background .15s ease,color .15s ease,transform .15s ease}
+.mega-col a:hover{transform:translateX(3px)}
+.mega-col a:hover svg{transform:scale(1.15)}
+.mega-col a svg{transition:transform .2s ease}
+@media (max-width:1080px){ .mega{display:none} }
+
+/* Hamburger mit Animation */
+.nav-toggle{border-radius:var(--r-pill);background:var(--surface-a);transition:background .2s ease,transform .2s ease}
+.nav-toggle:hover{background:var(--brand-soft);color:var(--brand-dark)}
+.nav-toggle svg{transition:transform .3s cubic-bezier(.22,.7,.2,1)}
+.nav-toggle[aria-expanded="true"] .icon-close{transform:rotate(90deg)}
+
+/* ---------- Segment-Controls: Sprache + Tag/Nacht -------------------------- */
+
+.seg{
+  display:inline-flex;align-items:center;gap:2px;flex:none;padding:3px;
+  border:1px solid var(--line);border-radius:var(--r-pill);
+  background:var(--surface-a);box-shadow:inset 0 1px 2px rgba(20,23,28,.05);
+}
+.seg button{
+  font:inherit;font-size:.76rem;font-weight:700;letter-spacing:.03em;
+  color:var(--muted);background:none;border:none;cursor:pointer;
+  min-width:38px;height:32px;padding:0 10px;border-radius:var(--r-pill);
+  transition:background .2s ease,color .2s ease,transform .2s ease,box-shadow .2s ease;
+}
+.seg button:hover{color:var(--heading)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff;box-shadow:0 6px 16px -8px var(--brand-glow)}
+.seg button:active{transform:scale(.94)}
+
+.theme-switch{
+  display:inline-flex;align-items:center;gap:10px;flex:none;
+  font:inherit;font-size:.86rem;font-weight:650;color:var(--text);
+  background:none;border:none;padding:6px 0;margin:-6px 0;cursor:pointer;min-height:44px;
+}
+.theme-switch-track{
+  position:relative;width:60px;height:32px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:var(--surface-a);
+  box-shadow:inset 0 1px 2px rgba(20,23,28,.06);
+  transition:background .3s ease,border-color .3s ease;
+}
+.theme-switch-knob{
+  position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(145deg,#ffd166,#ff8a00);color:#fff;
+  display:grid;place-items:center;
+  box-shadow:0 2px 6px rgba(20,23,28,.25);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .3s ease;
+}
+.theme-switch-knob svg{width:15px;height:15px;position:absolute;transition:opacity .2s ease,transform .3s ease}
+.theme-switch-knob .icon-moon{opacity:0;transform:rotate(-60deg) scale(.6)}
+:root[data-theme="dark"] .theme-switch-track{background:#2f3340;border-color:#3a3f4d}
+:root[data-theme="dark"] .theme-switch-knob{transform:translateX(28px);background:linear-gradient(145deg,#5b6cff,#2b3a8f)}
+:root[data-theme="dark"] .theme-switch-knob .icon-sun{opacity:0;transform:rotate(60deg) scale(.6)}
+:root[data-theme="dark"] .theme-switch-knob .icon-moon{opacity:1;transform:none}
+.theme-switch:hover .theme-switch-track{border-color:var(--muted-2)}
+.theme-switch:focus-visible{outline:none}
+.theme-switch:focus-visible .theme-switch-track{outline:3px solid var(--brand);outline-offset:3px}
+.theme-switch-text{display:none}
+.theme-switch-text::after{content:"Dunkel"}
+:root[data-theme="dark"] .theme-switch-text::after{content:"Hell"}
+
+/* ---------- Mobiles Menü als Glas-Overlay ---------------------------------- */
+
+.mobile-menu{
+  position:fixed;left:0;right:0;bottom:0;top:var(--mm-top,116px);
+  z-index:39;display:block;border-top:1px solid var(--line);
+  background:var(--glass-strong);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);
+  padding:18px var(--gutter) calc(28px + env(safe-area-inset-bottom,0px));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px);
+  transition:opacity .25s ease,transform .3s cubic-bezier(.22,.7,.2,1),visibility 0s linear .3s;
+}
+.mobile-menu[data-open="true"]{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s}
+.mobile-menu-inner{max-width:560px;margin:0 auto;display:grid;gap:18px}
+.mm-group{display:grid;gap:4px}
+.mm-label{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px 6px}
+.mobile-menu ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.mobile-menu ul a{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;border:0;border-radius:14px;
+  background:var(--surface-a);text-decoration:none;font-weight:650;font-size:1.02rem;color:var(--heading);
+  transition:background .15s ease,transform .15s ease;
+}
+.mobile-menu ul a:hover,.mobile-menu ul a:active{background:var(--brand-soft);color:var(--brand-dark)}
+.mobile-menu ul a svg{width:20px;height:20px;flex:none;color:var(--brand)}
+.mobile-menu ul a .chev{margin-left:auto;width:16px;height:16px;color:var(--muted-2)}
+.mm-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mm-quick a{
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 12px;
+  border-radius:14px;font-weight:700;font-size:.95rem;text-decoration:none;
+  background:var(--surface-a);color:var(--heading);border:1px solid var(--line);
+}
+.mm-quick a svg{width:18px;height:18px}
+.mm-quick .mm-wa{background:#25d366;color:#fff;border-color:#25d366}
+.mobile-menu .btn-block{min-height:52px}
+.mobile-menu-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:14px 0 0;border-top:1px solid var(--line);
+}
+.mobile-menu-foot .theme-switch-text{display:inline}
+/* gestaffeltes Einblenden der Menüpunkte */
+.mobile-menu-inner > *{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .4s cubic-bezier(.22,.7,.2,1)}
+.mobile-menu[data-open="true"] .mobile-menu-inner > *{opacity:1;transform:none}
+.mobile-menu[data-open="true"] .mobile-menu-inner > :nth-child(1){transition-delay:.05s}
+.mobile-menu[data-open="true"] .mobile-menu-inner > :nth-child(2){transition-delay:.1s}
+.mobile-menu[data-open="true"] .mobile-menu-inner > :nth-child(3){transition-delay:.15s}
+.mobile-menu[data-open="true"] .mobile-menu-inner > :nth-child(4){transition-delay:.2s}
+.mobile-menu[data-open="true"] .mobile-menu-inner > :nth-child(5){transition-delay:.25s}
+.mobile-menu[data-open="true"] .mobile-menu-inner > :nth-child(6){transition-delay:.3s}
+html.menu-open,html.menu-open body{overflow:hidden}
+html.menu-open .sticky-bar{animation:none;transform:translateY(120%)}
+@media (min-width:1081px){ .mobile-menu{display:none} }
+
+/* ---------- Sticky-Bar: Glas + Einblenden ---------------------------------- */
+
+.sticky-bar{
+  background:var(--glass-strong);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+  transition:transform .35s cubic-bezier(.22,.7,.2,1);
+}
+.js .sticky-bar{animation:stickyIn .6s cubic-bezier(.22,.7,.2,1) .4s both}
+@keyframes stickyIn{from{transform:translateY(120%)}to{transform:none}}
+.sticky-bar-item{transition:transform .15s ease,background .15s ease}
+.sticky-bar-item:active{transform:scale(.96)}
+
+/* ---------- Mikro-Animationen ---------------------------------------------- */
+
+/* Primärbuttons: Lichtreflex beim Hover */
+.btn{position:relative;overflow:hidden}
+.btn::after{
+  content:"";position:absolute;top:0;left:-120%;width:60%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:skewX(-20deg);transition:left .5s ease;pointer-events:none;
+}
+.btn:hover::after{left:140%}
+.btn-outline::after,.btn-glass::after{display:none}
+
+/* Karten: Rahmen-Glow und leichtes Anheben */
+.card,.why-card,.service-card,.region-card,.ratgeber-grid a{
+  transition:transform .25s cubic-bezier(.22,.7,.2,1),box-shadow .25s ease,border-color .25s ease,background .25s ease;
+}
+.why-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--brand-soft)}
+.why-card .ic,.intro-fact .ic,.card-icon,.step-num{transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s ease,color .25s ease}
+.why-card:hover .ic{transform:rotate(-6deg) scale(1.08)}
+.step:hover .step-num{transform:scale(1.1)}
+.chip-list li{transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.chip-list li:hover{transform:translateY(-2px);border-color:var(--brand-soft);background:var(--brand-soft)}
+
+/* Ablauf: Verbindungslinie zeichnet sich beim Einblenden */
+@media (min-width:1020px){
+  .js .step::after{transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.22,.7,.2,1) .25s}
+  .js .step.is-visible::after{transform:scaleX(1)}
+}
+
+/* FAQ: Inhalt gleitet auf */
+.faq details[open] .faq-body{animation:faqIn .32s cubic-bezier(.22,.7,.2,1) both}
+@keyframes faqIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* Eyebrow-Punkt pulsiert dezent */
+.eyebrow::before{animation:dotPulse 2.6s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,0,0,.35)}50%{box-shadow:0 0 0 5px rgba(255,0,0,0)}}
+
+/* Hero-Foto: langsamer Zoom */
+.js .hero-photo img{animation:kenburns 26s ease-in-out infinite alternate}
+@keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.07)}}
+.js .hero-points li{opacity:0;animation:rise .6s cubic-bezier(.22,.7,.2,1) both}
+.js .hero-points li:nth-child(1){animation-delay:.4s}
+.js .hero-points li:nth-child(2){animation-delay:.5s}
+.js .hero-points li:nth-child(3){animation-delay:.6s}
+.js .hero-points li:nth-child(4){animation-delay:.7s}
+
+/* Seitenkopf der Unterseiten: sanfter Einstieg */
+.js .page-head .breadcrumb,.js .page-head .eyebrow,.js .page-head h1,.js .page-head p,.js .page-head .page-actions{
+  animation:rise .7s cubic-bezier(.22,.7,.2,1) both;
+}
+.js .page-head .eyebrow{animation-delay:.05s}
+.js .page-head h1{animation-delay:.12s}
+.js .page-head p{animation-delay:.2s}
+.js .page-head .page-actions{animation-delay:.28s}
+
+/* Formularfelder: Fokus-Glow */
+.field input:focus,.field textarea:focus,.field select:focus{box-shadow:0 0 0 4px var(--brand-soft),0 8px 24px -12px var(--brand-glow)}
+.field input,.field textarea,.field select{transition:border-color .2s ease,box-shadow .25s ease,transform .2s ease}
+
+/* Footer-Links */
+.footer-col a{display:inline-block;transition:color .15s ease,transform .15s ease}
+.footer-col a:hover{transform:translateX(3px)}
+
+@media (prefers-reduced-motion: reduce){
+  .js .hero-photo img,.js .hero-points li,.js .page-head *,.js .sticky-bar,.eyebrow::before{animation:none;opacity:1}
+  .btn::after{display:none}
+  .mega,.mega-col,.mobile-menu,.mobile-menu-inner > *{transition:none}
+}
+
+/* Radio-Labels nicht umbrechen */
+.radio{white-space:nowrap}
+@media (max-width:400px){ .radio{white-space:normal} }
