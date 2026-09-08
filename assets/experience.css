@@ -131,6 +131,8 @@ html{scroll-padding-top:118px}
 .hero-card,.trust-card,.review-card,.editorial-grid article,.guide-card,.area-card,.service-card,.region-card{background:var(--surface-a);border-color:var(--line);box-shadow:0 12px 36px #12326809,0 1px 2px #12326807}
 :root[data-theme="dark"] .hero-card,:root[data-theme="dark"] .trust-card,:root[data-theme="dark"] .review-card,:root[data-theme="dark"] .editorial-grid article,:root[data-theme="dark"] .guide-card{box-shadow:0 12px 36px #00000026}
 .certificate-card{background:linear-gradient(125deg,#ff553509,#267fff09),var(--surface-a)}
+.trust-card dl{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.trust-card dt{white-space:normal;overflow-wrap:anywhere}.trust-card dd{min-width:0;overflow-wrap:anywhere}
+@media(max-width:480px){.trust-card dl{grid-template-columns:minmax(0,1fr)}}
 .hero-photo{padding:168px 0 96px;min-height:760px;background:#08111f}
 .hero-photo > img,.page-head-photo .page-photo img,.photo-section>img,.cine img,.intro-photo img{filter:contrast(1.08) saturate(1.16)!important}
 .hero-photo::before{background:linear-gradient(90deg,#08111ff5 0%,#08111fe0 28%,#08111f70 55%,#08111f14 80%)}
