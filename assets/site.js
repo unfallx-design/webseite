@@ -377,6 +377,8 @@
           return;
         }
         if (r.json && r.json.ok) {
+          var priorWarning = form.parentNode.querySelector('[data-delivery-warning]');
+          if (priorWarning) priorWarning.hidden = true;
           form.reset();
           setzeKontaktpflicht();
           if (fotoListe) fotoListe.textContent = '';
