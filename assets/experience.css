@@ -77,6 +77,7 @@ body{isolation:isolate}
 @media(max-width:760px){
  .site-footer > .wrap{padding-left:15px}
  .trust-grid{grid-template-columns:minmax(0,1fr);overflow-wrap:anywhere}
+ .trust-card dt{white-space:normal}
  .ambient-canvas i{width:75vw;min-width:0;min-height:0;height:75vw;filter:blur(42px);opacity:.06}.ambient-canvas i+i{display:none}
  .hero-haze{max-height:350px}.hero-haze::before{width:75%;filter:blur(22px)}.hero-haze::after,.hero-haze span{display:none}
  .hero-photo h1{font-size:clamp(35px,9.6vw,54px)}.hero-photo .hero-text{margin-bottom:20px}.hero-photo{padding-bottom:36px}
