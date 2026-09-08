@@ -13,9 +13,8 @@
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/favicon.svg">
-<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
-<link rel="preconnect" href="https://videos.pexels.com" crossorigin>
 <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/refresh.css">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
 <meta property="og:site_name" content="UNFALLX">
@@ -110,18 +109,13 @@
 
 <!-- 1. Hero -->
 <section class="hero-photo" id="start" aria-labelledby="hero-title">
-  <img src="https://images.unsplash.com/photo-1777251530844-1fafb9403bbd?auto=format&fit=crop&w=1920&q=75" alt="" width="1920" height="1080" loading="eager" fetchpriority="high" decoding="async">
-  <video class="hero-vid" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="https://videos.pexels.com/video-files/863860/863860-hd_1920_1080_30fps.mp4"></video>
-  <div class="grain" aria-hidden="true"></div>
+  <img srcset="/assets/ux-hero-small.webp 640w, /assets/ux-hero.webp 1600w" sizes="100vw" src="/assets/ux-hero.webp" alt="" width="1920" height="1080" loading="eager" fetchpriority="high" decoding="async">
+  <span class="hero-caption">Visualisierung · UNFALLX</span>
   <div class="wrap on-photo">
     <div class="hero-inner">
       <span class="eyebrow">Unabhängige Kfz-Gutachten · Berlin &amp; Brandenburg</span>
-      <h1 id="hero-title">Kfz-Gutachter in Berlin &amp; Brandenburg – Unfallgutachten direkt nach Ihrem Unfall</h1>
-      <p class="hero-text">
-        Unverschuldeten Unfall gehabt? UNFALLX erstellt Ihr unabhängiges Kfz-Gutachten und
-        unterstützt Sie auf Wunsch bei der gesamten Schadenabwicklung – von der Begutachtung
-        bis zu Werkstatt und Ersatzmobilität.
-      </p>
+      <h1 id="hero-title">Nach dem Unfall.<span>Klarheit schaffen.</span></h1>
+      <p class="hero-text">Ihr unabhängiger Kfz-Gutachter in Berlin &amp; Brandenburg. Wir dokumentieren Ihren Schaden und unterstützen Sie auf Wunsch bis zu Werkstatt und Ersatzmobilität.</p>
 
       <div class="hero-actions">
         <a class="btn btn-lg" href="#anfrage">
@@ -241,7 +235,7 @@
           <input type="hidden" name="t0" value="">
           <div class="field field-full">
             <button class="btn btn-block" type="submit">
-              Unfallgutachten anfragen
+              Anfrage senden
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
             </button>
           </div>
@@ -293,7 +287,7 @@
 
     <div class="service-grid">
       <article class="service-card reveal" data-group="leistungen">
-        <div class="card-media cine"><img src="https://images.unsplash.com/photo-1597328290883-50c5787b7c7e?auto=format&fit=crop&w=800&q=72" alt="" width="800" height="500" loading="lazy" decoding="async"><span class="cine-tag">Unfallgutachten</span></div>
+        <div class="card-media cine"><img srcset="/assets/ux-inspection-small.webp 640w, /assets/ux-inspection.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-inspection-small.webp" alt="" width="800" height="500" loading="lazy" decoding="async"><span class="cine-tag">Unfallgutachten</span></div>
         <div class="service-body">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>
         <h3>Unfallgutachten</h3>
@@ -306,7 +300,7 @@
       </article>
 
       <article class="service-card reveal" data-group="leistungen">
-        <div class="card-media cine"><img src="https://images.unsplash.com/photo-1645400379459-f6fd3d963fd4?auto=format&fit=crop&w=800&q=72" alt="" width="800" height="500" loading="lazy" decoding="async"><span class="cine-tag">Wertgutachten</span></div>
+        <div class="card-media cine"><img srcset="/assets/ux-valuation-small.webp 640w, /assets/ux-valuation.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-valuation-small.webp" alt="" width="800" height="500" loading="lazy" decoding="async"><span class="cine-tag">Wertgutachten</span></div>
         <div class="service-body">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div>
         <h3>Wertgutachten</h3>
@@ -319,7 +313,7 @@
       </article>
 
       <article class="service-card reveal" data-group="leistungen">
-        <div class="card-media cine"><img src="https://images.unsplash.com/photo-1694889649299-518dc97b474d?auto=format&fit=crop&w=800&q=72" alt="" width="800" height="500" loading="lazy" decoding="async"><span class="cine-tag">Schaden prüfen</span></div>
+        <div class="card-media cine"><img srcset="/assets/ux-workshop-small.webp 640w, /assets/ux-workshop.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-workshop-small.webp" alt="" width="800" height="500" loading="lazy" decoding="async"><span class="cine-tag">Schaden prüfen</span></div>
         <div class="service-body">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
         <h3>Kostenvoranschlag / Schadenkalkulation</h3>
@@ -380,11 +374,11 @@
       </div>
 
       <div class="gallery-collage reveal">
-        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img src="https://images.unsplash.com/photo-1708226633190-d5b9fe523b24?auto=format&fit=crop&w=700&q=72" alt="" width="700" height="933" loading="lazy" decoding="async"></a>
-        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img src="https://images.unsplash.com/photo-1676493168691-dc36a0654b99?auto=format&fit=crop&w=700&q=72" alt="" width="700" height="933" loading="lazy" decoding="async"></a>
-        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img src="https://images.unsplash.com/photo-1679186398296-a4264530d4ef?auto=format&fit=crop&w=500&q=72" alt="" width="500" height="333" loading="lazy" decoding="async"></a>
-        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img src="https://images.unsplash.com/photo-1616790273454-c68f0d35465c?auto=format&fit=crop&w=500&q=72" alt="" width="500" height="333" loading="lazy" decoding="async"></a>
-        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img src="https://images.unsplash.com/photo-1624608488853-fe8bf6389e7c?auto=format&fit=crop&w=500&q=72" alt="" width="500" height="333" loading="lazy" decoding="async"></a>
+        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img srcset="/assets/ux-inspection-small.webp 640w, /assets/ux-inspection.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-inspection-small.webp" alt="" width="700" height="933" loading="lazy" decoding="async"></a>
+        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img srcset="/assets/ux-workshop-small.webp 640w, /assets/ux-workshop.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-workshop-small.webp" alt="" width="700" height="933" loading="lazy" decoding="async"></a>
+        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img srcset="/assets/ux-valuation-small.webp 640w, /assets/ux-valuation.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-valuation-small.webp" alt="" width="500" height="333" loading="lazy" decoding="async"></a>
+        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img srcset="/assets/ux-mobility-small.webp 640w, /assets/ux-mobility.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-mobility-small.webp" alt="" width="500" height="333" loading="lazy" decoding="async"></a>
+        <a class="cine" href="#leistungen" aria-hidden="true" tabindex="-1"><img srcset="/assets/ux-inspection-small.webp 640w, /assets/ux-inspection.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-inspection-small.webp" alt="" width="500" height="333" loading="lazy" decoding="async"></a>
       </div>
     </div>
   </div>
@@ -430,8 +424,9 @@
     <div class="intro intro-rev">
       <div class="intro-photo">
         <div class="frame cine reveal">
-          <img src="https://images.unsplash.com/photo-1786490002518-8b5af5f2b537?auto=format&fit=crop&w=900&h=1125&q=75" alt="Fahrzeug mit geöffneter Motorhaube auf der Hebebühne in einer Halle" width="900" height="1125" loading="lazy" decoding="async">
+          <img srcset="/assets/ux-workshop-small.webp 640w, /assets/ux-workshop.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-workshop-small.webp" alt="Symbolbild einer modernen Halle zur Fahrzeugbegutachtung" width="900" height="1125" loading="lazy" decoding="async">
         </div>
+        <small class="image-caption">KI-generiertes Symbolbild</small>
         <div class="intro-badge">
           <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg></span>
           <span>Eigene Halle</span>
@@ -480,7 +475,7 @@
 
 <!-- 5. Unfallservice -->
 <section id="unfallservice" class="photo-section" aria-labelledby="unfallservice-title">
-  <img src="https://images.unsplash.com/photo-1723099971299-3789db53604c?auto=format&fit=crop&w=1800&q=72" alt="" width="1800" height="1200" loading="lazy" decoding="async">
+  <img srcset="/assets/ux-mobility-small.webp 640w, /assets/ux-mobility.webp 1600w" sizes="100vw" src="/assets/ux-mobility.webp" alt="" width="1800" height="1200" loading="lazy" decoding="async">
   <div class="wrap">
     <div class="section-head reveal">
       <span class="eyebrow">Unfallservice</span>
@@ -532,8 +527,9 @@
     <div class="intro">
       <div class="intro-photo">
         <div class="frame reveal">
-          <img src="/assets/team-selimchan.svg" alt="Selimchan Kasumov, Gründer und Gutachter bei UNFALLX, vor dem UNFALLX-Gebäude" width="800" height="1000" loading="lazy" decoding="async">
+          <img srcset="/assets/ux-inspection-small.webp 640w, /assets/ux-inspection.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-inspection-small.webp" alt="Symbolbild einer Fahrzeugbegutachtung" width="800" height="1000" loading="lazy" decoding="async">
         </div>
+        <small class="image-caption">KI-generiertes Symbolbild</small>
         <div class="intro-badge">
           <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg></span>
           <span>Berlin-Reinickendorf</span>
@@ -638,7 +634,7 @@
     </div>
     <div class="region-grid">
       <a class="region-card reveal" href="/kfz-gutachter-berlin" data-group="region">
-        <div class="card-media cine"><img src="https://images.unsplash.com/photo-1528728329032-2972f65dfb3f?auto=format&fit=crop&w=900&q=72" alt="" width="900" height="506" loading="lazy" decoding="async"><span class="cine-tag">Berlin</span></div>
+        <div class="card-media cine"><img srcset="/assets/ux-mobility-small.webp 640w, /assets/ux-mobility.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-mobility-small.webp" alt="" width="900" height="506" loading="lazy" decoding="async"><span class="cine-tag">Berlin</span></div>
         <div class="region-body">
         <span class="region-kicker">Unternehmenssitz</span>
         <h3>Kfz-Gutachter Berlin</h3>
@@ -647,7 +643,7 @@
         </div>
       </a>
       <a class="region-card reveal" href="/kfz-gutachter-brandenburg" data-group="region">
-        <div class="card-media cine"><img src="https://images.unsplash.com/photo-1455918781536-1272694bcd6d?auto=format&fit=crop&w=900&q=72" alt="" width="900" height="506" loading="lazy" decoding="async"><span class="cine-tag">Brandenburg</span></div>
+        <div class="card-media cine"><img srcset="/assets/ux-mobility-small.webp 640w, /assets/ux-mobility.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-mobility-small.webp" alt="" width="900" height="506" loading="lazy" decoding="async"><span class="cine-tag">Brandenburg</span></div>
         <div class="region-body">
         <span class="region-kicker">Einsatzgebiet</span>
         <h3>Kfz-Gutachter Brandenburg</h3>
@@ -668,11 +664,11 @@
       <p class="lead">Verständlich erklärt, an der aktuellen Rechtsprechung geprüft – ohne Versicherungsdeutsch.</p>
     </div>
     <ul class="ratgeber-grid">
-      <li class="reveal" data-group="ratgeber"><a href="/kfz-gutachten"><span class="thumb cine"><img src="https://images.unsplash.com/photo-1630406144797-821be1f35d75?auto=format&fit=crop&w=640&q=72" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Kfz-Gutachten nach Unfall</strong><span>Wer den Gutachter wählt, wer zahlt, was drinsteht</span></span></a></li>
-      <li class="reveal" data-group="ratgeber"><a href="/wertminderung"><span class="thumb cine"><img src="https://images.unsplash.com/photo-1703609438732-2fad53e62a4b?auto=format&fit=crop&w=640&q=72" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Merkantile Wertminderung</strong><span>Warum Ihr Auto trotz Reparatur an Wert verliert</span></span></a></li>
-      <li class="reveal" data-group="ratgeber"><a href="/nutzungsausfall"><span class="thumb cine"><img src="https://images.unsplash.com/photo-1701836938286-e64ffeb7561a?auto=format&fit=crop&w=640&q=72" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Nutzungsausfall</strong><span>Tagessätze, Dauer und Voraussetzungen</span></span></a></li>
-      <li class="reveal" data-group="ratgeber"><a href="/mietwagen"><span class="thumb cine"><img src="https://images.unsplash.com/photo-1727893512947-8bdc773ceb02?auto=format&fit=crop&w=640&q=72" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Mietwagen nach Unfall</strong><span>Klasse, Tarif und die typischen Abzüge</span></span></a></li>
-      <li class="reveal" data-group="ratgeber"><a href="/totalschaden"><span class="thumb cine"><img src="https://images.unsplash.com/photo-1662541547523-118842914aa7?auto=format&fit=crop&w=640&q=72" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Totalschaden &amp; 130-Prozent-Regel</strong><span>Wann sich Reparieren trotzdem lohnt</span></span></a></li>
+      <li class="reveal" data-group="ratgeber"><a href="/kfz-gutachten"><span class="thumb cine"><img srcset="/assets/ux-inspection-small.webp 640w, /assets/ux-inspection.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-inspection-small.webp" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Kfz-Gutachten nach Unfall</strong><span>Wer den Gutachter wählt, wer zahlt, was drinsteht</span></span></a></li>
+      <li class="reveal" data-group="ratgeber"><a href="/wertminderung"><span class="thumb cine"><img srcset="/assets/ux-valuation-small.webp 640w, /assets/ux-valuation.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-valuation-small.webp" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Merkantile Wertminderung</strong><span>Warum Ihr Auto trotz Reparatur an Wert verliert</span></span></a></li>
+      <li class="reveal" data-group="ratgeber"><a href="/nutzungsausfall"><span class="thumb cine"><img srcset="/assets/ux-mobility-small.webp 640w, /assets/ux-mobility.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-mobility-small.webp" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Nutzungsausfall</strong><span>Tagessätze, Dauer und Voraussetzungen</span></span></a></li>
+      <li class="reveal" data-group="ratgeber"><a href="/mietwagen"><span class="thumb cine"><img srcset="/assets/ux-mobility-small.webp 640w, /assets/ux-mobility.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-mobility-small.webp" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Mietwagen nach Unfall</strong><span>Klasse, Tarif und die typischen Abzüge</span></span></a></li>
+      <li class="reveal" data-group="ratgeber"><a href="/totalschaden"><span class="thumb cine"><img srcset="/assets/ux-workshop-small.webp 640w, /assets/ux-workshop.webp 1600w" sizes="(max-width: 760px) 100vw, 50vw" src="/assets/ux-workshop-small.webp" alt="" width="640" height="360" loading="lazy" decoding="async"></span><span class="rg-body"><strong>Totalschaden &amp; 130-Prozent-Regel</strong><span>Wann sich Reparieren trotzdem lohnt</span></span></a></li>
     </ul>
   </div>
 </section>
@@ -735,7 +731,7 @@
 <section id="kontakt" aria-labelledby="kontakt-title">
   <div class="wrap">
     <div class="cta-photo reveal">
-      <img src="https://images.unsplash.com/photo-1598637419142-84f13373a780?auto=format&fit=crop&w=1920&q=70" alt="" width="1920" height="1080" loading="lazy" decoding="async">
+      <img srcset="/assets/ux-hero-small.webp 640w, /assets/ux-hero.webp 1600w" sizes="100vw" src="/assets/ux-hero.webp" alt="" width="1920" height="1080" loading="lazy" decoding="async">
       <div class="cta-photo-top">
         <div>
           <h2 id="kontakt-title">Unfall gehabt?</h2>
