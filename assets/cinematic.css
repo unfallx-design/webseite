@@ -1,5 +1,8 @@
 /* UNFALLX image series: warm light, graphite shadows and consistent framing. */
 img.cinema-image{filter:contrast(1.03) saturate(.94)!important;animation:none!important}
+.unique-leistung-unfallgutachten{object-position:68% 0%}
+.gallery-collage .unique-detail-radpruefung{object-position:65% 40%}
+.faq-contact .unique-faq-portraet{object-position:50% 16%}
 .cinema-frame{position:relative;overflow:hidden;border-radius:20px;background:#22252a}
 .cinema-frame::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(150deg,#e7b47c08,transparent 48%,#141b2820)}
 .hero-photo>img.cinema-hero{top:92px;height:calc(100% - 92px);object-position:70% 20%}
@@ -57,6 +60,11 @@ img.cinema-image{filter:contrast(1.03) saturate(.94)!important;animation:none!im
 html:has(.photo-dialog[open]){overflow:hidden}
 @media(max-width:1000px){.damage-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.cinema-contact{padding:30px}.cinema-contact .cta-photo-top{width:53%}}
 @media(max-width:760px){
+ .page-head-photo{padding-top:364px;background:#11151c}
+ .page-head-photo .page-photo{inset:92px 0 auto;height:290px}
+ .page-head-photo .page-photo img{object-position:78% 24%}
+ .page-head-photo .page-photo::before{background:linear-gradient(180deg,transparent 42%,#11151c 100%)}
+ .page-head-photo .page-image-note{top:344px;bottom:auto}
  .hero-photo{padding-top:380px;background:#101318}
  .hero-photo>img.cinema-hero{top:92px;height:330px;object-position:75% 15%}
  .hero-photo::before{background:linear-gradient(180deg,#101318 0px,#10131800 118px,#10131800 268px,#101318b8 365px,#101318 435px)}

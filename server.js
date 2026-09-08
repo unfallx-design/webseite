@@ -14,6 +14,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 const ROOT = __dirname;
 
 const MIME = {
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
