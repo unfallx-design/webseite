@@ -156,7 +156,6 @@ function pruefe(body) {
   if (d.name.length < 2) fehler.name = M.name;
 
   d.telefon = einzeilig(body.telefon, 30);
-  if (!istTelefon(d.telefon)) fehler.telefon = M.telefon;
 
   d.email = einzeilig(body.email, 120).toLowerCase();
   if (d.email && !istEmail(d.email)) fehler.email = M.email;
@@ -176,6 +175,7 @@ function pruefe(body) {
 
   d.kontaktweg = einzeilig(body.kontaktweg, 20);
   if (!['telefon', 'whatsapp', 'email'].includes(d.kontaktweg)) d.kontaktweg = 'telefon';
+  if ((d.kontaktweg !== 'email' || d.telefon) && !istTelefon(d.telefon)) fehler.telefon = M.telefon;
   if (d.kontaktweg === 'email' && !d.email) fehler.email = M.emailNoetig;
 
   if (body.datenschutz !== true && body.datenschutz !== 'true' && body.datenschutz !== 'on') {

@@ -212,6 +212,43 @@
     var t0 = form.querySelector('[name="t0"]');
     if (t0) t0.value = String(Date.now());
 
+    /* Kontaktfelder und ihre sichtbaren Hinweise folgen dem Kontaktweg. */
+    var setzeKontaktpflicht = function () {
+      var kontakt = form.querySelector('[name="kontaktweg"]:checked');
+      var perEmail = kontakt && kontakt.value === 'email';
+      ['telefon', 'email'].forEach(function (name) {
+        var input = form.querySelector('[name="' + name + '"]');
+        if (!input) return;
+        input.required = name === 'email' ? !!perEmail : !perEmail;
+        var hint = form.querySelector('label[for="' + input.id + '"] span');
+        if (hint) {
+          hint.className = input.required ? 'req' : 'opt';
+          hint.textContent = input.required ? '*' : (istRu ? '(необязательно)' : '(optional)');
+          if (input.required) hint.setAttribute('aria-hidden', 'true');
+          else hint.removeAttribute('aria-hidden');
+        }
+        var feld = input.closest('.field');
+        if (feld) {
+          feld.classList.remove('has-error');
+          var error = feld.querySelector('.field-error');
+          if (error) error.remove();
+        }
+        input.removeAttribute('aria-invalid');
+      });
+    };
+    form.querySelectorAll('[name="kontaktweg"]').forEach(function (input) {
+      input.addEventListener('change', setzeKontaktpflicht);
+    });
+    setzeKontaktpflicht();
+    window.addEventListener('pageshow', setzeKontaktpflicht);
+
+    /* Leistungslinks uebergeben eine explizite, erlaubte Vorauswahl. */
+    var anliegen = form.querySelector('[name="anliegen"]');
+    var vorauswahl = new URLSearchParams(window.location.search).get('anliegen');
+    if (anliegen && ['unfallgutachten', 'wertgutachten', 'kostenvoranschlag', 'sonstiges'].indexOf(vorauswahl) !== -1) {
+      anliegen.value = vorauswahl;
+    }
+
     var setzeStatus = function (text, art) {
       if (!status) return;
       status.textContent = text;
@@ -315,6 +352,7 @@
       }).then(function (r) {
         if (r.json && r.json.ok) {
           form.reset();
+          setzeKontaktpflicht();
           if (fotoListe) fotoListe.textContent = '';
           var erfolg = form.parentNode.querySelector('[data-form-success]');
           if (erfolg) {
