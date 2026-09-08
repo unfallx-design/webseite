@@ -191,6 +191,11 @@ function sendError(res, status, isHead, urlPath) {
 
 const server = http.createServer((req, res) => {
   const isHead = req.method === 'HEAD';
+  /* Eine feste Domain hält Portal-Cookies und die CSRF-Origin konsistent. */
+  if (/^www\.unfallx\.com(?::\d+)?$/i.test(req.headers.host || '')) {
+    const target = 'https://unfallx.com' + (req.url.startsWith('/') ? req.url : '/');
+    return send(res, 308, { Location: target, 'Cache-Control': 'no-store' }, '', isHead);
+  }
   if (req.url.split('?')[0].startsWith('/api/portal/')) return portal.handle(req, res, SECURITY_HEADERS);
 
   /* Anfrageformular: POST /api/anfrage (JSON) */
