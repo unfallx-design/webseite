@@ -73,6 +73,14 @@ body{isolation:isolate}
 .certificate-seal:focus-visible{outline:2px solid var(--brand);outline-offset:5px}
 .certificate-copy{min-width:0;max-width:660px;overflow-wrap:anywhere}.certificate-copy .eyebrow{margin-bottom:10px}.certificate-copy h3{font-size:clamp(24px,3vw,32px);margin:0 0 12px}.certificate-copy p{font-size:16px;line-height:1.75;margin:0 0 22px}.certificate-copy .btn{white-space:normal;text-align:center;min-height:48px;max-width:100%}.certificate-copy .btn svg{flex:none}
 @media(max-width:600px){.certificate-card{grid-template-columns:minmax(0,1fr);gap:24px;text-align:center}.certificate-copy .btn{width:100%}}
+/* Selected Google review excerpts: no third-party widget or profile photos. */
+.reviews-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.review-card{display:flex;flex-direction:column;min-width:0;margin:0;padding:28px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow-sm)}
+.review-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.review-stars{font-size:21px;letter-spacing:3px;color:var(--brand);white-space:nowrap}.review-platform{font-size:13px;font-weight:650;color:var(--muted)}
+.review-card blockquote{flex:1;margin:0 0 26px;padding:0;border:0;overflow-wrap:anywhere}.review-card blockquote p{margin:0;color:var(--heading);font-size:20px;font-weight:600;line-height:1.6}
+.review-card figcaption{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:20px;min-width:0}.review-initials{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-size:13px;font-weight:750}.review-card figcaption strong{display:block;color:var(--heading);font-size:15px;overflow-wrap:anywhere}.review-card figcaption small{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.5}
+.reviews-actions{display:grid;justify-items:center;gap:16px;margin-top:28px;text-align:center}.reviews-actions .btn{max-width:100%;min-height:48px;white-space:normal}.reviews-actions .btn svg{flex:none}.reviews-note{max-width:600px;margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+@media(max-width:900px){.reviews-grid{grid-template-columns:minmax(0,1fr);gap:16px}.review-card{padding:24px}.review-card blockquote{margin-bottom:22px}}
 /* Social profiles: direct links with accessible touch targets. */
 .social-caption{margin:0;font-size:13px;font-weight:650;color:var(--heading);line-height:1.5}
 .footer-social{margin-top:22px}.contact-social{margin-top:24px}
