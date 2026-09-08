@@ -122,11 +122,13 @@
   var toggle = document.querySelector('[data-nav-toggle]');
   var menu = document.getElementById('mobile-menu');
   if (toggle && menu) {
+    var positioniereMenue = function () {
+      if (!header) return;
+      var unten = Math.max(0, Math.round(header.getBoundingClientRect().bottom));
+      menu.style.setProperty('--mm-top', unten + 'px');
+    };
     var setzeMenue = function (offen) {
-      if (offen && header) {
-        var unten = Math.max(0, Math.round(header.getBoundingClientRect().bottom));
-        menu.style.setProperty('--mm-top', unten + 'px');
-      }
+      if (offen) positioniereMenue();
       toggle.setAttribute('aria-expanded', String(offen));
       menu.setAttribute('data-open', String(offen));
       menu.setAttribute('aria-hidden', String(!offen));
@@ -156,6 +158,7 @@
     });
     window.addEventListener('resize', function () {
       if (window.innerWidth > 1080 && menu.getAttribute('data-open') === 'true') setzeMenue(false);
+      else if (menu.getAttribute('data-open') === 'true') positioniereMenue();
     });
   }
 

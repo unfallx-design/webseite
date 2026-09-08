@@ -5,7 +5,8 @@
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   var savedMotion;
   try { savedMotion = localStorage.getItem('unfallx-motion'); } catch (e) {}
-  var motionOff = reduced.matches || savedMotion === 'off' || !!(navigator.connection && navigator.connection.saveData);
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var motionOff = reduced.matches || savedMotion === 'off' || saveData;
   var motionButtons = document.querySelectorAll('[data-motion-toggle]');
   function applyMotion() {
     root.setAttribute('data-motion', motionOff ? 'off' : 'on');
@@ -21,7 +22,7 @@
     try { localStorage.setItem('unfallx-motion', savedMotion); } catch (e) {}
     applyMotion();
   }); });
-  reduced.addEventListener('change', function (event) { motionOff = event.matches || savedMotion === 'off'; applyMotion(); });
+  reduced.addEventListener('change', function (event) { motionOff = event.matches || savedMotion === 'off' || saveData; applyMotion(); });
   document.addEventListener('visibilitychange', function () { root.toggleAttribute('data-page-hidden', document.hidden); root.classList.toggle('motion-ready', !document.hidden); });
   var scenes = document.querySelectorAll('.hero-photo,.page-head-photo,.photo-section');
   scenes.forEach(function (scene) {
