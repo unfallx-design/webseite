@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js"
+    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js"
   },
   "dependencies": {
     "nodemailer": "9.1.1"
