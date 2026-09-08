@@ -257,6 +257,9 @@
     /* Leistungslinks uebergeben eine explizite, erlaubte Vorauswahl. */
     var anliegen = form.querySelector('[name="anliegen"]');
     var vorauswahl = new URLSearchParams(window.location.search).get('anliegen');
+    var ortVorauswahl = new URLSearchParams(window.location.search).get('ort');
+    var ortFeld = form.querySelector('[name="ort"]');
+    if (ortVorauswahl && ortFeld) ortFeld.value = ortVorauswahl.replace(/[\x00-\x1F]/g, '').slice(0, 120);
     if (anliegen && ['unfallgutachten', 'wertgutachten', 'kostenvoranschlag', 'sonstiges'].indexOf(vorauswahl) !== -1) {
       anliegen.value = vorauswahl;
     }
@@ -362,6 +365,17 @@
       }).then(function (res) {
         return res.json().then(function (json) { return { status: res.status, json: json }; });
       }).then(function (r) {
+        if (r.json && r.json.delivery === 'stored') {
+          setzeStatus(r.json.error, 'error');
+          var warning = form.parentNode.querySelector('[data-delivery-warning]');
+          if (warning) {
+            warning.hidden = false;
+            var direct = warning.querySelector('[data-mail-fallback]');
+            if (direct) direct.href = 'mailto:info@unfallx.com?subject=' + encodeURIComponent('Anfrage über UNFALLX – ' + daten.name) + '&body=' + encodeURIComponent('Name: ' + daten.name + '\nTelefon: ' + daten.telefon + '\nE-Mail: ' + daten.email + '\nOrt: ' + daten.ort + '\nAnliegen: ' + daten.anliegen + '\n\n' + daten.beschreibung);
+            warning.setAttribute('tabindex', '-1'); warning.focus();
+          }
+          return;
+        }
         if (r.json && r.json.ok) {
           form.reset();
           setzeKontaktpflicht();

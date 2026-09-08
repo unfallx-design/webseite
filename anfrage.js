@@ -15,7 +15,7 @@
  *   SMTP_SECURE   "true" fuer Port 465, sonst "false"
  *   SMTP_USER     Postfach, z. B. info@unfallx.com
  *   SMTP_PASS     Passwort des Postfachs
- *   MAIL_TO       Empfaenger der Anfragen (Standard: info@unfallx.com)
+ *   Empfaenger aller Website-Anfragen: info@unfallx.com
  *   MAIL_FROM     Absender (Standard: SMTP_USER)
  *   ANFRAGE_LIMIT Anfragen je IP und 10 Minuten (Standard: 8)
  */
@@ -24,13 +24,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const MAX_BODY = 12 * 1024 * 1024;        // 12 MB inkl. Fotos (Base64)
+const MAX_BODY = 22 * 1024 * 1024;        // Drei Fotos à 5 MB, Base64-Aufschlag und Formularfelder
 const MAX_FILES = 3;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;   // 5 MB je Foto
 const MIN_FORM_MS = 3000;                 // Mindestzeit zwischen Laden und Senden
 const WINDOW_MS = 10 * 60 * 1000;
 const LIMIT = Math.max(1, parseInt(process.env.ANFRAGE_LIMIT || '8', 10) || 8);
-const MAIL_TO = (process.env.MAIL_TO || 'info@unfallx.com').trim();
+const MAIL_TO = 'info@unfallx.com';
 const DATA_DIR = path.join(__dirname, 'data', 'anfragen');
 
 /* nodemailer ist optional: fehlt es, greift der Datei-Fallback */
@@ -258,10 +258,13 @@ async function sendeMail(d, meta) {
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || '465', 10),
     secure: String(process.env.SMTP_SECURE || 'true') === 'true',
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
   });
   const betreff = `[UNFALLX${d.sprache === 'ru' ? ' RU' : ''}] ${LABEL.anliegen[d.anliegen]} – ${d.name}`;
-  await transport.sendMail({
+  const receipt = await transport.sendMail({
     from: process.env.MAIL_FROM || process.env.SMTP_USER,
     to: MAIL_TO,
     replyTo: d.email || undefined,
@@ -274,6 +277,9 @@ async function sendeMail(d, meta) {
       contentType: f.typ
     }))
   });
+  if (!receipt.accepted || !receipt.accepted.some((address) => String(address).toLowerCase() === MAIL_TO)) {
+    throw new Error('Der Mailserver hat den Empfaenger nicht angenommen.');
+  }
 }
 
 function speichereDatei(d, meta) {
@@ -348,7 +354,7 @@ function handle(req, res, securityHeaders) {
     if (mailerKonfiguriert()) {
       try {
         await sendeMail(d, meta);
-        return antwort(res, 200, { ok: true }, securityHeaders);
+        return antwort(res, 200, { ok: true, delivery: 'email' }, securityHeaders);
       } catch (e) {
         console.error('[anfrage] Mailversand fehlgeschlagen:', e && e.message);
         /* weiter zum Datei-Fallback, damit die Anfrage nicht verloren geht */
@@ -360,7 +366,12 @@ function handle(req, res, securityHeaders) {
     try {
       const id = speichereDatei(d, meta);
       console.log('[anfrage] Anfrage gespeichert unter data/anfragen/' + id);
-      return antwort(res, 200, { ok: true }, securityHeaders);
+      return antwort(res, 202, {
+        ok: false, delivery: 'stored', reference: id,
+        error: d.sprache === 'ru'
+          ? 'Заявка сохранена на сервере, но отправить её по электронной почте не удалось. Пожалуйста, свяжитесь с нами: info@unfallx.com или 0176 64 365 185.'
+          : 'Ihre Anfrage wurde auf dem Server gesichert, konnte aber noch nicht per E-Mail zugestellt werden. Bitte kontaktieren Sie uns direkt: info@unfallx.com oder 0176 64 365 185.'
+      }, securityHeaders);
     } catch (e) {
       console.error('[anfrage] Speichern fehlgeschlagen:', e && e.message);
       return antwort(res, 503, { ok: false, error: 'Die Anfrage konnte gerade nicht übermittelt werden. Bitte rufen Sie uns an oder schreiben Sie an info@unfallx.com.' }, securityHeaders);
@@ -371,4 +382,4 @@ function handle(req, res, securityHeaders) {
   });
 }
 
-module.exports = { handle, pruefe };
+module.exports = { handle, pruefe, contactStatus: () => ({ recipient: MAIL_TO, configured: mailerKonfiguriert() }) };

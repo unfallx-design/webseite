@@ -154,7 +154,7 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
   'Content-Security-Policy':
-    "default-src 'self'; img-src 'self' data: blob: https://images.unsplash.com; media-src 'self' https://videos.pexels.com; style-src 'self'; " +
+    "default-src 'self'; img-src 'self' data: blob:; media-src 'self'; style-src 'self'; frame-src https://www.google.com; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
     "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
@@ -222,7 +222,7 @@ const server = http.createServer((req, res) => {
     return send(res, 200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store'
-    }, JSON.stringify({ status: 'ok' }), isHead);
+    }, JSON.stringify({ status: 'ok', contact: anfrage.contactStatus() }), isHead);
   }
 
   /* Nachgestellten Slash entfernen: /impressum/ -> /impressum */

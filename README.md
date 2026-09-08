@@ -1,76 +1,44 @@
-# UNFALLX – Webseite
+# UNFALLX – Website
 
-Schlanke Node.js-Anwendung, die die Website von UNFALLX ausliefert.
-Ohne externe Abhängigkeiten – nur die Node-Standardbibliothek.
+Node.js liefert die deutschen und russischen Seiten aus. Nodemailer versendet Anfragen an **info@unfallx.com**. Gemeinsame Header, Footer und Standortkarten liegen in `partials/`.
 
-## Lokal starten
+## Start und Prüfung
 
 ```bash
+npm ci
+npm run check
 npm start
-# http://localhost:3000
 ```
 
-## Konfiguration
+Standard: `http://localhost:3000`. `PORT` und `HOST` können über die Hosting-Umgebung gesetzt werden. Änderungen an Partials, CSS oder Skripten benötigen einen Serverneustart, damit Asset-Versionen und CSP-Hashes neu berechnet werden.
 
-| Variable | Standard  | Bedeutung |
-|----------|-----------|-----------|
-| `PORT`   | `3000`    | Port, auf dem der Server lauscht (wird von Hostinger gesetzt) |
-| `HOST`   | `0.0.0.0` | Interface |
+## Mailversand
 
-`GET /health` liefert `{"status":"ok"}` für Healthchecks.
+Folgende Werte werden ausschließlich in der Hosting-Umgebung gesetzt, niemals im Repository:
 
-## Struktur
+| Variable | Beispiel / Bedeutung |
+| --- | --- |
+| SMTP_HOST | SMTP-Server des Postfachanbieters |
+| SMTP_PORT | 465 für TLS oder 587 für STARTTLS |
+| SMTP_SECURE | true für 465, false für 587 |
+| SMTP_USER | Authentifizierter Postfachbenutzer |
+| SMTP_PASS | Passwort oder App-Passwort des Postfachs |
+| MAIL_FROM | Optional, freigegebener Absender; Standard SMTP_USER |
+| ANFRAGE_LIMIT | Optional: Anfragen pro IP in zehn Minuten, Standard 8 |
 
-```
-server.js                HTTP-Server: statische Dateien, saubere URLs, 404, Security-Header
-index.html               Startseite
-impressum.html           Impressum        -> erreichbar unter /impressum
-datenschutz.html         Datenschutz      -> erreichbar unter /datenschutz
-404.html                 Fehlerseite
-robots.txt               Suchmaschinen
-sitemap.xml              Seitenverzeichnis
-assets/styles.css        Design-System für alle Seiten
-assets/site.js           Mobiles Menue, Header-Scrollzustand, Jahreszahl, Formular
-assets/favicon.svg       Favicon (Bildmarke)
-assets/logo-mark.svg     Bildmarke
-assets/logo-wordmark.svg Wortmarke
-assets/logo-full.svg     Bild- und Wortmarke
-package.json             start-Skript für Hostinger
-```
+Der Empfänger ist fest `info@unfallx.com`. Antworten gehen über Reply-To an die angegebene Besucheradresse. `GET /health` meldet den Betriebszustand sowie `contact.configured` und die öffentliche Empfängeradresse; Zugangsdaten werden nie ausgegeben. Die Bereitschaftsanzeige prüft die Konfiguration, nicht die Anmeldung beim Mailserver.
 
-Neue Seite anlegen: `name.html` ins Projektverzeichnis legen – sie ist danach
-automatisch unter `/name` erreichbar (`.html`-URLs werden umgeleitet).
+Bei erfolgreicher Annahme durch den SMTP-Server antwortet das Formular mit `delivery: email`. Bei einer Störung wird die Anfrage unter dem nicht öffentlich zugänglichen Verzeichnis `data/anfragen/` gesichert. Die Antwort `delivery: stored` zeigt im Formular ausdrücklich die ausstehende Mailzustellung und bietet einen direkten E-Mail-Link. Dieser Speicher ist keine automatische Versandwarteschlange. Betreiber müssen SMTP-Störungen beheben und gesicherte Anfragen bearbeiten; die Aufbewahrung über Hosting-Neubereitstellungen hängt vom Hosting-Speicher ab.
 
-## Sprachen (Deutsch / Russisch)
+Maximal drei JPEG-, PNG- oder WebP-Fotos mit jeweils 5 MB; das JSON-Limit berücksichtigt den Base64-Aufschlag. Keine Passwörter oder produktiven Kundendaten in Tests verwenden.
 
-Jede Seite gibt es zweimal: deutsch im Projektverzeichnis (`/name`) und russisch
-unter `ru/` mit gleichem Dateinamen (`/ru/name`, Startseite `/ru`). Kopf- und
-Fußbereich liegen als eigene Bausteine vor: `partials/topbar.html`, `header.html`,
-`footer.html` (deutsch) und `partials/topbar-ru.html`, `header-ru.html`,
-`footer-ru.html` (russisch). Der Sprachumschalter im Header ist ein Link auf die
-jeweils andere Fassung derselben Seite; `server.js` setzt die Adresse über die
-Platzhalter `<!--#langlink:de-->` / `<!--#langlink:ru-->` ein. Beide Fassungen
-verweisen per `hreflang` aufeinander und stehen in `sitemap.xml`. Bei einer
-inhaltlichen Änderung immer beide Dateien anpassen (`name.html` und `ru/name.html`).
-Fehlermeldungen des Formulars kommen je nach Sprache aus `anfrage.js`
-(Feld `sprache`) und `assets/site.js`.
+## Gestaltung und Inhalte
 
-## Noch einzutragen
+- `assets/styles.css` und `assets/refresh.css`: bestehendes Design und responsive Basis.
+- `assets/experience.css` und `assets/experience.js`: animierte Lichtflächen, Cinematic-Look, Ortssuche, Standortkarte und Checkliste. Animationen lassen sich pausieren und berücksichtigen reduzierte Bewegung und Datensparmodus.
+- `einsatzgebiete.html`: Berliner Bezirke mit 97 Ortsteilen sowie Brandenburger Landkreise und kreisfreie Städte. Die Auswahl übergibt den Ort an das Anfrageformular.
+- `unfall-checkliste.html`: Vorbereitung auf die Fahrzeugbesichtigung mit Druckansicht.
+- `partials/location.html`: Halle und Unternehmenssitz; Google Maps wird erst nach dem freiwilligen Laden eingebunden.
+- `assets/favicon.svg`: transparente Bildmarke.
 
-Alle offenen Stellen sind im Browser gelb markiert (`<span class="todo">…</span>`)
-und im Quelltext mit `TODO` kommentiert:
-
-- Telefonnummer (Startseite, Impressum, Datenschutz)
-- Anschrift (Startseite, Impressum, Datenschutz)
-- Firmierung, Vertretungsberechtigter, ggf. Registereintrag und USt-IdNr. (Impressum)
-- Hoster-Anschrift, Log-Speicherdauer, zuständige Aufsichtsbehörde, Stand-Datum (Datenschutz)
-
-Nach dem Eintragen den `<span class="todo">` durch reinen Text ersetzen.
-Impressum und Datenschutzerklärung sind Entwürfe und sollten vor dem Livegang
-rechtlich geprüft werden.
-
-## Formular
-
-Das Formular auf der Startseite sendet nichts an den Server, sondern setzt die
-Angaben im Browser zu einer E-Mail zusammen und öffnet das Mailprogramm des
-Besuchers. Für echten Serverversand wäre ein Mailversand (SMTP) nötig.
+Jede Inhaltsseite hat eine russische Fassung unter `ru/`. Änderungen an beiden Sprachversionen vornehmen und Canonical-, Hreflang- und Sitemap-Verweise zusammen prüfen. Öffnungszeiten, Rezensionen, örtliche Niederlassungen oder Leistungsversprechen nur ergänzen, wenn sie tatsächlich belegt sind.

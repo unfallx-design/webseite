@@ -9,11 +9,17 @@
   },
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js"
+    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js"
   },
   "dependencies": {
-    "nodemailer": "^6.9.16"
+    "nodemailer": "9.1.1"
   },
-  "keywords": ["unfallx", "kfz-gutachter", "unfallgutachten", "berlin", "brandenburg"],
+  "keywords": [
+    "unfallx",
+    "kfz-gutachter",
+    "unfallgutachten",
+    "berlin",
+    "brandenburg"
+  ],
   "license": "UNLICENSED"
 }
