@@ -66,6 +66,13 @@ body{isolation:isolate}
 .check-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.source-note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:30px}.source-note a{text-decoration:underline}
 .form-direct{font-size:13px;padding-top:14px;line-height:1.7}.form-direct a{color:var(--brand);text-decoration:underline}.form-delivery-warning{padding:18px;border:1px solid #c27d1a;border-radius:12px;background:#c27d1a0d;margin-top:14px}.form-delivery-warning p{margin-bottom:10px;font-size:14px;line-height:1.7}
 [hidden]{display:none!important}
+/* Keep the official DESAG seal at its native size, without filters or cropping. */
+.certificate-card{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(24px,4vw,48px);padding:clamp(22px,4vw,40px);margin:0 0 36px;border:1px solid var(--line);border-radius:var(--r-lg);background:radial-gradient(ellipse at 100% 0,#f1322709,transparent 65%),var(--surface);box-shadow:var(--shadow-sm);scroll-margin-top:120px}
+.certificate-seal{display:block;width:186px;max-width:100%;line-height:0;background:#fff;justify-self:center;box-shadow:0 8px 24px #10151d12}
+.certificate-seal img{display:block;width:186px;max-width:100%;height:auto;filter:none;object-fit:contain}
+.certificate-seal:focus-visible{outline:2px solid var(--brand);outline-offset:5px}
+.certificate-copy{min-width:0;max-width:660px;overflow-wrap:anywhere}.certificate-copy .eyebrow{margin-bottom:10px}.certificate-copy h3{font-size:clamp(24px,3vw,32px);margin:0 0 12px}.certificate-copy p{font-size:16px;line-height:1.75;margin:0 0 22px}.certificate-copy .btn{white-space:normal;text-align:center;min-height:48px;max-width:100%}.certificate-copy .btn svg{flex:none}
+@media(max-width:600px){.certificate-card{grid-template-columns:minmax(0,1fr);gap:24px;text-align:center}.certificate-copy .btn{width:100%}}
 /* Social profiles: direct links with accessible touch targets. */
 .social-caption{margin:0;font-size:13px;font-weight:650;color:var(--heading);line-height:1.5}
 .footer-social{margin-top:22px}.contact-social{margin-top:24px}

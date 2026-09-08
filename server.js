@@ -154,7 +154,7 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
   'Content-Security-Policy':
-    "default-src 'self'; img-src 'self' data: blob:; media-src 'self'; style-src 'self'; frame-src https://www.google.com; " +
+    "default-src 'self'; img-src 'self' data: blob: https://www.desag.de; media-src 'self'; style-src 'self'; frame-src https://www.google.com; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
     "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
