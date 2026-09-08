@@ -1,18 +1,21 @@
 {
   "name": "unfallx-webseite",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Webseite von UNFALLX - Kfz-Gutachten und Unfallservice in Berlin und Brandenburg (Unext GmbH)",
   "main": "server.js",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js"
+    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js && node --check portal/app.js && node --check portal/domain.js && node --check portal/store.js && node --check assets/portal.js",
+    "test": "node --test tests/portal.test.js"
   },
   "dependencies": {
-    "nodemailer": "9.1.1"
+    "mysql2": "3.24.3",
+    "nodemailer": "9.1.1",
+    "sharp": "0.35.4"
   },
   "keywords": [
     "unfallx",

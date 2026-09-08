@@ -106,4 +106,15 @@
     checklist.querySelector('[data-check-reset]').addEventListener('click', function () { boxes.forEach(function (box) { box.checked = false; }); updateChecklist(); });
     updateChecklist();
   }
+  var topButton = document.querySelector('[data-back-top]');
+  if (topButton) {
+    function showTopButton() { topButton.hidden = window.scrollY < 450; }
+    window.addEventListener('scroll', showTopButton, {passive:true});
+    topButton.addEventListener('click', function () {
+      var logo = document.querySelector('.site-header .logo');
+      if (logo) logo.focus({preventScroll:true});
+      window.scrollTo({top:0, behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'off' ? 'instant' : 'smooth'});
+    });
+    showTopButton();
+  }
 })();

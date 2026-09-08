@@ -8,6 +8,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const anfrage = require('./anfrage');
+const portal = require('./portal/app').createPortal();
+portal.ready().catch(() => {});
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -32,7 +34,7 @@ const MIME = {
 };
 
 /* Dateien, die nie ausgeliefert werden dürfen */
-const BLOCKED = /(^|[\\/])(\.git|\.env[^\\/]*|node_modules|partials|data|anfrage\.js|server\.js|package(-lock)?\.json)([\\/]|$)/i;
+const BLOCKED = /(^|[\\/])(\.git|\.env[^\\/]*|node_modules|partials|data|portal|tests|pnpm-lock\.yaml|anfrage\.js|server\.js|package(-lock)?\.json)([\\/]|$)/i;
 
 /**
  * Gemeinsame Bausteine aus partials/ werden in die Seiten eingesetzt.
@@ -103,7 +105,7 @@ function langLinks(file) {
   if (slug === 'index' || slug === '404') slug = '';
   return {
     de: slug ? '/' + slug : '/',
-    ru: slug ? '/ru/' + slug : '/ru'
+    ru: slug && fs.existsSync(path.join(ROOT, 'ru', slug + '.html')) ? '/ru/' + slug : '/ru'
   };
 }
 
@@ -189,6 +191,7 @@ function sendError(res, status, isHead, urlPath) {
 
 const server = http.createServer((req, res) => {
   const isHead = req.method === 'HEAD';
+  if (req.url.split('?')[0].startsWith('/api/portal/')) return portal.handle(req, res, SECURITY_HEADERS);
 
   /* Anfrageformular: POST /api/anfrage (JSON) */
   if (req.method === 'POST') {
@@ -223,7 +226,7 @@ const server = http.createServer((req, res) => {
     return send(res, 200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store'
-    }, JSON.stringify({ status: 'ok', contact: anfrage.contactStatus() }), isHead);
+    }, JSON.stringify({ status: 'ok', contact: anfrage.contactStatus(), portal: portal.status() }), isHead);
   }
 
   /* Nachgestellten Slash entfernen: /impressum/ -> /impressum */
@@ -232,7 +235,7 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: target }, '', isHead);
   }
 
-  if (BLOCKED.test(urlPath)) return sendError(res, 404, isHead, urlPath);
+  if (urlPath !== '/portal' && BLOCKED.test(urlPath)) return sendError(res, 404, isHead, urlPath);
 
   /* Startseiten: /index.html -> /, /ru/index(.html) -> /ru */
   if (urlPath === '/index.html' || urlPath === '/index') {
@@ -247,7 +250,7 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
   }
 
-  const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
+  const relative = urlPath === '/' ? 'index.html' : urlPath === '/portal' ? 'partner-app.html' : urlPath === '/gutachter-portal' ? 'partner-app.html' : urlPath.replace(/^\/+/, '');
   const resolved = path.resolve(ROOT, relative);
 
   /* Verzeichnis-Traversal verhindern */
@@ -292,6 +295,9 @@ const server = http.createServer((req, res) => {
   tryNext(0);
 });
 
+server.requestTimeout = 30000;
+server.headersTimeout = 15000;
+server.maxRequestsPerSocket = 100;
 server.listen(PORT, HOST, () => {
   console.log(`UNFALLX Webseite laeuft auf http://${HOST}:${PORT}`);
 });
