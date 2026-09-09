@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const anfrage = require('./anfrage');
 const hosts = require('./portal/hosts');
+const help = require('./assets/help-content');
 const portal = require('./portal/app').createPortal();
 portal.ready().catch(() => {});
 
@@ -95,11 +96,13 @@ function versionAssets(html) {
 
 function renderPage(file, context={}) {
   let html=fs.readFileSync(file,'utf8');
+  if(path.basename(file)==='app-hilfe.html'){const role=context.workspace==='admin'?'admin':context.workspace==='mobile'?'mobile':'partner';html=html.replace('{{helpContent}}',help.render(role)).replace('{{helpTitle}}','Hilfe · '+hosts.workspaces[role].title);}
   if(context.isReport)html=html.replace('<!--#include:header-->','<!--#include:gutachten-header-->');
   if(context.isApp)html=html.replace(/<!--#include:(?:app-)?header-->/g,'<!--#include:workspace-header-->').replace(/<!--#include:(?:app-)?footer-->/g,'<!--#include:workspace-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
-  if(context.isApp&&!['mobile-app.html','workspace-login.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
+  if(context.isApp&&!['mobile-app.html','workspace-login.html','app-hilfe.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
   if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
   html=applyPartials(html);
+  if(!context.isApp&&html.includes('ux-header'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/navigation.css"><script src="/assets/navigation.js" defer></script></head>');
   if(context.isApp){const w=context.workspace||'partner',title=hosts.workspaces[w].title;
     const labels={partner:['Willkommen zurück.','Melde dich an, um Fälle, Fotos und Unterlagen an UNFALLX zu übermitteln.'],admin:['Das interne Dashboard.','Geschützter Zugang für die Administration und das UNFALLX-Team.'],mobile:['Aufnehmen. Hochladen. Fertig.','Dein Partnerkonto für die Schadenaufnahme direkt am Fahrzeug.']};
     html=html.replace('<body','<body data-workspace="'+w+'"').replaceAll('{{workspaceTitle}}',title).replaceAll('{{workspaceHeading}}',labels[w][0]).replaceAll('{{workspaceCopy}}',labels[w][1]).replaceAll('{{workspaceEnrollment}}',w==='admin'?'<p class="workspace-enrollment">Interne Zugänge werden durch UNFALLX eingeladen.</p>':'<p class="workspace-enrollment">Noch kein Partnerkonto?<a href="/registrieren">Als Partner registrieren →</a></p>');

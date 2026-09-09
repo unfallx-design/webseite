@@ -34,6 +34,8 @@ function links(html,isApp,production,isReport=false,workspace='partner'){
  let out=html.replace(/href="((?:https:\/\/(?:(?:app|admin|mobile|gutachten)\.)?unfallx\.com)?\/(?!\/)[^"]*)"/g,(m,value)=>{
   const u=new URL(value,PUBLIC_ORIGIN),p=clean(u.pathname),suffix=u.search+u.hash;
   if(assetPath(u.pathname))return m;
+  // Explicit cross-domain destinations must survive page-context rewriting.
+  if(/^https:\/\//.test(value)&&(!p||sharedPages.has(p)))return m;
   if(p==='/gutachter-portal'||p==='/login'&&u.searchParams.get('bereich')==='team')return 'href="'+ADMIN_ORIGIN+(p==='/login'?'/login':u.pathname)+u.hash+'"';
   if(p==='/mobile')return 'href="'+MOBILE_ORIGIN+'/portal'+suffix+'"';
   if(appPath(p)){const explicit=workspaceForHost(u.host);return 'href="'+(explicit?workspaces[explicit].origin:isApp?origin:APP_ORIGIN)+(p==='/app'?'/':u.pathname)+suffix+'"';}
