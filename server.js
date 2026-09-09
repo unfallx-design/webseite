@@ -235,7 +235,7 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
   }
 
-  const relative = urlPath === '/' ? 'index.html' : urlPath === '/portal' ? 'partner-app.html' : urlPath === '/gutachter-portal' ? 'partner-app.html' : urlPath.replace(/^\/+/, '');
+  const relative = urlPath === '/' ? 'index.html' : urlPath === '/portal' ? 'partner-app.html' : ['/gutachter-portal','/kundenportal'].includes(urlPath) ? 'partner-app.html' : urlPath.replace(/^\/+/, '');
   const resolved = path.resolve(ROOT, relative);
 
   /* Verzeichnis-Traversal verhindern */
