@@ -192,3 +192,13 @@ html{scroll-padding-top:118px}
 
 /* App-first access on every public page. */
 .mobile-business{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:5px 0 18px}.mobile-business a{padding:14px 10px;border:1px solid var(--line);border-radius:12px;font-weight:750;text-align:center}.mobile-business a:first-child{background:#e3241c;color:#fff}.mobile-business a:last-child{background:var(--surface);color:var(--text)}
+
+/* The certificate and consent placeholder occupy the same slot. */
+.certificate-card{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)}
+.certificate-seal,.certificate-card>.external-placeholder{grid-column:1;grid-row:1;min-width:0;max-width:100%}
+.certificate-seal:has(img[hidden]){display:none}
+.certificate-card>.certificate-copy{grid-column:2;grid-row:1;min-width:0}
+.certificate-card>.external-placeholder[hidden]{display:none}
+.certificate-card>.external-placeholder .btn{white-space:normal;max-width:100%;width:100%;padding-inline:12px;margin-block:12px}
+.certificate-card>.external-placeholder a{overflow-wrap:anywhere}
+@media(max-width:700px){.certificate-card{grid-template-columns:minmax(0,1fr)}.certificate-card>.certificate-copy{grid-column:1;grid-row:2}.certificate-card>.external-placeholder{max-width:100%}}
