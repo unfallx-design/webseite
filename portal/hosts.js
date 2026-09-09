@@ -11,6 +11,7 @@ const assetPath=p=>/^\/(?:api\/|assets\/|health$|(?:app|site)\.webmanifest$|appl
 function hostPolicy(host,url){
  const u=new URL(url,PUBLIC_ORIGIN),name=String(host||'').toLowerCase().split(':')[0];
  const isApp=name==='app.unfallx.com',isReport=name==='gutachten.unfallx.com',isPublic=['unfallx.com','www.unfallx.com'].includes(name);
+ const retired=clean(u.pathname);if(['/kundenportal','/schaden-melden'].includes(retired))return {redirect:(isApp||isPublic||isReport?APP_ORIGIN:'')+(retired==='/kundenportal'?'/login':'/mitglied-werden')+u.search};
  if(!isApp&&!isPublic&&!isReport)return {isApp:false,isReport:false,production:false};
  const info={isApp,isReport,production:true},p=clean(u.pathname);
  if(p==='/gutachten-start')return {redirect:REPORT_ORIGIN+'/'+u.search};

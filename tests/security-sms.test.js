@@ -16,7 +16,7 @@ test('SMS proof, optional 2FA, reset/magic-link bypass prevention, recovery and 
  async function call(p,data,u={},extra={}){const response=await fetch(base+'/api/portal'+p,{method:data===undefined?'GET':'POST',headers:{Origin:env.PORTAL_ORIGIN,'Content-Type':'application/json',Cookie:u.cookie||'','X-CSRF-Token':u.csrf||'','X-Forwarded-For':'local-'+(++ip),...extra},body:data===undefined?undefined:JSON.stringify(data)});return {status:response.status,json:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};}
  const password='Dieser lokale Test Merksatz bleibt privat!';const encoded=await passwords.encode(password);
  async function actor(name,role,companyId=null){const u={id:D.hash(name+'@example.com'),email:name+'@example.com',name,role,companyId,active:true,verifiedAt:new Date().toISOString(),passwordHash:encoded,phone:''},token=D.random(),csrf=D.random();await store.transaction(async s=>{await s.put('user',u,companyId||'internal');await s.put('session',{id:D.hash(token),userId:u.id,csrf,createdAt:new Date().toISOString(),expires:Date.now()+3600000},u.id);if(companyId)await s.put('company',{id:companyId,name:companyId,status:'approved'});});return {...u,cookie:'ux_session='+token,csrf};}
- const a=await actor('admin','admin'),p=await actor('partner','partner','test-company'),other=await actor('other','customer'),staff=await actor('staff','appraiser');
+ const a=await actor('admin','admin'),p=await actor('partner','partner','test-company'),other=await actor('other','appraiser'),staff=await actor('staff','appraiser');
  const resetLimits=()=>store.transaction(async s=>{for(const kind of ['sms_guard','limit'])for(const x of await s.list(kind))await s.remove(kind,x.id);});
  let full=a,recoveryCodes=[];
  try{

@@ -75,11 +75,11 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
  await t.test('Percentage calculator persists verified amounts and referral attribution avoids unrelated private accounts',async()=>{
   const r=await act(a,{action:'finance',invoiceNumber:'R-TEST',agreement:'50 % der Nettovergütung',invoiceNet:'99999',calculation:{amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'50',partnerVatPercent:'19'}});assert.equal(r.status,200);assert.equal(r.json.case.finance.invoiceGross,119000);assert.equal(r.json.case.finance.partnerNet,50000);assert.equal(r.json.case.finance.partnerGross,59500);
   assert.equal((await act(p,{action:'finance',calculation:{}})).status,403);assert.equal((await act(a,{action:'finance',calculation:{amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'200'}})).status,400);
-  assert.equal((await call('/referrals/join',{accepted:true},c)).status,200);const code=(await call('/referrals',undefined,c)).json.code;
+  assert.equal((await call('/referrals/join',{accepted:true},other)).status,200);const code=(await call('/referrals',undefined,other)).json.code;
   const direct=await call('/cases',{...input,customerEmail:'direct@example.com'},a);assert.equal(direct.status,200);const directId=direct.json.case.id;
-  await store.transaction(async s=>{await s.put('referral_attribution',{id:'unrelated',referrerId:c.id,companyId:null});const row=await s.get('case',directId);row.status='report_sent';await s.put('case',row);});
-  const v=(await call('/cases/'+directId,undefined,a)).json.case.version;await call('/cases/'+directId,{action:'comment',note:'Test',version:v},a);assert.equal((await call('/referrals',undefined,c)).json.rewards.length,0);
-  const v2=(await call('/cases/'+directId,undefined,a)).json.case.version;assert.equal((await call('/cases/'+directId,{action:'referral',referralCode:code,version:v2},a)).status,200);assert.equal((await call('/referrals',undefined,c)).json.rewards.length,1);
+  await store.transaction(async s=>{await s.put('referral_attribution',{id:'unrelated',referrerId:other.id,companyId:null});const row=await s.get('case',directId);row.status='report_sent';await s.put('case',row);});
+  const v=(await call('/cases/'+directId,undefined,a)).json.case.version;await call('/cases/'+directId,{action:'comment',note:'Test',version:v},a);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,0);
+  const v2=(await call('/cases/'+directId,undefined,a)).json.case.version;assert.equal((await call('/cases/'+directId,{action:'referral',referralCode:code,version:v2},a)).status,200);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,1);
  });
  await t.test('Course prices, publication, per-course capacity and immutable booking snapshots',async()=>{
   const course={action:'course',title:'Fotodokumentation',description:'Praxis am Fahrzeug',price:'2000',capacity:2,duration:'1 Woche',location:'Berlin',mode:'berlin',weekly:false,start:'',status:'draft'};

@@ -1,14 +1,13 @@
 /* Public, fictitious data only. This read-only demo never authenticates or calls an API. */
 (() => {
   'use strict';
-  const customer=new URLSearchParams(location.search).get('zugang')==='kunde';
-  const user={id:'demo-partner',name:'Alex Beispiel',role:customer?'customer':'partner',email:'demo@example.com',preferences:{startPage:'start',theme:'light',compact:false,reducedMotion:false}};
+  const user={id:'demo-partner',name:'Alex Beispiel',role:'partner',email:'demo@example.com',preferences:{startPage:'start',theme:'light',compact:false,reducedMotion:false}};
   const company={id:'demo-company',name:'Beispielwerkstatt Leipzig GmbH',contact:'Alex Beispiel',email:'demo@example.com',type:'Werkstatt',street:'Beispielstraße 1',postcode:'04109',city:'Leipzig',phone:'Nicht erreichbar – Demo',status:'approved'};
   const cases=[
     {id:'11111111-1111-4111-8111-111111111111',number:'DEMO-001',vehicle:'BMW 3er',location:'Leipzig',status:'review',description:'Fiktives Beispiel: Seitlicher Anstoß mit Beschädigung der vorderen Tür. Fahrzeug und Auftrag wurden aufgenommen. UNFALLX prüft die eingereichten Unterlagen.'},
     {id:'22222222-2222-4222-8222-222222222222',number:'DEMO-002',vehicle:'VW Golf',location:'Potsdam',status:'needs_info',description:'Fiktives Beispiel: Beschädigter hinterer Stoßfänger nach einem Parkunfall. Für die weitere Beurteilung wird eine zusätzliche Übersicht aus größerem Abstand benötigt.'},
     {id:'33333333-3333-4333-8333-333333333333',number:'DEMO-003',vehicle:'Renault Talisman',location:'Berlin',status:'in_progress',description:'Fiktives Beispiel: Sichtbarer Frontschaden. Die Unterlagen wurden geprüft und der Fall angenommen. Das Gutachten wird durch UNFALLX bearbeitet.'}
-  ].map((c,i)=>({id:c.id,number:c.number,companyId:customer?null:company.id,ownerUserId:customer?user.id:null,source:customer?'customer':'partner',companyName:customer?'Direktkunde · Alex Beispiel':company.name,status:c.status,version:1,createdAt:'2026-09-08T09:00:00.000Z',updatedAt:`2026-09-09T0${9-i}:00:00.000Z`,finance:null,intake:{vehicle:c.vehicle,plate:'DEMO',vin:'',accidentDate:'2026-09-07',location:c.location,owner:'Fiktiver Auftraggeber',ownerContact:'kunde@example.com',description:c.description,insurer:'Beispielversicherung',claimNumber:'BEISPIEL-'+(i+1),lawyerEmail:'',authority:true,shareWithLawyer:false}}));
+  ].map((c,i)=>({id:c.id,number:c.number,companyId:company.id,ownerUserId:null,source:'partner',companyName:company.name,status:c.status,version:1,createdAt:'2026-09-08T09:00:00.000Z',updatedAt:`2026-09-09T0${9-i}:00:00.000Z`,finance:null,intake:{vehicle:c.vehicle,plate:'DEMO',vin:'',accidentDate:'2026-09-07',location:c.location,owner:'Fiktiver Auftraggeber',ownerContact:'kunde@example.com',description:c.description,insurer:'Beispielversicherung',claimNumber:'BEISPIEL-'+(i+1),lawyerEmail:'',authority:true,shareWithLawyer:false}}));
   function read(path){
     if(path==='/me')return structuredClone({user,company,csrf:'demo'});
     if(path==='/cases')return structuredClone({cases});

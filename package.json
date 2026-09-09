@@ -1,6 +1,6 @@
 {
   "name": "unfallx-webseite",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Webseite von UNFALLX - Kfz-Gutachten und Unfallservice in Berlin und Brandenburg (Unext GmbH)",
   "main": "server.js",
   "private": true,
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js && node --check portal/app.js && node --check portal/domain.js && node --check portal/store.js && node --check assets/portal.js && node --check portal/email-templates.js && node --check portal/mail.js && node --check assets/portal-demo.js && node --check assets/app-showcase.js && node --check portal/academy.js && node --check assets/academy.js && node --check portal/passwords.js && node --check portal/oauth.js && node --check portal/notifications.js && node --check portal/referrals.js && node --check portal/statistics.js && node --check portal/brand-mail.js && node --check assets/auth.js && node --check assets/consent.js && node --check portal/documents.js && node --check portal/lawyers.js && node --check portal/tracking.js && node --check portal/hosts.js && node --check assets/finance-math.js && node --check assets/public-connect.js && node --check portal/security.js && node --check assets/uploads.js && node --check portal/upload-format.js && node --check assets/contact.js",
+    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js && node --check portal/app.js && node --check portal/domain.js && node --check portal/store.js && node --check assets/portal.js && node --check portal/email-templates.js && node --check portal/mail.js && node --check assets/portal-demo.js && node --check assets/app-showcase.js && node --check portal/academy.js && node --check assets/academy.js && node --check portal/passwords.js && node --check portal/oauth.js && node --check portal/notifications.js && node --check portal/referrals.js && node --check portal/statistics.js && node --check portal/brand-mail.js && node --check assets/auth.js && node --check assets/consent.js && node --check portal/documents.js && node --check portal/lawyers.js && node --check portal/tracking.js && node --check portal/hosts.js && node --check assets/finance-math.js && node --check assets/public-connect.js && node --check portal/security.js && node --check assets/uploads.js && node --check portal/upload-format.js && node --check assets/contact.js && node --check portal/access.js",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
