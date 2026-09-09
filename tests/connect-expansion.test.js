@@ -2,7 +2,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),sharp=require('sharp');
 const {createPortal}=require('../portal/app'),{createStore}=require('../portal/store'),D=require('../portal/domain'),math=require('../assets/finance-math'),hosts=require('../portal/hosts');
 test('Subdomain routes preserve the public website, queries and app entrypoints',()=>{
- assert.deepEqual(hosts.hostPolicy('unfallx.com','/'),{isApp:false,isReport:false,production:true});
+ assert.deepEqual(hosts.hostPolicy('unfallx.com','/'),{isApp:false,isReport:false,production:true,workspace:null,origin:'https://unfallx.com'});
  assert.equal(hosts.hostPolicy('unfallx.com','/login?next=%2Fportal').redirect,'https://app.unfallx.com/login?next=%2Fportal');
  assert.equal(hosts.hostPolicy('app.unfallx.com','/').isApp,true);
  assert.equal(hosts.hostPolicy('app.unfallx.com','/bildung').redirect,'https://unfallx.com/bildung');

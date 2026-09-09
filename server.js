@@ -96,10 +96,16 @@ function versionAssets(html) {
 function renderPage(file, context={}) {
   let html=fs.readFileSync(file,'utf8');
   if(context.isReport)html=html.replace('<!--#include:header-->','<!--#include:gutachten-header-->');
-  if(context.isApp)html=html.replace('<!--#include:header-->','<!--#include:app-header-->').replace('<!--#include:footer-->','<!--#include:app-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
-  if(context.isApp&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
+  if(context.isApp)html=html.replace(/<!--#include:(?:app-)?header-->/g,'<!--#include:workspace-header-->').replace(/<!--#include:(?:app-)?footer-->/g,'<!--#include:workspace-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
+  if(context.isApp&&!['mobile-app.html','workspace-login.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
   if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
-  return versionAssets(applyPartials(html));
+  html=applyPartials(html);
+  if(context.isApp){const w=context.workspace||'partner',title=hosts.workspaces[w].title;
+    const labels={partner:['Willkommen zurück.','Melde dich an, um Fälle, Fotos und Unterlagen an UNFALLX zu übermitteln.'],admin:['Das interne Dashboard.','Geschützter Zugang für die Administration und das UNFALLX-Team.'],mobile:['Aufnehmen. Hochladen. Fertig.','Dein Partnerkonto für die Schadenaufnahme direkt am Fahrzeug.']};
+    html=html.replace('<body','<body data-workspace="'+w+'"').replaceAll('{{workspaceTitle}}',title).replaceAll('{{workspaceHeading}}',labels[w][0]).replaceAll('{{workspaceCopy}}',labels[w][1]).replaceAll('{{workspaceEnrollment}}',w==='admin'?'<p class="workspace-enrollment">Interne Zugänge werden durch UNFALLX eingeladen.</p>':'<p class="workspace-enrollment">Noch kein Partnerkonto?<a href="/registrieren">Als Partner registrieren →</a></p>');
+    if(!html.includes('/assets/workspace.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace.css"></head>');
+  }
+  return versionAssets(html);
 }
 
 /**
@@ -175,6 +181,7 @@ function sendError(res, status, isHead, urlPath) {
 const server = http.createServer((req, res) => {
   const isHead = req.method === 'HEAD';
   let hostInfo;try{hostInfo=hosts.hostPolicy(req.headers.host,req.url);}catch{return sendError(res,400,isHead);}
+  if(process.env.NODE_ENV==='test'&&process.env.PORTAL_PREVIEW_WORKSPACE&&!hostInfo.production){hostInfo={...hostInfo,isApp:true,workspace:process.env.PORTAL_PREVIEW_WORKSPACE};}
   if(hostInfo.redirect)return send(res,308,{Location:hostInfo.redirect,'Cache-Control':'no-store'},'',isHead);
   const apiPath=req.url.split('?')[0];
   if(hostInfo.production&&!hostInfo.isApp&&apiPath.startsWith('/api/portal/')&&!apiPath.startsWith('/api/portal/academy/'))return send(res,409,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Die App ist umgezogen. Bitte app.unfallx.com/login öffnen und dort anmelden.',redirect:hosts.APP_ORIGIN+'/login'}),isHead);
@@ -224,6 +231,11 @@ const server = http.createServer((req, res) => {
   }
   if(hostInfo.isReport&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain'},'User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://gutachten.unfallx.com/sitemap.xml\n',isHead);
   if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
+  if(hostInfo.isApp&&['/app.webmanifest','/site.webmanifest'].includes(urlPath)){
+    const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'app.webmanifest'),'utf8')),w=hostInfo.workspace||'partner';
+    Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='mobile'?'UX Aufnahme':w==='admin'?'UX Team':'UX Partner',start_url:'/',scope:'/',description:w==='mobile'?'Mobile Schadenaufnahme mit deinem UNFALLX Partnerkonto.':'Dein geschützter UNFALLX Arbeitsbereich.'});
+    return send(res,200,{'Content-Type':MIME['.webmanifest'],'Cache-Control':'no-cache'},JSON.stringify(manifest),isHead);
+  }
   /* Healthcheck für Hostinger */
   if (urlPath === '/health') {
     return send(res, 200, {
@@ -249,7 +261,11 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
   }
 
-  const relative = hostInfo.isApp&&urlPath==='/datenschutz'?'portal-datenschutz.html':urlPath === '/' ? (hostInfo.isApp?'app.html':hostInfo.isReport?'gutachten-start.html':'index.html') : urlPath === '/portal' ? 'partner-app.html' : urlPath === '/gutachter-portal' ? 'partner-app.html' : urlPath.replace(/^\/+/, '');
+  const relative = hostInfo.isApp&&urlPath==='/datenschutz'?'portal-datenschutz.html':
+    hostInfo.isApp&&['/','/login'].includes(urlPath)?'workspace-login.html':
+    hostInfo.workspace==='mobile'&&['/portal','/partner-app','/mobile'].includes(urlPath)?'mobile-app.html':
+    urlPath==='/'?(hostInfo.isReport?'gutachten-start.html':'index.html'):
+    ['/portal','/gutachter-portal'].includes(urlPath)?'partner-app.html':urlPath.replace(/^\/+/,'');
   const resolved = path.resolve(ROOT, relative);
 
   /* Verzeichnis-Traversal verhindern */
@@ -282,7 +298,7 @@ const server = http.createServer((req, res) => {
               if(path.basename(file)==='bildung.html'){const cards=courses.map(c=>'<article class="portal-card"><span class="eyebrow">'+(c.mode==='digital'?'DIGITAL':'PRÄSENZ')+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.description)+'</p><p><strong>'+(!c.price&&c.mode==='digital'?'Preis wird bekannt gegeben':euro(c.price)+' pro Person')+'</strong><br>'+esc(c.duration)+' · '+esc(c.location)+'<br>'+(c.start?'Start: '+esc(c.weeks[0]?.week||c.start):'Start wird demnächst bekannt gegeben')+'</p><p>'+c.capacity+' Plätze pro Termin</p><a class="btn btn-outline" href="#kursanmeldung">Kurs auswählen →</a></article>').join('')||'<p>Neue Kurse werden demnächst veröffentlicht.</p>';html=html.replace('<div class="partner-grid" id="course-catalog"><p>Kursangebot wird geladen …</p></div>','<div class="partner-grid" id="course-catalog">'+cards+'</div>');}
             }catch{html=html.replace(/(<span data-course-price>)[^<]*(<\/span>)/g,'$1Preis auf Anfrage$2');}
           }
-          page = Buffer.from(hosts.links(html,hostInfo.isApp,hostInfo.production,hostInfo.isReport), 'utf8'); }
+          page = Buffer.from(hosts.links(html,hostInfo.isApp,hostInfo.production,hostInfo.isReport,hostInfo.workspace), 'utf8'); }
         catch (e) { return sendError(res, 500, isHead); }
         return send(res, 200, {
           'Content-Type': MIME[ext],

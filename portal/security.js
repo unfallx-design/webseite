@@ -16,14 +16,14 @@ function createSms(env,transport=fetch){
  const ready=env.SMS_PROVIDER==='seven'&&!!env.SEVEN_API_KEY;
  return {ready,async send(to,code){
   D.assert(ready,'Die SMS-Bestätigung wird noch eingerichtet.',503);
-  const r=await transport('https://gateway.seven.io/api/sms',{method:'POST',headers:{'X-Api-Key':env.SEVEN_API_KEY,'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:new URLSearchParams({to:to.slice(1),from:'UNFALLX',text:`UNFALLX Sicherheitscode: ${code}. Gueltig fuer 5 Minuten. Niemals weitergeben. Nur auf app.unfallx.com eingeben.`,ttl:'5',label:'account-security'}),signal:AbortSignal.timeout(10000),redirect:'error'});
+  const r=await transport('https://gateway.seven.io/api/sms',{method:'POST',headers:{'X-Api-Key':env.SEVEN_API_KEY,'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:new URLSearchParams({to:to.slice(1),from:'UNFALLX',text:`UNFALLX Sicherheitscode: ${code}. Gueltig fuer 5 Minuten. Niemals weitergeben. Nur im UNFALLX-Portal eingeben.`,ttl:'5',label:'account-security'}),signal:AbortSignal.timeout(10000),redirect:'error'});
   if(!r.ok)throw new Error('SMS_UNCONFIRMED');
   const result=await r.json();
   if(String(result.success)!=='100'||result.debug===true||result.debug==='true'||!result.messages?.length||!result.messages.every(m=>m.success===true))throw new Error('SMS_UNCONFIRMED');
   // Provider responses may echo the code, phone and account balance. Never log them.
  }};
 }
-function createSecurity({env,tx,rate,mail,origin,sms=createSms(env)}){
+function createSecurity({env,tx,rate,mail,origin,recipientOrigin=()=>origin,sms=createSms(env)}){
  const pepper=env.PORTAL_OTP_SECRET||'';
  const ready=sms.ready&&Buffer.byteLength(pepper)>=32;
  const digest=(challenge,code)=>crypto.createHmac('sha256',pepper).update(challenge+'\0'+code).digest('hex');
@@ -104,7 +104,7 @@ function createSecurity({env,tx,rate,mail,origin,sms=createSms(env)}){
    await s.put('security_event',{id:D.id(),userId:user.id,action:data.action,at:new Date().toISOString(),expires:Date.now()+90*24*60*minute},user.id);
    return {message:r.mfaEnabled?'Zwei-Faktor-Anmeldung ist aktiv. Bewahre deine Wiederherstellungscodes sicher außerhalb dieser App auf.':'Zwei-Faktor-Anmeldung wurde deaktiviert. Andere Geräte wurden abgemeldet.',recoveryCodes:codes.map(c=>c.match(/.{8}/g).join('-')),security:await view(s,fresh)};
   });
-  const e=notice({title:'Deine Anmeldesicherheit wurde geändert',copy:outcome.message+' Wenn du diese Änderung nicht vorgenommen hast, kontaktiere umgehend info@unfallx.com.',url:origin+'/login',cta:'Zugang prüfen',origin});
+  const e=notice({title:'Deine Anmeldesicherheit wurde geändert',copy:outcome.message+' Wenn du diese Änderung nicht vorgenommen hast, kontaktiere umgehend info@unfallx.com.',url:recipientOrigin(user)+'/login',cta:'Zugang prüfen',origin});
   try{await mail.send(user.email,e.subject,e.text,[],e.html);}catch{console.error('Security notice: delivery unavailable');}
   return outcome;
  }

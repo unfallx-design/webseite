@@ -33,9 +33,6 @@ async function showFactor(){
  bind('#factor-recovery',async d=>{await api('/security/login/verify',d);await enterPortal();});
 }
 async function boot(){
- const area=new URLSearchParams(location.search).get('bereich');
- if(['partner','team'].includes(area)&&$('[data-login-title]')){const team=area==='team';$('[data-login-title]').innerHTML=team?'Das UNFALLX Team. <br><span>Dein Dashboard.</span>':'Dein Partner-Portal. <br><span>Fälle einfach einreichen.</span>';$('[data-login-copy]').textContent=team?'Interner Zugang für die Verwaltung und Bearbeitung eingereichter Fälle. Melde dich mit dem von UNFALLX eingeladenen Konto an.':'Übermittle Falldaten, Originalfotos, unterschriebene Aufträge und PDFs. Verfolge die Bearbeitung und beantworte Rückfragen in deinem Partner-Portal.';document.querySelectorAll('[data-login-area]').forEach(a=>{if(a.dataset.loginArea===area)a.setAttribute('aria-current','page');});$('[data-partner-enrollment]').hidden=team;}
-
  if(new URLSearchParams(location.search).get('factor')==='1'&&$('#auth-root')){await showFactor();return;}
  const login=$('#login-form');
  if(login){
@@ -49,7 +46,7 @@ async function boot(){
    $('#auth-root').innerHTML='<h2>E-Mail bestätigen.</h2><p>'+(info.passwordRequired?'Gib dein bei der Registrierung gewähltes Passwort ein. Danach ist dein Konto bestätigt.':'Bestätige die Anmeldung, um deinen geschützten Arbeitsplatz zu öffnen.')+'</p><form id="exchange-form">'+(info.passwordRequired?'<label>Dein Passwort<input type="password" name="password" autocomplete="current-password" required maxlength="128"></label>':'')+'<button class="btn btn-block" type="submit">Sicher anmelden</button></form><p class="partner-muted">Dieser persönliche Link ist einmalig nutzbar.</p>';
    bind('#exchange-form',async d=>{const r=await api('/exchange',{...d,token});if(r.mfaRequired)return showFactor();await enterPortal();});
   }else{
-   try{const m=await api('/me');const box=document.createElement('div');box.className='portal-alert';box.innerHTML='<strong>Du bist angemeldet.</strong><p>'+esc(m.user.name)+' · '+esc(m.user.role==='partner'?'Partner-Portal':'UNFALLX Dashboard')+'</p><button type="button" class="btn" id="continue-portal">Meinen Arbeitsplatz öffnen →</button>';login.before(box);box.querySelector('button').addEventListener('click',()=>enterPortal().catch(e=>message(e.message,true)));}catch{}
+   try{const m=await api('/me');if(document.body.classList.contains('workspace-login')){await enterPortal();return;}const box=document.createElement('div');box.className='portal-alert';box.innerHTML='<strong>Du bist angemeldet.</strong><p>'+esc(m.user.name)+' · '+esc(m.user.role==='partner'?'Partner-Portal':'UNFALLX Dashboard')+'</p><button type="button" class="btn" id="continue-portal">Meinen Arbeitsplatz öffnen →</button>';login.before(box);box.querySelector('button').addEventListener('click',()=>enterPortal().catch(e=>message(e.message,true)));}catch{}
    const state=new URLSearchParams(location.search).get('oauth');
    if(state==='link_required')message('Zu dieser E-Mail besteht bereits ein Konto. Melde dich mit Passwort oder E-Mail-Link an und verbinde Google oder Apple unter Einstellungen.',true);
    if(state==='failed')message('Der Anbieter-Login konnte nicht abgeschlossen werden. Bitte neu starten oder mit deinem Passwort anmelden.',true);
