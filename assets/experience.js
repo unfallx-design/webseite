@@ -1,7 +1,6 @@
 (function () {
   'use strict';
   var root = document.documentElement;
-  var ru = root.lang.indexOf('ru') === 0;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   var savedMotion;
   try { savedMotion = localStorage.getItem('unfallx-motion'); } catch (e) {}
@@ -13,7 +12,7 @@
     root.classList.add('motion-ready');
     motionButtons.forEach(function (button) {
       button.setAttribute('aria-pressed', String(motionOff));
-      button.textContent = motionOff ? (ru ? 'Включить анимацию' : 'Animationen aktivieren') : (ru ? 'Остановить анимацию' : 'Animationen pausieren');
+      button.textContent = motionOff ? 'Animationen aktivieren' : 'Animationen pausieren';
     });
   }
   applyMotion();
@@ -50,8 +49,8 @@
       title.textContent = address;
       route.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address);
       if (frame) {
-        frame.title = (ru ? 'Карта: ' : 'Standortkarte: ') + address;
-        frame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&output=embed&hl=' + (ru ? 'ru' : 'de');
+        frame.title = 'Standortkarte: ' + address;
+        frame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&output=embed&hl=' + 'de';
       }
     }
     options.forEach(function (button) { button.addEventListener('click', function () { selected = button; update(); }); });
@@ -69,7 +68,7 @@
     var input = finder.querySelector('[data-area-query]'), cards = finder.querySelectorAll('[data-area]');
     var filters = finder.querySelectorAll('[data-area-filter]'), result = finder.querySelector('[data-area-status]');
     var empty = finder.querySelector('[data-area-empty]'), group = 'all';
-    function normalize(value) { return value.toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9а-яё]+/g, ' ').trim(); }
+    function normalize(value) { return value.toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
     function filter() {
       var query = normalize(input.value), count = 0;
       cards.forEach(function (card) {
@@ -78,9 +77,9 @@
         if (match) { count++; if (query) card.open = true; }
         if (!query) card.open = false;
       });
-      result.textContent = ru ? 'Найдено регионов: ' + count : count + (count === 1 ? ' Gebiet gefunden' : ' Gebiete gefunden');
+      result.textContent = count + (count === 1 ? ' Gebiet gefunden' : ' Gebiete gefunden');
       empty.hidden = count !== 0;
-      var other = empty.querySelector('a'); other.href = (ru ? '/ru' : '/') + '?ort=' + encodeURIComponent(input.value.trim().slice(0, 120)) + '#anfrage';
+      var other = empty.querySelector('a'); other.href = '/' + '?ort=' + encodeURIComponent(input.value.trim().slice(0, 120)) + '#anfrage';
     }
     input.addEventListener('input', filter);
     filters.forEach(function (button) { button.addEventListener('click', function () {
@@ -99,7 +98,7 @@
     function updateChecklist() {
       var count = Array.prototype.filter.call(boxes, function (box) { return box.checked; }).length;
       progress.value = count; progress.max = boxes.length;
-      checkStatus.textContent = ru ? 'Готово: ' + count + ' из ' + boxes.length : count + ' von ' + boxes.length + ' Punkten vorbereitet';
+      checkStatus.textContent = count + ' von ' + boxes.length + ' Punkten vorbereitet';
     }
     boxes.forEach(function (box) { box.addEventListener('change', updateChecklist); });
     checklist.querySelector('[data-print]').addEventListener('click', function () { window.print(); });

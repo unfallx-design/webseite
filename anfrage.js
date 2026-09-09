@@ -102,7 +102,7 @@ function magicOk(buf, typ) {
 
 /* ---------- Validierung --------------------------------------------------- */
 
-/* Fehlertexte fuer das Formular – Deutsch (Standard) und Russisch (/ru) */
+/* Fehlertexte fuer das deutschsprachige Formular */
 const MELDUNGEN = {
   de: {
     ungueltig: 'Ungültige Anfrage.',
@@ -117,25 +117,11 @@ const MELDUNGEN = {
     fotoGroesse: 'Jedes Foto darf höchstens 5 MB groß sein.',
     fotoKeinBild: 'Eine Datei konnte nicht als Bild erkannt werden.',
     felder: 'Bitte prüfen Sie die markierten Felder.'
-  },
-  ru: {
-    ungueltig: 'Некорректный запрос.',
-    name: 'Пожалуйста, укажите ваше имя.',
-    telefon: 'Пожалуйста, укажите действующий номер телефона.',
-    email: 'Адрес электронной почты выглядит некорректно.',
-    datum: 'Пожалуйста, проверьте дату ДТП.',
-    beschreibung: 'Пожалуйста, коротко опишите, что произошло.',
-    emailNoetig: 'Чтобы ответить по электронной почте, нам нужен ваш адрес.',
-    datenschutz: 'Пожалуйста, подтвердите согласие с правилами защиты данных.',
-    fotoFormat: 'Загружайте только фото в формате JPG, PNG или WebP.',
-    fotoGroesse: 'Каждое фото должно быть не больше 5 МБ.',
-    fotoKeinBild: 'Один из файлов не удалось распознать как изображение.',
-    felder: 'Пожалуйста, проверьте отмеченные поля.'
   }
 };
 
 function sprache(body) {
-  return body && body.sprache === 'ru' ? 'ru' : 'de';
+  return 'de';
 }
 
 function pruefe(body) {
@@ -213,7 +199,6 @@ function mailText(d, meta) {
   z.push('Neue Anfrage ueber unfallx.com');
   z.push('================================');
   z.push('Anliegen:        ' + LABEL.anliegen[d.anliegen]);
-  if (d.sprache === 'ru') z.push('Sprache:         Russisch (Anfrage ueber unfallx.com/ru)');
   z.push('Name:            ' + d.name);
   z.push('Telefon:         ' + d.telefon);
   if (d.email) z.push('E-Mail:          ' + d.email);
@@ -237,7 +222,6 @@ function mailHtml(d, meta) {
 <h2 style="margin:0 0 14px;font-size:18px">Neue Anfrage &uuml;ber unfallx.com</h2>
 <table style="border-collapse:collapse;font-size:15px">
 ${row('Anliegen', LABEL.anliegen[d.anliegen])}
-${row('Sprache', d.sprache === 'ru' ? 'Russisch (Anfrage über unfallx.com/ru)' : '')}
 ${row('Name', d.name)}
 ${row('Telefon', d.telefon)}
 ${row('E-Mail', d.email)}
@@ -263,7 +247,7 @@ async function sendeMail(d, meta) {
     socketTimeout: 20000,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
   });
-  const betreff = `[UNFALLX${d.sprache === 'ru' ? ' RU' : ''}] ${LABEL.anliegen[d.anliegen]} – ${d.name}`;
+  const betreff = `[UNFALLX] ${LABEL.anliegen[d.anliegen]} – ${d.name}`;
   const receipt = await transport.sendMail({
     from: process.env.MAIL_FROM || process.env.SMTP_USER,
     to: MAIL_TO,
@@ -368,9 +352,7 @@ function handle(req, res, securityHeaders) {
       console.log('[anfrage] Anfrage gespeichert unter data/anfragen/' + id);
       return antwort(res, 202, {
         ok: false, delivery: 'stored', reference: id,
-        error: d.sprache === 'ru'
-          ? 'Заявка сохранена на сервере, но отправить её по электронной почте не удалось. Пожалуйста, свяжитесь с нами: info@unfallx.com или 0176 64 365 185.'
-          : 'Ihre Anfrage wurde auf dem Server gesichert, konnte aber noch nicht per E-Mail zugestellt werden. Bitte kontaktieren Sie uns direkt: info@unfallx.com oder 0176 64 365 185.'
+        error: 'Ihre Anfrage wurde auf dem Server gesichert, konnte aber noch nicht per E-Mail zugestellt werden. Bitte kontaktieren Sie uns direkt: info@unfallx.com oder 0176 64 365 185.'
       }, securityHeaders);
     } catch (e) {
       console.error('[anfrage] Speichern fehlgeschlagen:', e && e.message);

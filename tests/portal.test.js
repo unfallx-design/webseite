@@ -3,7 +3,7 @@ const {test}=require('node:test');const assert=require('node:assert/strict');con
 const {createPortal}=require('../portal/app');const {createStore}=require('../portal/store');
 const D=require('../portal/domain');
 test('Real HTTP, durable database, tenant boundaries and full case/payment workflow',async t=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ux-test-'));const env={NODE_ENV:'test',PORTAL_LOCAL_DB:path.join(dir,'test.sqlite'),PORTAL_ADMIN_EMAIL:'info@unfallx.com',PORTAL_ORIGIN:'http://localhost'};const sent=[];const mail={ready:true,send:async(to,subject,text)=>sent.push({to,subject,text})};let portal=createPortal({env,mail});await portal.ready();const server=http.createServer((req,res)=>portal.handle(req,res,{}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let checks=0;
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ux-test-'));const env={NODE_ENV:'test',PORTAL_LOCAL_DB:path.join(dir,'test.sqlite'),PORTAL_ADMIN_EMAIL:'info@unfallx.com',PORTAL_ORIGIN:'http://localhost'};const sent=[];let failMail=false;const mail={ready:true,send:async(to,subject,text,attachments,html)=>{sent.push({to,subject,text,html});if(failMail)throw new Error('TEST_SMTP_FAILURE');}};let portal=createPortal({env,mail});await portal.ready();const server=http.createServer((req,res)=>portal.handle(req,res,{}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let checks=0;
  async function call(route,data,actor={},method=data===undefined?'GET':'POST',headers={}){const response=await fetch(base+'/api/portal'+route,{method,headers:{Origin:env.PORTAL_ORIGIN,'Content-Type':'application/json',...(actor.cookie?{Cookie:actor.cookie,'X-CSRF-Token':actor.csrf||''}:{}),...headers},body:data===undefined?undefined:Buffer.isBuffer(data)?data:JSON.stringify(data)});const json=await response.json();return {status:response.status,json,cookie:response.headers.get('set-cookie')};}
  const valid={company:'Testwerkstatt GmbH',contact:'Test Partner',type:'Werkstatt',street:'Teststraße 1',postcode:'12345',city:'Teststadt',phone:'030123456',privacy:true};
  async function signIn(address,registration){await call(registration?'/register':'/login',{email:address,...registration});const msg=sent.findLast(m=>m.to===address);assert.ok(msg);const token=msg.text.match(/#token=([a-f0-9]+)/)[1];const response=await call('/exchange',{token});assert.equal(response.status,200);const actor={cookie:response.cookie.split(';')[0]};const me=await call('/me',undefined,actor);actor.csrf=me.json.csrf;actor.user=me.json.user;actor.company=me.json.company;return {actor,token};}
@@ -11,6 +11,21 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  await t.test('Unauthenticated access, CSRF, bootstrap admin, single-use tokens',async()=>{assert.equal((await call('/cases')).status,401);assert.equal((await call('/login',{email:'info@unfallx.com'},{},'POST',{Origin:'https://evil.example'})).status,403);checks+=2;});
  const {actor:admin,token}=await signIn('info@unfallx.com');assert.equal(admin.user.role,'admin');assert.equal((await call('/exchange',{token})).status,401);assert.match(admin.cookie,/ux_session/);checks+=3;
  const {actor:p1}=await signIn('one@example.com',valid);const {actor:p2}=await signIn('two@example.com',{...valid,company:'Andere Firma'});assert.equal(p1.company.status,'pending');
+ await t.test('Settings persist, reject privilege changes and revoke only other sessions',async()=>{
+ const pref={name:'Test Neuer Name',phone:'030123',jobTitle:'Aufnahme',startPage:'faelle',theme:'dark',compact:true,reducedMotion:true,role:'admin',email:'attack@example.com',companyId:p2.company.id};
+ assert.equal((await call('/settings')).status,401);
+ assert.equal((await call('/settings',pref,{cookie:p1.cookie})).status,403);
+ assert.equal((await call('/settings',{...pref,compact:'true'},p1)).status,400);
+ const r=await call('/settings',pref,p1);assert.equal(r.status,200);assert.equal(r.json.user.role,'partner');assert.equal(r.json.user.email,'one@example.com');assert.equal(r.json.user.companyId,p1.company.id);
+ const settings=(await call('/settings',undefined,p1)).json;assert.equal(settings.preferences.theme,'dark');assert.equal(settings.profile.name,pref.name);assert.equal(settings.storage,null);
+ assert.equal((await call('/settings',undefined,p2)).json.preferences.theme,'light');
+ const {actor:secondAdmin}=await signIn('info@unfallx.com');assert.equal((await call('/settings',undefined,admin)).json.activeSessions,2);
+ assert.equal((await call('/sessions/revoke-others',{confirmed:false},admin)).status,400);
+ assert.equal((await call('/sessions/revoke-others',{confirmed:true},admin)).json.revoked,1);
+ assert.equal((await call('/me',undefined,secondAdmin)).status,401);assert.equal((await call('/me',undefined,admin)).status,200);assert.equal((await call('/me',undefined,p1)).status,200);
+ assert.ok((await call('/settings',undefined,admin)).json.storage.limit>0);
+ const reg=sent.find(m=>m.to==='one@example.com');assert.match(reg.subject,/Willkommen/);assert.match(reg.html,/E-Mail bestätigen/);assert.match(reg.html,/15 Minuten/);assert.match(reg.html,/Freigabe erhalten/);
+});
  const intake={vehicle:'BMW Test',plate:'TEST',vin:'',accidentDate:'2026-09-08',location:'Leipzig',owner:'Testkunde',ownerContact:'customer@example.com',description:'Testschaden',authority:true,shareWithLawyer:false};
  assert.equal((await call('/cases',intake,p1)).status,403);assert.equal((await call('/admin/overview',undefined,p1)).status,403);assert.equal((await call('/admin/company',{id:p1.company.id,status:'approved'},p1)).status,403);checks+=3;
  for(const p of [p1,p2])assert.equal((await call('/admin/company',{id:p.company.id,status:'approved'},admin)).status,200);
@@ -25,7 +40,27 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  async function reload(){c=(await call('/cases/'+cid,undefined,admin)).json.case;return c;}
  async function action(actor,data,expected=200){await reload();const r=await call('/cases/'+cid,{...data,version:c.version},actor);assert.equal(r.status,expected,JSON.stringify(r.json));checks++;return r;}
  await action(p1,{action:'submit'});await action(admin,{action:'status',status:'report_ready'},400);await action(admin,{action:'status',status:'accepted'});await action(admin,{action:'status',status:'in_progress'});
- assert.equal((await call('/admin/invite',{name:'Test Gutachter',email:'expert@example.com'},admin)).status,200);const {actor:expert}=await signIn('expert@example.com');assert.equal((await call('/cases/'+cid,undefined,expert)).status,404);await action(admin,{action:'assign',assignee:expert.user.id});assert.equal((await call('/cases/'+cid,undefined,expert)).status,200);await action(expert,{action:'payment',amount:'1'},403);checks+=3;
+ let expert;
+ await t.test('Admin invitation delivers HTML, resend revokes old links and mail failure is recoverable',async()=>{
+ const invite={name:'Test Gutachter',email:'expert@example.com'};
+ assert.equal((await call('/admin/invite',invite,p1)).status,403);
+ assert.equal((await call('/admin/resend-invitation',{id:p2.user.id},admin)).status,404);
+ assert.equal((await call('/admin/invite',invite,admin)).json.invitationSent,true);
+ const first=sent.findLast(m=>m.to===invite.email);assert.match(first.subject,/Einladung/);assert.match(first.html,/24 Stunden/);assert.match(first.html,/Einladung annehmen/);
+ const oldToken=first.text.match(/#token=([a-f0-9]+)/)[1];
+ assert.equal((await call('/admin/resend-invitation',{id:D.hash(invite.email)},admin)).json.invitationSent,true);
+ assert.equal((await call('/exchange',{token:oldToken})).status,401);
+ const newToken=sent.findLast(m=>m.to===invite.email).text.match(/#token=([a-f0-9]+)/)[1];
+ const r=await call('/exchange',{token:newToken});assert.equal(r.status,200);expert={cookie:r.cookie.split(';')[0]};const me=(await call('/me',undefined,expert)).json;expert.csrf=me.csrf;expert.user=me.user;assert.ok(me.user.verifiedAt);assert.equal(me.user.role,'appraiser');
+ assert.equal((await call('/exchange',{token:newToken})).status,401);
+ failMail=true;const failure=await call('/admin/invite',{name:'Failed Delivery',email:'failed@example.com'},admin);failMail=false;
+ assert.equal(failure.status,200);assert.equal(failure.json.invitationSent,false);
+ const failedToken=sent.findLast(m=>m.to==='failed@example.com').text.match(/#token=([a-f0-9]+)/)[1];assert.equal((await call('/exchange',{token:failedToken})).status,401);
+ const team=(await call('/admin/overview',undefined,admin)).json.team;assert.equal(team.find(u=>u.email==='failed@example.com').invitationStatus,'failed');
+ assert.equal((await call('/admin/resend-invitation',{id:D.hash('failed@example.com')},admin)).json.invitationSent,true);
+ await call('/admin/team',{id:D.hash('failed@example.com'),active:false},admin);
+ const blockedToken=sent.findLast(m=>m.to==='failed@example.com').text.match(/#token=([a-f0-9]+)/)[1];assert.equal((await call('/exchange',{token:blockedToken})).status,403);
+ });assert.equal((await call('/cases/'+cid,undefined,expert)).status,404);await action(admin,{action:'assign',assignee:expert.user.id});assert.equal((await call('/cases/'+cid,undefined,expert)).status,200);await action(expert,{action:'payment',amount:'1'},403);checks+=3;
  const pdf=Buffer.from('%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF');const report=await upload(expert,'report',pdf,'application/pdf','gutachten.pdf');assert.equal(report.status,200);assert.equal((await fetch(base+'/api/portal/files/'+report.json.file.id,{headers:{Cookie:p1.cookie}})).status,403);checks++;
  await action(expert,{action:'internal_note',note:'Interne fachliche Notiz'});assert.equal((await call('/cases/'+cid,undefined,expert)).json.case.internalNote,'Interne fachliche Notiz');assert.equal((await call('/cases/'+cid,undefined,p1)).json.case.internalNote,undefined);checks+=2;await action(expert,{action:'status',status:'report_ready'});await action(expert,{action:'status',status:'report_sent',confirmed:true,reference:'Testversand, autorisierter Empfänger'});
  await action(admin,{action:'finance',invoiceNumber:'UX-TEST-1',invoiceNet:'1000',invoiceGross:'1190',partnerNet:'400',agreement:'Individuelle Testvereinbarung'});await action(p1,{action:'accept_terms'});await action(admin,{action:'payment',amount:'600',date:'2026-09-09',reference:'Teilzahlung 1'});
@@ -39,3 +74,8 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  }finally{await new Promise(r=>server.close(r));await portal.close();fs.rmSync(dir,{recursive:true,force:true});}
 });
 test('Financial calculations are integer cents and invalid inputs fail closed',()=>{assert.equal(D.money('1000,49'),100049);for(const bad of ['-1','1.999','Infinity',NaN,1.23])assert.throws(()=>D.money(bad));assert.equal(D.payable({status:'report_sent',finance:{partnerNet:40000,agreement:'A',agreedAt:'date',invoiceGross:119000,received:119000}}),false);});
+
+test('Email HTML safely escapes company and recipient text and retains a complete text alternative',()=>{
+ const {accessEmail}=require('../portal/email-templates');
+ for(const kind of ['login','registration','invitation']){const m=accessEmail({kind,name:'<script>alert(1)</script>',company:'Test <img src=x>',url:'https://unfallx.com/login#token=not-a-live-token'});assert.doesNotMatch(m.html,/<script>|<img src=x>/);assert.match(m.html,/&lt;script&gt;/);assert.match(m.html,/role="presentation"/);assert.match(m.text,/https:\/\/unfallx.com\/app-hilfe/);assert.match(m.text,/not-a-live-token/);assert.match(m.html,/Datenschutz/);}
+});

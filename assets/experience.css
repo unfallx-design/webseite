@@ -186,3 +186,6 @@ html{scroll-padding-top:118px}
 @media(max-width:370px){.site-header .nav>.logo{max-width:105px}.site-header .nav{gap:7px}.nav-login{font-size:12px}}
 
 .nav-login{min-width:44px;text-align:center}
+
+.mobile-business{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:5px 0 18px}.mobile-business a{padding:14px 10px;border:1px solid var(--line);border-radius:12px;font-weight:750;text-align:center}.mobile-business a:last-child{background:#e3241c;color:#fff}
+.mobile-business a,.member-shortcuts a{text-decoration:none}

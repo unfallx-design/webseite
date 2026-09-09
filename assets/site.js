@@ -2,22 +2,8 @@
 (function () {
   'use strict';
 
-  /* Texte, die per Skript gesetzt werden – je nach Sprache der Seite */
-  var istRu = (document.documentElement.getAttribute('lang') || 'de').toLowerCase().indexOf('ru') === 0;
-  var T = istRu ? {
-    menuAuf: 'Открыть меню', menuZu: 'Закрыть меню',
-    formatNicht: ' — формат не поддерживается', zuGross: ' — слишком большой файл (макс. 5 МБ)',
-    nurFotos: 'Загружайте только фото в формате JPG, PNG или WebP.',
-    fotoGross: 'Каждое фото должно быть не больше 5 МБ.',
-    fotoLesen: 'Не удалось прочитать одно из фото.',
-    sendet: 'Отправляем вашу заявку …',
-    danke: 'Спасибо! Ваша заявка успешно отправлена. Мы свяжемся с вами в ближайшее время.',
-    felder: 'Пожалуйста, проверьте отмеченные поля.',
-    zuGrossAnfrage: 'Заявка слишком большая. Пожалуйста, используйте фото меньшего размера.',
-    zuViele: 'Слишком много запросов. Попробуйте через несколько минут или позвоните нам.',
-    nichtGesendet: 'Не удалось отправить заявку. Пожалуйста, позвоните нам: 0176 64 365 185.',
-    keinNetz: 'Нет соединения. Проверьте интернет или позвоните нам: 0176 64 365 185.'
-  } : {
+  /* Deutsche Oberflächentexte. */
+  var T = {
     menuAuf: 'Menü öffnen', menuZu: 'Menü schließen',
     formatNicht: ' – Format nicht unterstützt', zuGross: ' – zu groß (max. 5 MB)',
     nurFotos: 'Bitte nur Fotos im Format JPG, PNG oder WebP hochladen.',
@@ -180,7 +166,7 @@
   var pfad = window.location.pathname.replace(/\/$/, '') || '/';
   document.querySelectorAll('.nav-links a[href]').forEach(function (a) {
     var ziel = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
-    if (ziel !== '/' && ziel !== '/ru' && ziel === pfad) a.classList.add('is-active');
+    if (ziel !== '/' && ziel === pfad) a.classList.add('is-active');
   });
 
   /* Theme-Umschalter (Tag/Nacht) */
@@ -203,22 +189,6 @@
     themeButtons.forEach(function (b) { b.addEventListener('click', wendeTheme); });
   }
 
-  /* Sprachumschalter (Deutsch/Russisch): jede Sprache ist eine eigene Seite,
-     der Server setzt die Zieladresse ein. Hier wird nur der Anker (#faq usw.)
-     mitgenommen, damit man in der anderen Sprache an derselben Stelle landet. */
-  var langLinks = document.querySelectorAll('[data-lang-switch] a[href]');
-  if (langLinks.length) {
-    var setzeAnker = function () {
-      langLinks.forEach(function (a) {
-        var basis = (a.getAttribute('href') || '').split('#')[0];
-        a.setAttribute('href', basis + (window.location.hash || ''));
-      });
-    };
-    setzeAnker();
-    window.addEventListener('hashchange', setzeAnker);
-  }
-
-
   /* Anfrageformular: sendet die Angaben an /api/anfrage */
   var form = document.getElementById('schadenform');
   if (form) {
@@ -238,7 +208,7 @@
         var hint = form.querySelector('label[for="' + input.id + '"] span');
         if (hint) {
           hint.className = input.required ? 'req' : 'opt';
-          hint.textContent = input.required ? '*' : (istRu ? '(необязательно)' : '(optional)');
+          hint.textContent = input.required ? '*' : '(optional)';
           if (input.required) hint.setAttribute('aria-hidden', 'true');
           else hint.removeAttribute('aria-hidden');
         }
@@ -346,7 +316,7 @@
         kontaktweg: get('kontaktweg') || 'telefon',
         datenschutz: !!form.querySelector('[name="datenschutz"]:checked'),
         website: get('website'), t0: get('t0'),
-        sprache: istRu ? 'ru' : 'de'
+        sprache: 'de'
       };
     };
 
@@ -399,11 +369,6 @@
         if (r.status === 422 && r.json && r.json.felder) {
           markiere(r.json.felder);
           setzeStatus(T.felder, 'error');
-          return;
-        }
-        /* Allgemeine Fehler: auf der russischen Seite eigene Texte, sonst die des Servers */
-        if (istRu) {
-          setzeStatus(r.status === 413 ? T.zuGrossAnfrage : r.status === 429 ? T.zuViele : T.nichtGesendet, 'error');
           return;
         }
         setzeStatus((r.json && r.json.error) || T.nichtGesendet, 'error');

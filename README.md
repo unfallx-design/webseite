@@ -1,6 +1,6 @@
 # UNFALLX – Website
 
-Node.js liefert die deutschen und russischen Seiten aus. Nodemailer versendet Anfragen an **info@unfallx.com**. Gemeinsame Header, Footer und Standortkarten liegen in `partials/`.
+Node.js liefert die deutschsprachigen Seiten aus. Nodemailer versendet Anfragen an **info@unfallx.com**. Gemeinsame Header, Footer und Standortkarten liegen in `partials/`.
 
 ## Start und Prüfung
 
@@ -41,4 +41,14 @@ Maximal drei JPEG-, PNG- oder WebP-Fotos mit jeweils 5 MB; das JSON-Limit berüc
 - `partials/location.html`: Halle und Unternehmenssitz; Google Maps wird erst nach dem freiwilligen Laden eingebunden.
 - `assets/favicon.svg`: transparente Bildmarke.
 
-Jede Inhaltsseite hat eine russische Fassung unter `ru/`. Änderungen an beiden Sprachversionen vornehmen und Canonical-, Hreflang- und Sitemap-Verweise zusammen prüfen. Öffnungszeiten, Rezensionen, örtliche Niederlassungen oder Leistungsversprechen nur ergänzen, wenn sie tatsächlich belegt sind.
+Die Website ist ausschließlich deutschsprachig. Frühere Sprachadressen werden auf passende deutsche Seiten umgeleitet. Neue öffentliche Seiten in Sitemap und Navigation ergänzen. Öffnungszeiten, Rezensionen, örtliche Niederlassungen oder Leistungsversprechen nur ergänzen, wenn sie tatsächlich belegt sind.
+
+
+## UNFALLX Connect
+
+- `/app`: Präsentation mit zwei KI-Visualisierungen. `/app-demo`: schreibgeschützte Beispielansicht mit ausschließlich fiktiven Daten und ohne API-Zugriffe. `/app-hilfe`: Anleitung mit echten Ansichten aus der Demo.
+- `portal/email-templates.js`: HTML- und Textvorlagen für Registrierung, Login (15 Minuten) und interne Einladungen (24 Stunden). Kein Link wird öffentlich protokolliert.
+- Die Administration legt interne Gutachter an. Eine persönliche Einladung wird direkt versandt. Fehlgeschlagener Versand bleibt sichtbar und kann erneut ausgelöst werden; dabei verlieren ältere Einladungslinks ihre Gültigkeit. Gesperrte Konten können sich nicht anmelden.
+- Persönliche Einstellungen: Name, Telefon, Funktion, Startansicht, Hell/Dunkel, kompakte Tabellen und reduzierte Bewegung. E-Mail, Rollen und Firmeneigentum sind darüber nicht änderbar.
+- Sitzungsverwaltung meldet andere Geräte ab und erhält die aktuelle Sitzung. CSV-Fallübersicht entschärft Tabellenformeln; Fotovorschauen nutzen die bestehende geschützte Datei-API.
+- `npm test` prüft Anmeldung, Einladung und Fehlerbehandlung, Rollen/Firmengrenzen, Einstellungen, Sitzungen sowie den Fall- und Zahlungsablauf über einen lokalen HTTP-Server mit temporärer Datenbank. Es werden keine echten E-Mails versandt.

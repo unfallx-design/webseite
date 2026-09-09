@@ -92,30 +92,8 @@ function versionAssets(html) {
   });
 }
 
-/**
- * Sprachversionen: Die deutschen Seiten liegen im Wurzelverzeichnis, die
- * russischen unter ru/ (gleicher Dateiname). Der Sprachumschalter in den
- * Partials enthaelt Platzhalter <!--#langlink:de--> und <!--#langlink:ru-->,
- * die hier durch die passende Adresse der jeweils anderen Fassung ersetzt
- * werden (z. B. /unfallgutachten <-> /ru/unfallgutachten).
- */
-function langLinks(file) {
-  const rel = path.relative(ROOT, file).split(path.sep).join('/');
-  let slug = rel.replace(/^ru\//, '').replace(/\.html$/i, '');
-  if (slug === 'index' || slug === '404') slug = '';
-  return {
-    de: slug ? '/' + slug : '/',
-    ru: slug && fs.existsSync(path.join(ROOT, 'ru', slug + '.html')) ? '/ru/' + slug : '/ru'
-  };
-}
-
-function applyLangLinks(html, file) {
-  const links = langLinks(file);
-  return html.replace(/<!--#langlink:(de|ru)-->/gi, (match, lang) => links[lang.toLowerCase()]);
-}
-
 function renderPage(file) {
-  return versionAssets(applyLangLinks(applyPartials(fs.readFileSync(file, 'utf8')), file));
+  return versionAssets(applyPartials(fs.readFileSync(file, 'utf8')));
 }
 
 /**
@@ -127,7 +105,7 @@ function inlineScriptHashes() {
   const crypto = require('crypto');
   const hashes = new Set();
   let files = [];
-  ['', 'ru'].forEach((dir) => {
+  [''].forEach((dir) => {
     try {
       fs.readdirSync(path.join(ROOT, dir))
         .filter((f) => f.toLowerCase().endsWith('.html'))
@@ -175,9 +153,7 @@ function send(res, status, headers, body, isHead) {
 }
 
 function sendError(res, status, isHead, urlPath) {
-  /* 404-Seite in der Sprache des aufgerufenen Bereichs (/ru/... -> russisch) */
-  const istRu = typeof urlPath === 'string' && /^\/ru(\/|$)/i.test(urlPath);
-  const file = status === 404 ? path.join(ROOT, istRu ? 'ru' : '', '404.html') : null;
+  const file = status === 404 ? path.join(ROOT, '404.html') : null;
   if (file && fs.existsSync(file)) {
     const body = Buffer.from(renderPage(file), 'utf8');
     return send(res, status, {
@@ -226,6 +202,15 @@ const server = http.createServer((req, res) => {
     return sendError(res, 400, isHead);
   }
 
+  /* Alte Sprachadressen behalten ihren Weg zum entsprechenden deutschen Inhalt. */
+  if (/^\/ru(?:\/|$)/i.test(urlPath)) {
+    const slug = urlPath.replace(/^\/ru\/?/i, '').replace(/\/$/, '').replace(/\.html$/i, '');
+    const known = new Set(["wertminderung", "unfallgutachten", "wertgutachten", "kfz-gutachter-berlin", "nutzungsausfall", "kostenvoranschlag", "unfall-checkliste", "kfz-gutachter-brandenburg", "einsatzgebiete", "impressum", "mietwagen", "totalschaden", "kfz-gutachten", "datenschutz"]);
+    if (!slug || slug === 'index') return send(res, 301, { Location: '/' }, '', isHead);
+    if (known.has(slug)) return send(res, 301, { Location: '/' + slug }, '', isHead);
+    return sendError(res, 404, isHead, urlPath);
+  }
+
   /* Healthcheck für Hostinger */
   if (urlPath === '/health') {
     return send(res, 200, {
@@ -242,13 +227,8 @@ const server = http.createServer((req, res) => {
 
   if (urlPath !== '/portal' && BLOCKED.test(urlPath)) return sendError(res, 404, isHead, urlPath);
 
-  /* Startseiten: /index.html -> /, /ru/index(.html) -> /ru */
-  if (urlPath === '/index.html' || urlPath === '/index') {
-    return send(res, 301, { Location: '/' }, '', isHead);
-  }
-  if (/^\/ru\/index(\.html)?$/i.test(urlPath)) {
-    return send(res, 301, { Location: '/ru' }, '', isHead);
-  }
+  /* Startseite auf die kanonische Adresse führen. */
+  if (urlPath === '/index.html' || urlPath === '/index') return send(res, 301, { Location: '/' }, '', isHead);
 
   /* .html in der URL auf saubere Adresse umleiten */
   if (/\.html$/i.test(urlPath)) {
