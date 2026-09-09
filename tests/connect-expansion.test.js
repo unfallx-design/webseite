@@ -2,13 +2,13 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),sharp=require('sharp');
 const {createPortal}=require('../portal/app'),{createStore}=require('../portal/store'),D=require('../portal/domain'),math=require('../assets/finance-math'),hosts=require('../portal/hosts');
 test('Subdomain routes preserve the public website, queries and app entrypoints',()=>{
- assert.deepEqual(hosts.hostPolicy('unfallx.com','/'),{isApp:false,production:true});
+ assert.deepEqual(hosts.hostPolicy('unfallx.com','/'),{isApp:false,isReport:false,production:true});
  assert.equal(hosts.hostPolicy('unfallx.com','/login?next=%2Fportal').redirect,'https://app.unfallx.com/login?next=%2Fportal');
- assert.equal(hosts.hostPolicy('app.unfallx.com','/').redirect,'https://app.unfallx.com/portal');
+ assert.equal(hosts.hostPolicy('app.unfallx.com','/').isApp,true);
  assert.equal(hosts.hostPolicy('app.unfallx.com','/bildung').redirect,'https://unfallx.com/bildung');
  assert.equal(hosts.hostPolicy('app.unfallx.com','/api/portal/me').isApp,true);
  assert.equal(hosts.hostPolicy('localhost:3000','/login').production,false);
- assert.equal(hosts.links('<a href="/">Home</a><a href="/registrieren?ref=UX-TEST">Join</a><script src="/assets/portal.js"></script>',true,true),'<a href="https://unfallx.com/">Home</a><a href="https://app.unfallx.com/registrieren?ref=UX-TEST">Join</a><script src="/assets/portal.js"></script>');
+ assert.equal(hosts.links('<a href="/">Home</a><a href="/registrieren?ref=UX-TEST">Join</a><script src="/assets/portal.js"></script>',true,true),'<a href="https://app.unfallx.com/">Home</a><a href="https://app.unfallx.com/registrieren?ref=UX-TEST">Join</a><script src="/assets/portal.js"></script>');
 });
 test('Money is calculated in integer cents, including gross input and independent partner VAT',()=>{
  const r=math.calculate({amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'50',partnerVatPercent:'19'});assert.deepEqual([r.invoiceNet,r.invoiceTax,r.invoiceGross,r.partnerNet,r.partnerTax,r.partnerGross],[100000,19000,119000,50000,9500,59500]);

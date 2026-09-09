@@ -1,6 +1,8 @@
 /* UNFALLX – kleine Helfer, ohne Framework */
 (function () {
   'use strict';
+  if(['unfallx.com','www.unfallx.com'].includes(location.hostname)&&['gutachten','anfrage','leistungen','vorteile','ablauf','halle','unfallservice','ueber-uns','vertrauen','desag-zertifikat','bewertungen','einsatzgebiet','ratgeber','faq','schadenbilder','standort'].includes(location.hash.slice(1))){location.replace('https://gutachten.unfallx.com/'+location.hash);return;}
+
 
   /* Deutsche Oberflächentexte. */
   var T = {
@@ -170,24 +172,7 @@
   });
 
   /* Theme-Umschalter (Tag/Nacht) */
-  var themeButtons = document.querySelectorAll('[data-theme-toggle]');
-  if (themeButtons.length) {
-    var aktuellesTheme = function () {
-      return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-    };
-    var setzeThemeButtons = function () {
-      var istHell = aktuellesTheme() === 'light';
-      themeButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(istHell)); });
-    };
-    var wendeTheme = function () {
-      var naechstes = aktuellesTheme() === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', naechstes);
-      try { localStorage.setItem('unfallx-theme', naechstes); } catch (e) {}
-      setzeThemeButtons();
-    };
-    setzeThemeButtons();
-    themeButtons.forEach(function (b) { b.addEventListener('click', wendeTheme); });
-  }
+  document.documentElement.setAttribute("data-theme", "light");
 
   /* Anfrageformular: sendet die Angaben an /api/anfrage */
   var form = document.getElementById('schadenform');

@@ -93,8 +93,13 @@ function versionAssets(html) {
   });
 }
 
-function renderPage(file) {
-  return versionAssets(applyPartials(fs.readFileSync(file, 'utf8')));
+function renderPage(file, context={}) {
+  let html=fs.readFileSync(file,'utf8');
+  if(context.isReport)html=html.replace('<!--#include:header-->','<!--#include:gutachten-header-->');
+  if(context.isApp)html=html.replace('<!--#include:header-->','<!--#include:app-header-->').replace('<!--#include:footer-->','<!--#include:app-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
+  if(context.isApp&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
+  if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
+  return versionAssets(applyPartials(html));
 }
 
 /**
@@ -212,6 +217,12 @@ const server = http.createServer((req, res) => {
     return sendError(res, 404, isHead, urlPath);
   }
 
+  if(hostInfo.production&&urlPath==='/sitemap.xml'){
+    const paths=hostInfo.isApp?[]:hostInfo.isReport?['/',...['unfallgutachten','wertgutachten','kostenvoranschlag','kfz-gutachten','kfz-gutachter-berlin','kfz-gutachter-brandenburg','einsatzgebiete','unfall-checkliste','wertminderung','nutzungsausfall','mietwagen','totalschaden'].map(p=>'/'+p)]:['/',...fs.readdirSync(ROOT).filter(f=>f.endsWith('.html')&&(f.startsWith('bildung')||['kfz-gutachter-werden.html','schadenfotos-lernen.html','gutachten-aufbau.html'].includes(f))).map(f=>'/'+f.slice(0,-5))];
+    const domain=hostInfo.isReport?hosts.REPORT_ORIGIN:hosts.PUBLIC_ORIGIN;
+    return send(res,200,{'Content-Type':'application/xml; charset=utf-8','Cache-Control':'no-cache'},'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+paths.map(p=>'<url><loc>'+domain+p+'</loc></url>').join('')+'</urlset>',isHead);
+  }
+  if(hostInfo.isReport&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain'},'User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://gutachten.unfallx.com/sitemap.xml\n',isHead);
   if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
   /* Healthcheck für Hostinger */
   if (urlPath === '/health') {
@@ -238,7 +249,7 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: urlPath.replace(/\.html$/i, '') }, '', isHead);
   }
 
-  const relative = urlPath === '/' ? 'index.html' : urlPath === '/portal' ? 'partner-app.html' : ['/gutachter-portal','/kundenportal'].includes(urlPath) ? 'partner-app.html' : urlPath.replace(/^\/+/, '');
+  const relative = hostInfo.isApp&&urlPath==='/datenschutz'?'portal-datenschutz.html':urlPath === '/' ? (hostInfo.isApp?'app.html':hostInfo.isReport?'gutachten-start.html':'index.html') : urlPath === '/portal' ? 'partner-app.html' : ['/gutachter-portal','/kundenportal'].includes(urlPath) ? 'partner-app.html' : urlPath.replace(/^\/+/, '');
   const resolved = path.resolve(ROOT, relative);
 
   /* Verzeichnis-Traversal verhindern */
@@ -263,7 +274,7 @@ const server = http.createServer((req, res) => {
 
       if (ext === '.html') {
         let page;
-        try { let html=renderPage(file);
+        try { let html=renderPage(file,hostInfo);
           if(!hostInfo.isApp&&html.includes('data-course-price')||path.basename(file)==='bildung.html'){
             const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n/100);
@@ -271,13 +282,13 @@ const server = http.createServer((req, res) => {
               if(path.basename(file)==='bildung.html'){const cards=courses.map(c=>'<article class="portal-card"><span class="eyebrow">'+(c.mode==='digital'?'DIGITAL':'PRÄSENZ')+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.description)+'</p><p><strong>'+(!c.price&&c.mode==='digital'?'Preis wird bekannt gegeben':euro(c.price)+' pro Person')+'</strong><br>'+esc(c.duration)+' · '+esc(c.location)+'<br>'+(c.start?'Start: '+esc(c.weeks[0]?.week||c.start):'Start wird demnächst bekannt gegeben')+'</p><p>'+c.capacity+' Plätze pro Termin</p><a class="btn btn-outline" href="#kursanmeldung">Kurs auswählen →</a></article>').join('')||'<p>Neue Kurse werden demnächst veröffentlicht.</p>';html=html.replace('<div class="partner-grid" id="course-catalog"><p>Kursangebot wird geladen …</p></div>','<div class="partner-grid" id="course-catalog">'+cards+'</div>');}
             }catch{html=html.replace(/(<span data-course-price>)[^<]*(<\/span>)/g,'$1Preis auf Anfrage$2');}
           }
-          page = Buffer.from(hosts.links(html,hostInfo.isApp,hostInfo.production), 'utf8'); }
+          page = Buffer.from(hosts.links(html,hostInfo.isApp,hostInfo.production,hostInfo.isReport), 'utf8'); }
         catch (e) { return sendError(res, 500, isHead); }
         return send(res, 200, {
           'Content-Type': MIME[ext],
           'Content-Length': page.length,
-          'Cache-Control': hosts.appPath(urlPath)?'private, no-store, max-age=0':cacheFor(ext, false),
-          ...(hosts.appPath(urlPath)?{'CDN-Cache-Control':'no-store','Vary':'Cookie','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'}:{})
+          'Cache-Control': (hostInfo.isApp||hosts.appPath(urlPath))?'private, no-store, max-age=0':cacheFor(ext, false),
+          ...((hostInfo.isApp||hosts.appPath(urlPath))?{'CDN-Cache-Control':'no-store','Vary':'Cookie','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'}:{})
         }, page, isHead);
       }
 
@@ -295,7 +306,7 @@ const server = http.createServer((req, res) => {
   tryNext(0);
 });
 
-server.requestTimeout = 30000;
+server.requestTimeout = 180000;
 server.headersTimeout = 15000;
 server.maxRequestsPerSocket = 100;
 server.listen(PORT, HOST, () => {

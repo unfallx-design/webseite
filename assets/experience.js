@@ -2,26 +2,10 @@
   'use strict';
   var root = document.documentElement;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var savedMotion;
-  try { savedMotion = localStorage.getItem('unfallx-motion'); } catch (e) {}
   var saveData = !!(navigator.connection && navigator.connection.saveData);
-  var motionOff = reduced.matches || savedMotion === 'off' || saveData;
-  var motionButtons = document.querySelectorAll('[data-motion-toggle]');
-  function applyMotion() {
-    root.setAttribute('data-motion', motionOff ? 'off' : 'on');
-    root.classList.add('motion-ready');
-    motionButtons.forEach(function (button) {
-      button.setAttribute('aria-pressed', String(motionOff));
-      button.textContent = motionOff ? 'Animationen aktivieren' : 'Animationen pausieren';
-    });
-  }
+  function applyMotion() { root.dataset.motion = reduced.matches || saveData ? 'off' : 'on'; root.classList.add('motion-ready'); }
   applyMotion();
-  motionButtons.forEach(function (button) { button.addEventListener('click', function () {
-    motionOff = !motionOff; savedMotion = motionOff ? 'off' : 'on';
-    try { localStorage.setItem('unfallx-motion', savedMotion); } catch (e) {}
-    applyMotion();
-  }); });
-  reduced.addEventListener('change', function (event) { motionOff = event.matches || savedMotion === 'off' || saveData; applyMotion(); });
+  reduced.addEventListener('change', applyMotion);
   document.addEventListener('visibilitychange', function () { root.toggleAttribute('data-page-hidden', document.hidden); root.classList.toggle('motion-ready', !document.hidden); });
   var scenes = document.querySelectorAll('.hero-photo,.page-head-photo,.photo-section');
   scenes.forEach(function (scene) {

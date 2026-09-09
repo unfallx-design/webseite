@@ -17,7 +17,7 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  assert.equal((await call('/settings',pref,{cookie:p1.cookie})).status,403);
  assert.equal((await call('/settings',{...pref,compact:'true'},p1)).status,400);
  const r=await call('/settings',pref,p1);assert.equal(r.status,200);assert.equal(r.json.user.role,'partner');assert.equal(r.json.user.email,'one@example.com');assert.equal(r.json.user.companyId,p1.company.id);
- const settings=(await call('/settings',undefined,p1)).json;assert.equal(settings.preferences.theme,'dark');assert.equal(settings.profile.name,pref.name);assert.equal(settings.storage,null);
+ const settings=(await call('/settings',undefined,p1)).json;assert.equal(settings.preferences.theme,'light');assert.equal(settings.profile.name,pref.name);assert.equal(settings.storage,null);
  assert.equal((await call('/settings',undefined,p2)).json.preferences.theme,'light');
  const {actor:secondAdmin}=await signIn('info@unfallx.com');assert.equal((await call('/settings',undefined,admin)).json.activeSessions,2);
  assert.equal((await call('/sessions/revoke-others',{confirmed:false},admin)).status,400);
