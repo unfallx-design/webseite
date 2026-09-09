@@ -54,11 +54,13 @@
       }
     }
     options.forEach(function (button) { button.addEventListener('click', function () { selected = button; update(); }); });
-    load.addEventListener('click', function () {
+    function loadMap() {
       if (frame) return;
       frame = document.createElement('iframe'); frame.referrerPolicy = 'strict-origin-when-cross-origin'; frame.setAttribute('allowfullscreen', '');
       update(); shell.appendChild(frame); placeholder.hidden = true; remove.hidden = false; remove.focus();
-    });
+    }
+    load.addEventListener('click', function () { if(window.UnfallxConsent)window.UnfallxConsent.requestMedia(loadMap); });
+    window.addEventListener('unfallx-consent-change',function(e){if(!e.detail.media&&frame){frame.remove();frame=null;placeholder.hidden=false;remove.hidden=true;}});
     remove.addEventListener('click', function () { if (frame) frame.remove(); frame = null; placeholder.hidden = false; remove.hidden = true; load.focus(); });
     update();
   });

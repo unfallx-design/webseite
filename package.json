@@ -1,6 +1,6 @@
 {
   "name": "unfallx-webseite",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Webseite von UNFALLX - Kfz-Gutachten und Unfallservice in Berlin und Brandenburg (Unext GmbH)",
   "main": "server.js",
   "private": true,
@@ -9,10 +9,11 @@
   },
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js && node --check portal/app.js && node --check portal/domain.js && node --check portal/store.js && node --check assets/portal.js && node --check portal/email-templates.js && node --check portal/mail.js && node --check assets/portal-demo.js && node --check assets/app-showcase.js && node --check portal/academy.js && node --check assets/academy.js",
+    "check": "node --check server.js && node --check anfrage.js && node --check assets/site.js && node --check assets/experience.js && node --check assets/cinematic.js && node --check portal/app.js && node --check portal/domain.js && node --check portal/store.js && node --check assets/portal.js && node --check portal/email-templates.js && node --check portal/mail.js && node --check assets/portal-demo.js && node --check assets/app-showcase.js && node --check portal/academy.js && node --check assets/academy.js && node --check portal/passwords.js && node --check portal/oauth.js && node --check portal/notifications.js && node --check portal/referrals.js && node --check portal/statistics.js && node --check portal/brand-mail.js && node --check assets/auth.js && node --check assets/consent.js",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
+    "jose": "6.2.12",
     "mysql2": "3.24.3",
     "nodemailer": "9.1.1",
     "sharp": "0.35.4"

@@ -12,6 +12,8 @@
   function read(path){
     if(path==='/me')return structuredClone({user,company,csrf:'demo'});
     if(path==='/cases')return structuredClone({cases});
+    if(path==='/statistics')return {total:cases.length,active:cases.length,needsInfo:1,reports:0,averageDays:null,durationSample:0,scope:'Fiktive Beispieldaten',groups:[{status:'review',label:'In Prüfung',count:1},{status:'needs_info',label:'Rückfrage',count:1},{status:'in_progress',label:'Gutachten in Arbeit',count:1}],months:[{month:'2026-09',created:3,reports:0}]};
+    if(path==='/referrals')return {code:null,url:null,referredAccounts:0,rewards:[],totals:{offered:0,approved:0,paid:0}};
     if(path==='/settings')return structuredClone({profile:{...user,phone:'',jobTitle:'Partnerbetrieb'},preferences:user.preferences,activeSessions:0,storage:null});
     if(path==='/export')return structuredClone({notice:'Fiktive Beispieldaten',user,company,cases});
     if(path.startsWith('/cases/')){const c=cases.find(c=>path==='/cases/'+c.id);if(!c)throw new Error('Beispielfall nicht gefunden.');return structuredClone({case:c,files:c.number==='DEMO-001'?[{id:'demo-photo',name:'Beispiel-Seitenschaden.webp',type:'image/webp',kind:'photo',size:124000,at:c.updatedAt,preview:'/assets/ux-cinema-side-small.webp'}]:[],payments:[],events:[{id:'demo-event-1',at:'2026-09-08T09:00:00Z',actor:'Alex Beispiel',action:'Fall eingereicht',note:'Beispielfall mit fiktiven Angaben.'},{id:'demo-event-2',at:c.updatedAt,actor:'UNFALLX Beispielteam',action:c.status==='needs_info'?'Rückfrage zu den Unterlagen':'Bearbeitung aktualisiert',note:c.status==='needs_info'?'Bitte ergänze eine Übersichtsaufnahme des gesamten Fahrzeughecks.':'Die Unterlagen sind eingegangen und werden bearbeitet.'}]});}

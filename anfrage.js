@@ -254,12 +254,12 @@ async function sendeMail(d, meta) {
     replyTo: d.email || undefined,
     subject: betreff,
     text: mailText(d, meta),
-    html: mailHtml(d, meta),
-    attachments: d.fotos.map((f, i) => ({
+    html: brandHtml(mailHtml(d, meta)),
+    attachments: [logoAttachment(), ...d.fotos.map((f, i) => ({
       filename: `foto-${i + 1}.${BILDTYPEN[f.typ].ext}`,
       content: f.buf,
       contentType: f.typ
-    }))
+    }))]
   });
   if (!receipt.accepted || !receipt.accepted.some((address) => String(address).toLowerCase() === MAIL_TO)) {
     throw new Error('Der Mailserver hat den Empfaenger nicht angenommen.');
