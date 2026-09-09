@@ -8,6 +8,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const anfrage = require('./anfrage');
+const hosts = require('./portal/hosts');
 const portal = require('./portal/app').createPortal();
 portal.ready().catch(() => {});
 
@@ -167,11 +168,10 @@ function sendError(res, status, isHead, urlPath) {
 
 const server = http.createServer((req, res) => {
   const isHead = req.method === 'HEAD';
-  /* Eine feste Domain hält Portal-Cookies und die CSRF-Origin konsistent. */
-  if (/^www\.unfallx\.com(?::\d+)?$/i.test(req.headers.host || '')) {
-    const target = 'https://unfallx.com' + (req.url.startsWith('/') ? req.url : '/');
-    return send(res, 308, { Location: target, 'Cache-Control': 'no-store' }, '', isHead);
-  }
+  let hostInfo;try{hostInfo=hosts.hostPolicy(req.headers.host,req.url);}catch{return sendError(res,400,isHead);}
+  if(hostInfo.redirect)return send(res,308,{Location:hostInfo.redirect,'Cache-Control':'no-store'},'',isHead);
+  const apiPath=req.url.split('?')[0];
+  if(hostInfo.production&&!hostInfo.isApp&&apiPath.startsWith('/api/portal/')&&!apiPath.startsWith('/api/portal/academy/'))return send(res,409,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Die App ist umgezogen. Bitte app.unfallx.com/login öffnen und dort anmelden.',redirect:hosts.APP_ORIGIN+'/login'}),isHead);
   if (req.url.split('?')[0].startsWith('/api/portal/')) return portal.handle(req, res, SECURITY_HEADERS);
 
   /* Anfrageformular: POST /api/anfrage (JSON) */
@@ -211,6 +211,7 @@ const server = http.createServer((req, res) => {
     return sendError(res, 404, isHead, urlPath);
   }
 
+  if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
   /* Healthcheck für Hostinger */
   if (urlPath === '/health') {
     return send(res, 200, {
@@ -251,18 +252,27 @@ const server = http.createServer((req, res) => {
   const tryNext = (i) => {
     if (i >= candidates.length) return sendError(res, 404, isHead, urlPath);
     const file = candidates[i];
-    fs.stat(file, (err, stat) => {
+    fs.stat(file, async (err, stat) => {
       if (err || !stat.isFile()) return tryNext(i + 1);
       const ext = path.extname(file).toLowerCase();
 
       if (ext === '.html') {
         let page;
-        try { page = Buffer.from(renderPage(file), 'utf8'); }
+        try { let html=renderPage(file);
+          if(!hostInfo.isApp&&html.includes('data-course-price')||path.basename(file)==='bildung.html'){
+            const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n/100);
+            try{const courses=await portal.catalog(),primary=courses.find(c=>c.id==='praxis-berlin');html=html.replace(/(<span data-course-price>)[^<]*(<\/span>)/g,'$1'+(primary?euro(primary.price):'siehe Kursangebot')+'$2');
+              if(path.basename(file)==='bildung.html'){const cards=courses.map(c=>'<article class="portal-card"><span class="eyebrow">'+(c.mode==='digital'?'DIGITAL':'PRÄSENZ')+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.description)+'</p><p><strong>'+(!c.price&&c.mode==='digital'?'Preis wird bekannt gegeben':euro(c.price)+' pro Person')+'</strong><br>'+esc(c.duration)+' · '+esc(c.location)+'<br>'+(c.start?'Start: '+esc(c.weeks[0]?.week||c.start):'Start wird demnächst bekannt gegeben')+'</p><p>'+c.capacity+' Plätze pro Termin</p><a class="btn btn-outline" href="#kursanmeldung">Kurs auswählen →</a></article>').join('')||'<p>Neue Kurse werden demnächst veröffentlicht.</p>';html=html.replace('<div class="partner-grid" id="course-catalog"><p>Kursangebot wird geladen …</p></div>','<div class="partner-grid" id="course-catalog">'+cards+'</div>');}
+            }catch{html=html.replace(/(<span data-course-price>)[^<]*(<\/span>)/g,'$1Preis auf Anfrage$2');}
+          }
+          page = Buffer.from(hosts.links(html,hostInfo.isApp,hostInfo.production), 'utf8'); }
         catch (e) { return sendError(res, 500, isHead); }
         return send(res, 200, {
           'Content-Type': MIME[ext],
           'Content-Length': page.length,
-          'Cache-Control': cacheFor(ext, false)
+          'Cache-Control': hosts.appPath(urlPath)?'private, no-store, max-age=0':cacheFor(ext, false),
+          ...(hosts.appPath(urlPath)?{'CDN-Cache-Control':'no-store','Vary':'Cookie','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'}:{})
         }, page, isHead);
       }
 

@@ -42,7 +42,7 @@ test('Customer intake remains isolated; academy confirmation, capacity and sched
  registration={mode:'berlin',week:'start-folgt',name:'Kurs Beispiel',email:'course@example.com',phone:'0300000',privacy:true,terms:true,password:'Mein sicherer Test Merksatz 2026!'};
  assert.equal((await call('/academy/register',{...registration,week:'2020-01-01'})).status,400);assert.equal((await call('/academy/register',{...registration,privacy:false})).status,400);
  assert.equal((await call('/academy/register',registration)).status,200);assert.equal((await call('/academy/weeks')).json.weeks[0].reserved,0);
- const msg=sent.findLast(x=>x.to===registration.email);assert.match(msg.text,/1.500 €/);assert.match(msg.html,/demnächst/);verifyToken=msg.text.match(/#bestaetigen=([a-f0-9]+)/)[1];assert.equal((await call('/exchange',{token:verifyToken})).status,401);
+ const msg=sent.findLast(x=>x.to===registration.email);assert.match(msg.text,/1\.500(?:,00)?\s€/);assert.match(msg.html,/demnächst/);verifyToken=msg.text.match(/#bestaetigen=([a-f0-9]+)/)[1];assert.equal((await call('/exchange',{token:verifyToken})).status,401);
  assert.equal((await call('/academy/verify',{token:verifyToken})).json.status,'requested');assert.equal((await call('/academy/verify',{token:verifyToken})).status,401);assert.equal((await call('/academy/weeks')).json.weeks[0].reserved,1);
  const count=sent.length;assert.equal((await call('/academy/register',registration)).status,200);assert.equal(sent.length,count);
  fail=true;assert.equal((await call('/academy/register',{...registration,email:'failcourse@example.com'})).status,503);fail=false;const failedToken=sent.at(-1).text.match(/#bestaetigen=([a-f0-9]+)/)[1];assert.equal((await call('/academy/verify',{token:failedToken})).status,401);
