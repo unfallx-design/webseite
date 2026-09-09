@@ -22,7 +22,7 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
  async function call(p,data,u={},extra={}){const r=await fetch(base+'/api/portal'+p,{method:data===undefined?'GET':'POST',headers:{Origin:env.PORTAL_ORIGIN,'Content-Type':'application/json','X-Forwarded-For':'test-'+(++ip),Cookie:u.cookie||'','X-CSRF-Token':u.csrf||'',...extra},body:data===undefined?undefined:Buffer.isBuffer(data)?data:JSON.stringify(data)});const bytes=Buffer.from(await r.arrayBuffer());return {status:r.status,json:r.headers.get('content-type')?.includes('application/json')?JSON.parse(bytes):null,bytes,headers:r.headers};}
  async function user(name,role,companyId=null){const token=D.random(),csrf=D.random(),u={id:D.hash(name+'@example.com'),name,email:name+'@example.com',role,companyId,active:true,verifiedAt:new Date().toISOString()};await store.transaction(async s=>{await s.put('user',u,companyId||'internal');await s.put('session',{id:D.hash(token),userId:u.id,csrf,createdAt:new Date().toISOString(),expires:Date.now()+3600000},u.id);if(companyId)await s.put('company',{id:companyId,name:companyId,status:'approved'});});return {...u,cookie:'ux_session='+token,csrf};}
  const a=await user('admin','admin'),p=await user('partner','partner','company-a'),other=await user('other','partner','company-b'),c=await user('customer','customer'),staff=await user('staff','appraiser');
- const input={vehicle:'Beispielfahrzeug',plate:'DEMO',accidentDate:'2026-09-09',location:'Berlin',owner:'Beispiel',ownerContact:'customer@example.com',customerEmail:'status@example.com',notifyCustomer:true,description:'PRIVATE_DESCRIPTION',authority:true,shareWithLawyer:true};
+ const input={...require('./fixtures/intake')(),vehicle:'Beispielfahrzeug',plate:'DEMO',accidentDate:'2026-09-09',location:'Berlin',owner:'Beispiel',ownerContact:'customer@example.com',customerEmail:'status@example.com',notifyCustomer:true,description:'PRIVATE_DESCRIPTION',authority:true,lawyerChoice:'unfallx',shareWithLawyer:true};
  const pdf=Buffer.from('%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF'),photo=await sharp({create:{width:8,height:8,channels:3,background:'#123456'}}).jpeg().toBuffer();let cid,lawyer;
  async function act(u,data){const v=(await call('/cases/'+cid,undefined,a)).json.case.version;return call('/cases/'+cid,{...data,version:v},u);}
  try{
@@ -33,6 +33,7 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
   assert.equal((await act(p,{action:'partner_status',status:'recording'})).status,200);
   assert.equal((await act(p,{action:'status',status:'accepted'})).status,403);
   assert.equal((await call('/cases/'+cid+'/files',photo,p,{'Content-Type':'image/jpeg','X-File-Kind':'photo','X-File-Name':'photo.jpg'})).status,200);
+  assert.equal((await call('/cases/'+cid+'/files',pdf,p,{'Content-Type':'application/pdf','X-File-Kind':'case_bundle','X-File-Name':'bundle.pdf'})).status,200);
   assert.equal((await act(p,{action:'partner_status',status:'ready_to_submit'})).status,200);
   assert.equal((await act(p,{action:'submit'})).status,200);
   assert.equal((await act(p,{action:'partner_status',status:'recording'})).status,403);

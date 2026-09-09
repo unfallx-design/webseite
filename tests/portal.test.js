@@ -26,7 +26,7 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  assert.ok((await call('/settings',undefined,admin)).json.storage.limit>0);
  const reg=sent.find(m=>m.to==='one@example.com');assert.match(reg.subject,/Willkommen/);assert.match(reg.html,/E-Mail bestätigen/);assert.match(reg.html,/15 Minuten/);assert.match(reg.html,/Freigabe erhalten/);
 });
- const intake={vehicle:'BMW Test',plate:'TEST',vin:'',accidentDate:'2026-09-08',location:'Leipzig',owner:'Testkunde',ownerContact:'customer@example.com',description:'Testschaden',authority:true,shareWithLawyer:false};
+ const intake={...require('./fixtures/intake')(),vehicle:'BMW Test',plate:'TEST',accidentDate:'2026-09-08',location:'Leipzig',owner:'Testkunde',ownerContact:'customer@example.com',description:'Testschaden',authority:true,shareWithLawyer:false};
  assert.equal((await call('/cases',intake,p1)).status,403);assert.equal((await call('/admin/overview',undefined,p1)).status,403);assert.equal((await call('/admin/company',{id:p1.company.id,status:'approved'},p1)).status,403);checks+=3;
  for(const p of [p1,p2])assert.equal((await call('/admin/company',{id:p.company.id,status:'approved'},admin)).status,200);
  const created=await call('/cases',intake,p1);assert.equal(created.status,200,JSON.stringify(created.json));const cid=created.json.case.id;let c=created.json.case;
@@ -39,7 +39,7 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  const downloaded=await fetch(base+'/api/portal/files/'+photo.json.file.id,{headers:{Cookie:p1.cookie}});assert.match(downloaded.headers.get('cache-control'),/no-store/);assert.deepEqual(Buffer.from(await downloaded.arrayBuffer()),pic);checks+=2;
  async function reload(){c=(await call('/cases/'+cid,undefined,admin)).json.case;return c;}
  async function action(actor,data,expected=200){await reload();const r=await call('/cases/'+cid,{...data,version:c.version},actor);assert.equal(r.status,expected,JSON.stringify(r.json));checks++;return r;}
- await action(p1,{action:'submit'});await action(admin,{action:'status',status:'report_ready'},400);await action(admin,{action:'status',status:'accepted'});await action(admin,{action:'status',status:'in_progress'});
+ assert.equal((await upload(p1,'case_bundle',Buffer.from('%PDF-1.4\n%%EOF'),'application/pdf','fixture-auftrag-und-schein.pdf')).status,200);await action(p1,{action:'submit'});await action(admin,{action:'status',status:'report_ready'},400);await action(admin,{action:'status',status:'accepted'});await action(admin,{action:'status',status:'in_progress'});
  let expert;
  await t.test('Admin invitation delivers HTML, resend revokes old links and mail failure is recoverable',async()=>{
  const invite={name:'Test Gutachter',email:'expert@example.com'};

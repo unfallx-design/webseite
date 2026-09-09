@@ -24,7 +24,7 @@ test('Authenticated original uploads above 6 MB are durable, idempotent and priv
  async function call(p,data,u={},headers={}){const r=await fetch(base+'/api/portal'+p,{method:data===undefined?'GET':'POST',headers:{Origin:env.PORTAL_ORIGIN,'Content-Type':'application/json',...u,...headers},body:data===undefined?undefined:Buffer.isBuffer(data)?data:JSON.stringify(data)});const bytes=Buffer.from(await r.arrayBuffer());return {status:r.status,headers:r.headers,bytes,json:r.headers.get('content-type')?.includes('application/json')?JSON.parse(bytes):null};}
  try{
  const customer=await actor('partner','fixture-partner'),other=await actor('partner','fixture-other'),admin=await actor('admin','fixture-admin');
- const cid=(await call('/cases',{vehicle:'Test',plate:'DEMO',accidentDate:'2026-09-09',location:'Berlin',owner:'Test Person',ownerContact:'fixture-customer@example.com',description:'Testaufnahme für Originaldateien',authority:true},customer)).json.case.id;
+ const cid=(await call('/cases',{...require('./fixtures/intake')(),vehicle:'Test',plate:'DEMO',accidentDate:'2026-09-09',location:'Berlin',owner:'Test Person',ownerContact:'fixture-customer@example.com',description:'Testaufnahme für Originaldateien',authority:true},customer)).json.case.id;
  const raw=crypto.randomBytes(1800*1500*3),jpg=await sharp(raw,{raw:{width:1800,height:1500,channels:3}}).png().toBuffer();assert.ok(jpg.length>6*1024*1024);
  const pdf=Buffer.concat([Buffer.from('%PDF-1.7\n'),Buffer.alloc(7*1024*1024,32),Buffer.from('\n%%EOF')]);
  const meta={'Content-Type':'image/png','X-File-Name':'Originalfoto.png','X-File-Kind':'photo'};
@@ -32,7 +32,7 @@ test('Authenticated original uploads above 6 MB are durable, idempotent and priv
  assert.equal((await call('/cases/'+cid+'/files',jpg,{Cookie:customer.Cookie},meta)).status,403);
  const uploaded=await call('/cases/'+cid+'/files',jpg,customer,meta);assert.equal(uploaded.status,200,JSON.stringify(uploaded.json));
  const repeated=await call('/cases/'+cid+'/files',jpg,customer,meta);assert.equal(repeated.json.alreadyStored,true);assert.equal(repeated.json.file.id,uploaded.json.file.id);
- const document=await call('/cases/'+cid+'/files',pdf,customer,{'Content-Type':'application/pdf','X-File-Name':'Auftrag.pdf','X-File-Kind':'document'});assert.equal(document.status,200);
+ const document=await call('/cases/'+cid+'/files',pdf,customer,{'Content-Type':'application/pdf','X-File-Name':'Auftrag.pdf','X-File-Kind':'case_bundle'});assert.equal(document.status,200);
  assert.equal((await call('/cases/'+cid,undefined,customer)).json.files.length,2);
  for(const [file,bytes]of [[uploaded.json.file,jpg],[document.json.file,pdf]]){const download=await call('/files/'+file.id,undefined,admin);assert.equal(download.status,200);assert.deepEqual(download.bytes,bytes);assert.match(download.headers.get('cache-control'),/no-store/);assert.equal((await call('/files/'+file.id,undefined,other)).status,404);assert.equal((await call('/files/'+file.id)).status,401);}
  const c=(await call('/cases/'+cid,undefined,customer)).json.case;assert.equal((await call('/cases/'+cid,{action:'submit',version:c.version},customer)).status,200);

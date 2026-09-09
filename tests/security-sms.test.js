@@ -21,14 +21,14 @@ test('SMS proof, optional 2FA, reset/magic-link bypass prevention, recovery and 
  let full=a,recoveryCodes=[];
  try{
  await t.test('Admin can move drafts; partners and assigned employees cannot take over drafts',async()=>{
-  const input={vehicle:'Demo',plate:'DEMO',owner:'Test',ownerContact:'example@example.com',accidentDate:'2026-09-09',location:'Berlin',description:'Test',authority:true};
+  const input={...require('./fixtures/intake')(),vehicle:'Demo',plate:'DEMO',owner:'Test',ownerContact:'example@example.com',accidentDate:'2026-09-09',location:'Berlin',description:'Test',authority:true};
   const c=(await call('/cases',input,p)).json.case;
   await store.transaction(async s=>{const r=await s.get('case',c.id);r.assignee=staff.id;await s.put('case',r,p.companyId);});
   assert.equal((await call('/cases/'+c.id,{action:'status',status:'review',version:c.version},p)).status,403);
   assert.equal((await call('/cases/'+c.id,{action:'status',status:'review',version:c.version},staff)).status,403);
   assert.equal((await call('/cases/'+c.id,{action:'status',status:'review',version:c.version},a)).json.case.status,'review');
   assert.equal((await call('/cases/'+c.id,{action:'status',status:'accepted',version:c.version},a)).status,409);
-  for(const from of ['recording','ready_to_submit']){const nc=(await call('/cases',input,p)).json.case;await store.transaction(async s=>{const r=await s.get('case',nc.id);r.status=from;await s.put('case',r,p.companyId);});assert.equal((await call('/cases/'+nc.id,{action:'status',status:'submitted',version:nc.version},a)).json.case.status,'submitted');}
+  for(const from of ['recording','ready_to_submit']){const nc=(await call('/cases',input,p)).json.case;await store.transaction(async s=>{const r=await s.get('case',nc.id);r.status=from;await s.put('case',r,p.companyId);for(const kind of ['photo','case_bundle'])await s.put('file',{id:D.id(),caseId:nc.id,kind,size:1},nc.id);});assert.equal((await call('/cases/'+nc.id,{action:'status',status:'submitted',version:nc.version},a)).json.case.status,'submitted');}
  });
  await t.test('Authenticated SMS only, CSRF, number allowlist, cooldown and persistent five-attempt limit',async()=>{
   assert.equal((await call('/security/phone/send',{phone:'017612345678'})).status,401);

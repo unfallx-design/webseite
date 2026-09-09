@@ -12,7 +12,7 @@ test('Partner intake remains isolated; academy confirmation, capacity and schedu
  assert.equal(a.user.role,'partner');assert.ok(a.user.companyId&&a.user.companyId!=='evil');assert.equal(a.redirect,'/portal');assert.equal((await call('/admin/overview',undefined,a)).status,403);assert.equal((await call('/admin/academy',undefined,a)).status,403);assert.equal((await call('/admin/overview',undefined,admin)).json.team.some(u=>u.role==='customer'),false);
  const email=sent.find(x=>x.to===a.user.email);assert.match(email.text,/Ersten Fall einreichen/);assert.match(email.html,/Firmendaten|Registrierung/);
  });
- const intake={vehicle:'Beispielfahrzeug',plate:'DEMO',accidentDate:'2026-09-09',location:'Berlin',owner:'Beispielkunde',ownerContact:'customer-a@example.com',description:'Fiktiver Parkschaden',authority:true};
+ const intake={...require('./fixtures/intake')(),vehicle:'Beispielfahrzeug',plate:'DEMO',accidentDate:'2026-09-09',location:'Berlin',owner:'Beispielkunde',ownerContact:'customer-a@example.com',description:'Fiktiver Parkschaden',authority:true};
  const first=await call('/cases',intake,a);assert.equal(first.status,200);const cid=first.json.case.id;assert.equal(first.json.case.companyId,a.user.companyId);assert.equal(first.json.case.ownerUserId,null);assert.equal(first.json.case.source,'partner');
  const photo=await sharp({create:{width:16,height:16,channels:3,background:'#445566'}}).jpeg().toBuffer(),pdf=Buffer.from('%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF');
  async function version(){return (await call('/cases/'+cid,undefined,admin)).json.case.version;}
@@ -27,6 +27,7 @@ test('Partner intake remains isolated; academy confirmation, capacity and schedu
  const partnerUser={id:D.hash('partner@example.com'),email:'partner@example.com',name:'Partner',role:'partner',companyId:'company-fixture',active:true};await store.transaction(async s=>{await s.put('user',partnerUser,'company-fixture');await s.put('company',{id:'company-fixture',name:'Firma',status:'approved'});});const p=await signin('partner@example.com',false);assert.equal((await call('/cases/'+cid,undefined,p)).status,404);
  });
  await t.test('Submission, staff review, private notes and explicit report release',async()=>{
+ assert.equal((await upload(a,'case_bundle',pdf,'application/pdf')).status,200);
  assert.equal((await act(a,{action:'submit'})).status,200);assert.equal((await act(a,{action:'save',...intake})).status,403);assert.equal((await upload(a,'photo',photo,'image/jpeg')).status,400);
  assert.equal((await act(admin,{action:'internal_note',note:'INTERNAL_ONLY'})).status,200);
  const view=(await call('/cases/'+cid,undefined,a)).json;assert.equal(view.case.internalNote,undefined);assert.equal(view.events.some(e=>e.internal),false);
