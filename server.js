@@ -132,6 +132,7 @@ const SCRIPT_HASHES = inlineScriptHashes();
 
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
+  ...(process.env.NODE_ENV==='test'?{}:{'Strict-Transport-Security':'max-age=31536000'}),
   'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
@@ -226,6 +227,7 @@ const server = http.createServer((req, res) => {
     return send(res, 301, { Location: target }, '', isHead);
   }
 
+  if (/(^|\/)\.[^/]|\\|[\x00-\x1f]/.test(urlPath)) return sendError(res,404,isHead,urlPath);
   if (urlPath !== '/portal' && BLOCKED.test(urlPath)) return sendError(res, 404, isHead, urlPath);
 
   /* Startseite auf die kanonische Adresse führen. */
@@ -255,6 +257,9 @@ const server = http.createServer((req, res) => {
     fs.stat(file, async (err, stat) => {
       if (err || !stat.isFile()) return tryNext(i + 1);
       const ext = path.extname(file).toLowerCase();
+      const publicAsset=file.startsWith(path.join(ROOT,'assets')+path.sep)&&['.css','.js','.svg','.png','.jpg','.jpeg','.webp','.avif','.ico','.woff2'].includes(ext);
+      const publicRoot=path.dirname(file)===ROOT&&(ext==='.html'||['robots.txt','sitemap.xml','site.webmanifest','app.webmanifest','favicon.ico','apple-touch-icon.png'].includes(path.basename(file)));
+      if(!publicAsset&&!publicRoot)return sendError(res,404,isHead,urlPath);
 
       if (ext === '.html') {
         let page;

@@ -42,3 +42,5 @@
 @media(min-width:901px){.portal-sidebar{position:sticky;top:76px;max-height:calc(100vh - 76px);overflow-y:auto;align-self:start;overscroll-behavior:contain}#portal-nav a{padding-top:11px;padding-bottom:11px}.portal-help{padding-bottom:20px}}
 #course-catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}#course-catalog .portal-card{margin:0}#course-catalog h3{overflow-wrap:anywhere}
 .partner-public .btn{max-width:100%;white-space:normal;text-align:center}
+
+#account-security input,#account-security select{max-width:100%;min-width:0}#account-security form+form{margin-top:20px}.recovery-code-list{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:2;background:#f1f4f7;color:#18202b;border:1px solid #dbe1e8;border-radius:12px;padding:16px}.factor-recovery{margin:24px 0}.factor-recovery summary{cursor:pointer;font-weight:700}.factor-recovery p{font-size:14px}body[data-portal-theme="dark"] .recovery-code-list{background:#171e2a;color:#fff;border-color:#303a49}

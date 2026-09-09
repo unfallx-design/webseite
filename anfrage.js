@@ -242,6 +242,7 @@ async function sendeMail(d, meta) {
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || '465', 10),
     secure: String(process.env.SMTP_SECURE || 'true') === 'true',
+    requireTLS: true,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 20000,
