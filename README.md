@@ -46,16 +46,18 @@ Die Website ist ausschließlich deutschsprachig. Frühere Sprachadressen werden 
 
 ## UNFALLX Connect
 
-- `/app`: Präsentation mit zwei KI-Visualisierungen. `/app-demo`: schreibgeschützte Beispielansicht mit ausschließlich fiktiven Daten und ohne API-Zugriffe. `/app-hilfe`: Anleitung mit echten Ansichten aus der Demo.
+- Die App-Vorstellung bleibt auf `https://unfallx.com/#app`. `app.unfallx.com` ist ausschließlich das Partnerportal; `admin.unfallx.com` ist das interne Dashboard. Partner starten direkt in „Meine Fälle“; Konto, Dokumente und Abrechnung liegen im aufklappbaren Nebenmenü. Beide Bereiche besitzen ein eigenes Hilfecenter unter `/app-hilfe`.
+- Die separate mobile App und ihre Programmdateien sind entfernt. `mobile.unfallx.com` leitet GET/HEAD-Aufrufe zum Partnerportal um. API-Aufrufe und schreibende Anfragen auf dem alten Host antworten mit 410 und werden nicht weiterverarbeitet. Bestehende Konten, Fallakten und Uploads bleiben in der gemeinsamen Datenbank erhalten. Sitzungen sind weiterhin an den aktiven Arbeitsbereich gebunden; ehemalige mobile Sitzungen berechtigen nicht zum Partner-Login.
+- Alte Demo-Adressen führen zur Vorstellung auf der Hauptseite, `/mitglied-werden` direkt zur Partnerregistrierung. Auf dem Handy wird dasselbe responsive Partnerportal verwendet. Keine DNS- oder Datenbanklöschung ist für diese Umstellung erforderlich.
 - `portal/email-templates.js`: HTML- und Textvorlagen für Registrierung, Login (15 Minuten) und interne Einladungen (24 Stunden). Kein Link wird öffentlich protokolliert.
 - Die Administration legt interne Gutachter an. Eine persönliche Einladung wird direkt versandt. Fehlgeschlagener Versand bleibt sichtbar und kann erneut ausgelöst werden; dabei verlieren ältere Einladungslinks ihre Gültigkeit. Gesperrte Konten können sich nicht anmelden.
-- Persönliche Einstellungen: Name, Telefon, Funktion, Startansicht, Hell/Dunkel, kompakte Tabellen und reduzierte Bewegung. E-Mail, Rollen und Firmeneigentum sind darüber nicht änderbar.
+- Persönliche Einstellungen: Name, Telefon, Funktion, Startansicht für interne Zugänge, kompakte Tabellen und reduzierte Bewegung. E-Mail, Rollen und Firmeneigentum sind darüber nicht änderbar.
 - Sitzungsverwaltung meldet andere Geräte ab und erhält die aktuelle Sitzung. CSV-Fallübersicht entschärft Tabellenformeln; Fotovorschauen nutzen die bestehende geschützte Datei-API.
 - `npm test` prüft Anmeldung, Einladung und Fehlerbehandlung, Rollen/Firmengrenzen, Einstellungen, Sitzungen sowie den Fall- und Zahlungsablauf über einen lokalen HTTP-Server mit temporärer Datenbank. Es werden keine echten E-Mails versandt.
 
-### Connect, Privatkunden und Bildung (2.2)
+### Connect und Bildung
 
-Die Startseite priorisiert Connect. Die Geräte-Szene verwendet unveränderte echte Screenshots der App-Demo mit fiktiven Daten; nur die Geräteumgebung wurde generiert. Der öffentliche Kundeneinstieg liegt unter `/schaden-melden`, der geschützte Zugang unter `/kundenportal`. Die Rolle `customer` kann ausschließlich eigene Fälle anlegen, Fotos und Unterlagen einreichen, Rückfragen beantworten und freigegebene Gutachten abrufen. Interne Aktionen, Partnervergütung und fremde Dateien bleiben gesperrt.
+Die Startseite priorisiert Connect. Die Geräte-Szene verwendet unveränderte echte Screenshots der App-Demo mit fiktiven Daten; nur die Geräteumgebung wurde generiert. Privatkunden-Zugänge sind deaktiviert. Fälle werden durch Partnerbetriebe übermittelt und durch das interne Team bearbeitet. Frühere Kundenadressen leiten zum Partnerzugang um. Interne Aktionen, Partnervergütung und fremde Dateien bleiben durch Rollen- und Firmenrechte geschützt.
 
 `/bildung` bietet eine unverbindliche Anmeldung für den einwöchigen Berliner Kurs (1.500 € pro Person) und eine separate Interessentenliste für spätere digitale Kurse. Bis zur Terminbekanntgabe werden Anfragen unter „Start folgt“ gesammelt. Erst nach E-Mail-Bestätigung zählt eine Vormerkung; maximal 26 vorgemerkte oder bestätigte Plätze pro Kurswoche werden innerhalb einer Datenbanktransaktion vergeben. Weitere Anmeldungen landen auf der Warteliste.
 

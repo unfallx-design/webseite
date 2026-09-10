@@ -44,3 +44,7 @@
 .partner-public .btn{max-width:100%;white-space:normal;text-align:center}
 
 #account-security input,#account-security select{max-width:100%;min-width:0}#account-security form+form{margin-top:20px}.recovery-code-list{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:2;background:#f1f4f7;color:#18202b;border:1px solid #dbe1e8;border-radius:12px;padding:16px}.factor-recovery{margin:24px 0}.factor-recovery summary{cursor:pointer;font-weight:700}.factor-recovery p{font-size:14px}body[data-portal-theme="dark"] .recovery-code-list{background:#171e2a;color:#fff;border-color:#303a49}
+
+/* The submitting partner has one direct workspace, with account tools secondary. */
+.portal-secondary-nav{margin-top:20px;border-top:1px solid #e2e7ed;padding-top:12px}.portal-secondary-nav summary{cursor:pointer;color:#647286;font-size:13px;font-weight:650;padding:13px 14px;line-height:1.5}.portal-secondary-nav>div{display:grid;gap:4px;margin-top:8px}.portal-secondary-nav summary:focus-visible{outline:3px solid #e83930;outline-offset:2px}.portal-heading>a.btn{flex:none}.portal-heading>button{flex:none}
+@media(max-width:640px){.portal-heading>a.btn,.portal-heading>button{width:100%;justify-content:center}.portal-secondary-nav{margin-top:10px}}

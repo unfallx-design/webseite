@@ -2,7 +2,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto'),sharp=require('sharp');
 const {createPortal}=require('../portal/app'),{createStore}=require('../portal/store'),D=require('../portal/domain'),hosts=require('../portal/hosts'),{Batch,MAX_FILE}=require('../assets/uploads');
 test('Three hosts separate app, reports and education without losing queries or deep links',()=>{
- for(const p of ['/login','/app-hilfe','/app-demo','/registrieren','/portal-datenschutz'])assert.equal(hosts.hostPolicy('unfallx.com',p+'?x=1').redirect,'https://app.unfallx.com'+p+'?x=1');
+ for(const p of ['/login','/app-hilfe','/registrieren','/portal-datenschutz'])assert.equal(hosts.hostPolicy('unfallx.com',p+'?x=1').redirect,'https://app.unfallx.com'+p+'?x=1');
  assert.equal(hosts.hostPolicy('gutachten.unfallx.com','/login').redirect,'https://app.unfallx.com/login');
  for(const p of ['/unfallgutachten','/einsatzgebiete','/wertminderung']){assert.equal(hosts.hostPolicy('unfallx.com',p).redirect,hosts.REPORT_ORIGIN+p);assert.equal(hosts.hostPolicy('app.unfallx.com',p).redirect,hosts.REPORT_ORIGIN+p);assert.equal(hosts.hostPolicy('gutachten.unfallx.com',p).isReport,true);}
  assert.equal(hosts.hostPolicy('gutachten.unfallx.com','/bildung').redirect,hosts.PUBLIC_ORIGIN+'/bildung');

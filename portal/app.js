@@ -33,8 +33,8 @@ function createPortal(options={}) {
  const context=new AsyncLocalStorage();
  const scope=()=>context.getStore()||{};
  const requestOrigin=()=>scope().origin||origin;
- const recipientOrigin=user=>local&&!scope().production?origin:(internal(user)?hosts.ADMIN_ORIGIN:scope().workspace==='mobile'?hosts.MOBILE_ORIGIN:hosts.APP_ORIGIN);
- function checkWorkspace(user){const w=scope().workspace;if(w)assert(hosts.workspaces[w].roles.includes(user.role),internal(user)?'Dieser Zugang gehört zum internen Team. Bitte unter admin.unfallx.com anmelden.':'Dieser Zugang gehört zum Partner-Portal. Bitte unter app.unfallx.com oder mobile.unfallx.com anmelden.',403);}
+ const recipientOrigin=user=>local&&!scope().production?origin:(internal(user)?hosts.ADMIN_ORIGIN:hosts.APP_ORIGIN);
+ function checkWorkspace(user){const w=scope().workspace;if(w)assert(hosts.workspaces[w].roles.includes(user.role),internal(user)?'Dieser Zugang gehört zum internen Team. Bitte unter admin.unfallx.com anmelden.':'Dieser Zugang gehört zum Partner-Portal. Bitte unter app.unfallx.com anmelden.',403);}
  const cookieName=local?'ux_session':'__Host-ux_session';
  const adminEmail=email(env.PORTAL_ADMIN_EMAIL||'info@unfallx.com');
  const mail=options.mail||createMailer(env);
@@ -189,7 +189,7 @@ function createPortal(options={}) {
  throw new Problem(404,'Nicht gefunden.');
  }
  async function handleScoped(req,res,headers){for(const [k,v]of Object.entries(headers))res.setHeader(k,v);res.setHeader('Cache-Control','private, no-store, max-age=0');res.setHeader('Pragma','no-cache');res.setHeader('CDN-Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Robots-Tag','noindex, nofollow');try{const result=await route(req,res,new URL(req.url,origin));if(result!==null){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(result));}void notifications.flush();}catch(e){if(!res.headersSent){res.statusCode=e.status||500;res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify({error:e.status?e.message:'Die Aktion konnte nicht gespeichert werden. Bitte erneut versuchen.',...(e.status===400&&e.fields?{fields:e.fields}:{})}));}else res.end();if(!e.status)console.error('Portal request failed:',e.code||e.name);}}
- function handle(req,res,headers={}){const workspace=hosts.workspaceForHost(req.headers.host)||(local?env.PORTAL_PREVIEW_WORKSPACE:null);const production=!!hosts.workspaceForHost(req.headers.host);return context.run({workspace,production,origin:production?hosts.workspaces[workspace].origin:origin},()=>handleScoped(req,res,headers));}
+ function handle(req,res,headers={}){if(hosts.isRetiredHost(req.headers.host)){res.writeHead(410,{...headers,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({error:'Die separate Aufnahme-App wurde eingestellt. Bitte im Partnerportal unter app.unfallx.com anmelden.',redirect:hosts.APP_ORIGIN+'/login'}));return;}const workspace=hosts.workspaceForHost(req.headers.host)||(local?env.PORTAL_PREVIEW_WORKSPACE:null);const production=!!hosts.workspaceForHost(req.headers.host);return context.run({workspace,production,origin:production?hosts.workspaces[workspace].origin:origin},()=>handleScoped(req,res,headers));}
  const notificationTimer=setInterval(()=>{if(database)void notifications.flush();},30000);notificationTimer.unref();
  const cleanupTimer=setInterval(()=>{if(database)tx(cleanup).catch(()=>{});},hour);cleanupTimer.unref();
  return {handle,catalog:academy.catalog,status:()=>({database:database?'ready':'pending',mail:mail.ready}),ready:db,close:async()=>{clearInterval(cleanupTimer);clearInterval(notificationTimer);if(database)await database.close();}};
