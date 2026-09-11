@@ -1,0 +1,63 @@
+/* Original files stay untouched; only the presentation uses thumbnails. */
+.portal-body .upload-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin:10px 0}
+.portal-body .upload-grid>li{position:relative;display:flex;flex-direction:column;gap:9px;min-width:0;padding:10px;border-radius:18px;background:#fff;border:1px solid #e1e6ed}
+.portal-body .upload-grid>li[data-state=done]{background:#f3faf6;border-color:#97cbb0}
+.portal-body .upload-grid>li[data-state=error],.portal-body .upload-grid>li[data-state=invalid]{border-color:#cf4138;background:#fff5f4}
+.portal-body .upload-grid strong{font-size:12px;line-height:1.45;font-weight:600;overflow-wrap:anywhere}
+.portal-body .upload-grid small{font-size:11px;line-height:1.45;color:#596575}
+.portal-body .upload-grid button.upload-image-open{display:block;position:relative;padding:0;width:100%;aspect-ratio:4/3;min-height:0;overflow:hidden;background:#f2f4f6;border:0;border-radius:12px;cursor:zoom-in}
+.upload-image-open img{width:100%;height:100%;object-fit:cover;display:block}
+.upload-image-fallback{font-size:12px;padding:15px;color:#5b6675}
+.portal-body .upload-grid button.upload-remove{position:absolute;right:14px;top:14px;display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:0;border-radius:50%;background:#fff;color:#9e231c;font-size:25px;border:1px solid #ddd;box-shadow:0 2px 8px #0002;cursor:pointer}
+.portal-body .upload-grid .upload-kind{margin:0;padding-top:4px;font-size:11px;color:#626c79}
+.portal-body .upload-grid .upload-kind summary{cursor:pointer;padding:8px 0;font-size:11px}
+.portal-body .upload-grid .upload-kind label{display:grid;gap:6px;margin:0;font-size:11px}
+.portal-body .upload-grid .upload-kind select{width:100%;max-width:100%;min-width:0;padding:8px 4px;min-height:44px;font-size:16px;border-radius:10px}
+.upload-document-icon{display:grid;place-items:center;height:95px;background:#f2f4f7;border-radius:12px;color:#bd2820;font-size:25px;font-weight:700}
+.upload-review-actions{display:flex;gap:12px;flex-wrap:wrap}
+.portal-body .upload-review-actions button,.portal-body .upload-add-more{border:1px solid #d5dce5;background:#fff;color:#252e3c;border-radius:14px;min-height:46px;padding:12px 18px;font:600 14px system-ui;cursor:pointer}
+.portal-body .upload-add-more{width:100%;border-style:dashed;background:#fbfcfe;margin-top:8px}
+.portal-body .upload-add-more:hover{background:#fff1ef;border-color:#e6a49e}
+.photo-review-open{overflow:hidden}
+body.design-workspace dialog.photo-review{position:fixed;inset:0;width:min(1040px,calc(100vw - 32px));height:min(840px,calc(100dvh - 32px));max-width:none;max-height:none;margin:auto;padding:0;border:1px solid #d9dfe7;border-radius:24px;background:#fff;color:#1c2632;box-shadow:0 25px 100px #0005;overflow:hidden}
+.photo-review[open]{display:flex;flex-direction:column}
+.photo-review::backdrop{background:#111927bb;backdrop-filter:blur(6px)}
+.photo-review header,.photo-review footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:14px 20px;background:#fff}
+.photo-review header{border-bottom:1px solid #e7eaf0;min-height:66px}
+.photo-review header strong{font:600 14px system-ui;white-space:nowrap}
+.photo-review button,.photo-review a{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:44px;padding:10px 15px;border:1px solid #dfe4eb;border-radius:14px;background:#fff;color:#263140;font:600 14px system-ui;cursor:pointer;text-decoration:none}
+.photo-review button[data-remove]{color:#aa231c;background:#fff4f2;border-color:#f2d4d0}
+.photo-review button[data-add]{color:#fff;background:#df3026;border-color:#df3026}
+.photo-review button:disabled{opacity:.4;cursor:default}
+.photo-review :focus-visible,.upload-picker :focus-visible,.case-gallery :focus-visible{outline:3px solid #4285f4;outline-offset:3px}
+.photo-review-stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f0f2f5;touch-action:pan-y pinch-zoom}
+.photo-review-stage img{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;user-select:none}
+.photo-review-stage p{padding:30px;max-width:450px;font:15px/1.6 system-ui;text-align:center;color:#526070}
+.photo-review-meta{display:grid;gap:5px;padding:12px 20px 0;font:13px/1.4 system-ui}
+.photo-review-meta strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.photo-review-meta span{font-size:12px;color:#647080}
+.photo-review [hidden],.portal-body .upload-picker [hidden]{display:none!important}
+.case-gallery .ws-photo-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.design-workspace .case-gallery .ws-photo{display:flex;flex-direction:column;gap:5px;position:relative;width:100%;padding:8px 8px 12px;background:#fff;border:1px solid #e1e6ed;border-radius:18px;text-align:left;cursor:zoom-in}
+.case-gallery .ws-photo>span{width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden}
+.case-gallery .ws-photo strong{padding:2px 4px;margin:0;font-size:12px;line-height:1.45;color:#293546;font-weight:600}
+.case-gallery .ws-photo small{font-size:11px;padding:0 4px;color:#606d7b}
+.case-gallery .ws-photo .photo-number{position:absolute;top:15px;left:15px;background:#fffefc;box-shadow:0 2px 7px #0002;color:#293546;padding:4px 7px;border-radius:8px;font:600 11px system-ui}
+.case-gallery-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.design-workspace .case-gallery-actions a,.design-workspace .case-gallery-actions button{min-height:44px;font-size:13px}
+@media(max-width:600px){
+ .portal-body .upload-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .portal-body .upload-grid>li{padding:8px;gap:7px}
+ .portal-body .upload-grid button.upload-remove{width:38px;height:38px;right:11px;top:11px}
+ body.design-workspace dialog.photo-review{width:100%;height:100dvh;border:0;border-radius:0}
+ .photo-review header{padding:calc(10px + env(safe-area-inset-top)) 12px 10px;gap:8px}
+ .photo-review header button{font-size:12px;padding:9px 10px}
+ .photo-review footer{padding:12px 10px calc(12px + env(safe-area-inset-bottom));gap:7px}
+ .photo-review footer button,.photo-review footer a{font-size:12px;padding:9px 11px}
+ .photo-review-meta{padding-inline:12px}
+ .photo-review-meta span{font-size:11px}
+ .case-gallery-actions{width:100%}
+ .case-gallery-actions a{flex:1;justify-content:center;text-align:center}
+ .case-gallery .ws-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}
+@media(prefers-reduced-motion:reduce){.photo-review *{scroll-behavior:auto!important}}

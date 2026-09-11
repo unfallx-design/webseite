@@ -22,7 +22,7 @@ async function fixture(){
 test('private previews preserve original bytes, enforce ownership, and queue simultaneous image requests',async()=>{
  const f=await fixture();try{
  assert.equal((await f.call('/files/'+f.photo+'/preview')).statusCode,401);assert.equal((await f.call('/files/'+f.photo+'/preview','other')).statusCode,404);assert.equal((await f.call('/files/'+f.report+'/preview','partner')).statusCode,403);assert.equal((await f.call('/files/'+f.pdf+'/preview','partner')).statusCode,415);
- const r=await f.call('/files/'+f.photo+'/thumbnail','partner');assert.equal(r.statusCode,200);assert.equal(r.headers['Content-Type'],'image/webp');assert.match(r.headers['Cache-Control'],/no-store/);const m=await sharp(r.bytes).metadata();assert.equal(m.width,960);assert.equal(m.height,600);
+ const r=await f.call('/files/'+f.photo+'/thumbnail','partner');assert.equal(r.statusCode,200);assert.equal(r.headers['Content-Type'],'image/webp');assert.match(r.headers['Cache-Control'],/no-store/);const m=await sharp(r.bytes).metadata();assert.equal(m.width,320);assert.equal(m.height,200);const large=await sharp((await f.call('/files/'+f.photo+'/preview','partner')).bytes).metadata();assert.equal(large.width,960);assert.equal(large.height,600);
  const burst=await Promise.all(Array.from({length:12},()=>f.call('/files/'+f.photo+'/preview','partner')));assert(burst.every(x=>x.statusCode===200));assert.deepEqual((await f.call('/files/'+f.photo,'partner')).bytes,f.original);assert.equal((await f.call('/files/'+f.photo+'/preview','admin')).statusCode,200);
  }finally{await f.portal.close();}
 });

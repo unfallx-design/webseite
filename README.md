@@ -72,3 +72,12 @@ Prüfung: `npm run check`, `npm test`. SMS-Tests injizieren einen lokalen Simula
 ### AWS-Dateispeicher
 
 Die optionale Anbindung an privaten S3-Speicher in Frankfurt ist in [docs/aws-storage.md](docs/aws-storage.md) beschrieben. Ohne konfigurierte Aktivierung bleibt die Datenbank der Dateispeicher. Zugangsschlüssel gehören ausschließlich in die private Hosting-Umgebung. Die Administration kann den Speicher prüfen und vorhandene Originaldateien in verifizierten Schritten übertragen.
+
+
+### Fotoauswahl und Sammeldownload
+
+Die gemeinsame Fotoauswahl zeigt Vorschaubilder mit Entfernen-X und einer Wischvorschau. Schadenfotos werden automatisch zugeordnet. Nur Fahrzeugschein und Auftrag benötigen ihre Dokumentart; fotografierte Dokumente lassen sich über „Als Dokument zuordnen“ ändern. Bereits gespeicherte Originale werden bei Wiederholung nicht erneut angelegt.
+
+In der Fallakte kann jede berechtigte Rolle Fotos oder ihre freigegebenen Unterlagen als ZIP herunterladen. Die ZIP wird ohne Neucodierung der Originale übertragen, liest jeweils nur eine Datei in den Arbeitsspeicher und prüft Größe und SHA-256. Download-Rechte entsprechen den Einzeldateien; nicht freigegebene Gutachten und Partnerrechnungen werden rollenabhängig ausgeschlossen. Bei Abbruch muss der Download erneut gestartet werden.
+
+Die lokale Browserprüfung verwendet fiktive Daten. HEIC/HEIF bleibt unverändert gespeichert; eine Vorschau ist vom Gerät abhängig. Google-Logoquelle: https://developers.google.com/identity/branding-guidelines (Originaldatei lokal eingebunden).

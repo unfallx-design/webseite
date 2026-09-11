@@ -41,6 +41,7 @@ test('HTTP S3 integration: original photos, previews, PDFs, tenant boundaries, q
     assert.equal((await call('/files/'+fid)).status,401);
     assert.match((await call('/files/'+fid,undefined,partner)).headers.get('cache-control'),/no-store/);
     assert.equal((await call('/files/'+fid+'/preview',undefined,admin)).headers.get('content-type'),'image/webp');
+    const archive=await call('/cases/'+cid+'/archive',undefined,admin);assert.equal(archive.status,200);assert.equal(archive.bytes.readUInt32LE(0),0x04034b50);const nameSize=archive.bytes.readUInt16LE(26);assert.deepEqual(archive.bytes.subarray(30+nameSize,30+nameSize+image.length),image);
     const retry=await call('/cases/'+cid+'/files',image,partner,{'Content-Type':'image/jpeg','X-File-Kind':'photo','X-File-Name':'Original.jpg'});
     assert.equal(retry.json.file.id,fid);assert.equal(f.objects.size,1);
     const pdf=Buffer.concat([Buffer.from('%PDF-1.7\n'),Buffer.alloc(1024*1024+7,32),Buffer.from('\n%%EOF')]);
