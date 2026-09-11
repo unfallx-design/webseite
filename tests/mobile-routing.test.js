@@ -1,0 +1,82 @@
+'use strict';
+// Run from the website root, or set UNFALLX_PORTAL_ROOT to its local path.
+const {test}=require('node:test'),assert=require('node:assert/strict'),crypto=require('node:crypto'),path=require('node:path'),{Readable}=require('node:stream');
+const root=process.env.UNFALLX_PORTAL_ROOT||path.resolve(__dirname,'..');
+const {createPortal}=require(path.join(root,'portal/app')),{createStore}=require(path.join(root,'portal/store'));
+const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
+const fields={'claimant.first':'Alex','claimant.last':'Beispiel','claimant.street':'Musterstraße 12','claimant.zip':'10115','claimant.city':'Berlin',plate:'B UX 123'};
+async function fixture(){
+ const store=await createStore({NODE_ENV:'test',PORTAL_LOCAL_DB:':memory:'});
+ const portal=createPortal({store,env:{NODE_ENV:'production',PORTAL_MOBILE_INTAKE_ENABLED:'true'},mail:{ready:false,send:async()=>{throw new Error('No mail in tests');}}});await portal.ready();
+ async function call(host,route,data,headers={}){
+  const bytes=data===undefined?null:Buffer.from(JSON.stringify(data));const req=Readable.from(bytes?[bytes]:[]);
+  Object.assign(req,{method:bytes?'POST':'GET',url:'/api/portal'+route,headers:{host,'content-type':'application/json',...headers},socket:{remoteAddress:'127.0.0.1'}});
+  const res={statusCode:200,headersSent:false,headers:{},setHeader(k,v){this.headers[k]=v;},writeHead(code,h){this.statusCode=code;Object.assign(this.headers,h);},end(value){this.value=JSON.parse(String(value));this.headersSent=true;}};
+  await portal.handle(req,res,{});return {status:res.statusCode,json:res.value};
+ }
+ const sessions={};
+ for(const role of ['admin','partner','other','pending','mfa']){
+  const secret=crypto.randomBytes(32).toString('hex');sessions[role]=secret;
+  await store.transaction(async s=>{
+   const companyId=role==='admin'?null:'company-'+role;
+   if(companyId)await s.put('company',{id:companyId,status:role==='pending'?'pending':'approved',name:'Testfirma '+role});
+   await s.put('user',{id:role,role:role==='admin'?'admin':'partner',name:'TEST '+role,email:role+'@example.test',active:true,companyId});
+   await s.put('session',{id:hash(secret),userId:role,workspace:role==='admin'?'admin':'partner',expires:Date.now()+60000,pendingMfa:role==='mfa',csrf:'test'},role);
+  });
+ }
+ const headers=(role='partner')=>({cookie:'__Host-ux_session='+sessions[role],'x-csrf-token':'test',origin:role==='admin'?'https://admin.unfallx.com':'https://app.unfallx.com'});
+ return {store,portal,call,headers};
+}
+test('production mobile API requires approved session, MFA, CSRF and correct host',async()=>{
+ const {portal,call,headers}=await fixture();try{
+  const data={id:crypto.randomUUID(),reference:'TEST',fields,fieldsHash:hash(JSON.stringify(fields))},cap={authorization:'Bearer '+crypto.randomBytes(32).toString('hex')};
+  assert.equal((await call('app.unfallx.com','/mobile/config')).json.version,2);
+  assert.equal((await call('app.unfallx.com','/mobile/cases',data,cap)).status,401);
+  for(const role of ['pending','mfa'])assert.equal((await call('app.unfallx.com','/mobile/cases',data,{...headers(role),...cap})).status,role==='pending'?403:401);
+  assert.equal((await call('app.unfallx.com','/mobile/cases',data,{...headers(),...cap,'x-csrf-token':'wrong'})).status,403);
+  assert.equal((await call('app.unfallx.com','/mobile/cases',data,{...headers(),...cap})).status,200);
+  assert.equal((await call('admin.unfallx.com','/mobile/cases',data,{...headers('admin'),...cap})).status,403);
+  assert.equal((await call('mobile.unfallx.com','/mobile/cases',data,{...headers(),...cap})).status,410);
+  assert.equal((await call('app.unfallx.com','/mobile/cases',data,{...headers(),...cap,origin:'https://evil.example'})).status,403);
+  assert.equal((await call('app.unfallx.com','/mobile/cases',undefined,headers())).status,405);
+ }finally{await portal.close();}
+});
+test('admin receives native case; own company sees it; other companies cannot read or write even with its capability',async()=>{
+ const {store,portal,call,headers}=await fixture();try{
+  const id=crypto.randomUUID(),token=crypto.randomBytes(32).toString('hex'),data={id,reference:'TEST',fields,fieldsHash:hash(JSON.stringify(fields))};
+  assert.equal((await call('app.unfallx.com','/mobile/cases',data,{...headers(),authorization:'Bearer '+token})).status,200);
+  const admin=await call('admin.unfallx.com','/cases/'+id,undefined,headers('admin'));
+  assert.equal(admin.status,200);assert.equal(admin.json.case.intake.owner,'Alex Beispiel');assert.deepEqual(admin.json.case.mobile.fields,fields);assert(!JSON.stringify(admin.json).includes(token));
+  assert.equal((await call('app.unfallx.com','/cases/'+id,undefined,headers())).status,200);
+  assert.equal((await call('app.unfallx.com','/cases/'+id,undefined,headers('other'))).status,404);
+  assert.equal((await call('app.unfallx.com','/mobile/cases',data,{...headers('other'),authorization:'Bearer '+token})).status,404);
+  assert.equal((await call('app.unfallx.com','/mobile/overview',undefined,headers())).json.items.length,1);
+  assert.equal((await call('app.unfallx.com','/mobile/overview',undefined,headers('other'))).json.items.length,0);
+  assert.equal((await call('app.unfallx.com','/mobile/overview')).status,401);
+  const overview=await call('app.unfallx.com','/mobile/overview',undefined,headers());
+  assert.equal(overview.json.items[0].commission.amountCents,null);
+  assert.deepEqual(overview.json.totals,{expectedCents:0,payableCents:0,paidCents:0});
+ }finally{await portal.close();}
+});
+test('real admin finance calculation flows into native 50% commission and payment gates',async()=>{
+ const {store,portal,call,headers}=await fixture();try{
+  const id=crypto.randomUUID(),token=crypto.randomBytes(32).toString('hex');
+  await call('app.unfallx.com','/mobile/cases',{id,reference:'TEST',fields,fieldsHash:hash(JSON.stringify(fields))},{...headers(),authorization:'Bearer '+token});
+  const action=async(data)=>{const row=await store.transaction(s=>s.get('case',id));return call('admin.unfallx.com','/cases/'+id,{version:row.version,...data},headers('admin'));};
+  const calc=await action({action:'finance',calculation:{amount:'100',basis:'net',vatPercent:'19',partnerPercent:'50',partnerVatPercent:'0'},invoiceNumber:'TEST-100',agreement:'Testvereinbarung 50 % netto'});
+  assert.equal(calc.status,200,JSON.stringify(calc));
+  const view=async()=> (await call('app.unfallx.com','/mobile/overview',undefined,headers())).json;
+  let v=await view();assert.equal(v.items[0].commission.amountCents,5000);assert.equal(v.items[0].commission.percent,50);assert.equal(v.items[0].commission.invoiceNetCents,10000);assert.equal(v.totals.payableCents,0);
+  await store.transaction(async s=>{const c=await s.get('case',id);c.status='report_sent';c.finance.partnerAcceptedAt=new Date().toISOString();await s.put('case',c,c.companyId);});
+  assert.equal((await action({action:'payment',amount:'50',date:'2026-09-11',reference:'Test Teilzahlung'})).status,200);
+  v=await view();assert.equal(v.items[0].commission.stage,'payment_pending');assert.equal(v.totals.payableCents,0);
+  assert.equal((await action({action:'payment',amount:'69',date:'2026-09-11',reference:'Test Restzahlung'})).status,200);
+  assert.equal((await view()).items[0].commission.stage,'invoice_pending');
+  assert.notEqual((await action({action:'payout',confirmed:true,date:'2026-09-11',reference:'Unzulässig'})).status,200);
+  await store.transaction(async s=>{const c=await s.get('case',id);c.finance.partnerInvoiceId='fixture-invoice';await s.put('case',c,c.companyId);});
+  assert.equal((await action({action:'approve_invoice',confirmed:true})).status,200);
+  v=await view();assert.equal(v.totals.payableCents,5000);assert.equal(v.totals.expectedCents,5000);
+  assert.equal((await action({action:'payout',confirmed:true,date:'2026-09-11',reference:'Testüberweisung'})).status,200);
+  v=await view();assert.equal(v.totals.expectedCents,0);assert.equal(v.totals.payableCents,0);assert.equal(v.totals.paidCents,5000);
+ }finally{await portal.close();}
+});
