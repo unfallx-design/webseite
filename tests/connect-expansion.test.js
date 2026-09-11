@@ -47,7 +47,7 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
  });
  await t.test('Vault PDFs are limited to admin and the owning partner, independent of cases',async()=>{
   assert.equal((await call('/documents')).status,401);assert.equal((await call('/documents',undefined,c)).status,403);assert.equal((await call('/documents',undefined,staff)).status,403);
-  const r=await call('/documents',pdf,p,{'Content-Type':'application/pdf','X-File-Name':'vertraulich.pdf','X-Company-Id':'company-b'});assert.equal(r.status,200);assert.equal(r.json.document.companyId,'company-a');const id=r.json.document.id;
+  const r=await call('/documents',pdf,p,{'Content-Type':'application/pdf','X-File-Name':'vertraulich.pdf','X-Company-Id':'company-b'});assert.equal(r.status,200);assert.equal(r.json.document.companyId,'company-a');const id=r.json.document.id;const again=await call('/documents',pdf,p,{'Content-Type':'application/pdf','X-File-Name':'vertraulich.pdf'});assert.equal(again.status,200);assert.equal(again.json.document.id,id);
   assert.equal((await call('/documents/'+id,undefined,other)).status,404);assert.equal((await call('/documents/'+id,undefined,c)).status,403);assert.deepEqual((await call('/documents/'+id,undefined,a)).bytes,pdf);
   assert.equal((await call('/documents',Buffer.from('not-pdf'),a,{'Content-Type':'application/pdf','X-File-Name':'fake.pdf'})).status,415);
   const own=await call('/documents',pdf,a,{'Content-Type':'application/pdf','X-File-Name':'nur-admin.pdf'});assert.equal(own.status,200);assert.equal((await call('/documents/'+own.json.document.id,undefined,p)).status,404);

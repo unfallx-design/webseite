@@ -23,6 +23,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { brandHtml, logoAttachment } = require('./portal/brand-mail');
 
 const MAX_BODY = 22 * 1024 * 1024;        // Drei Fotos à 5 MB, Base64-Aufschlag und Formularfelder
 const MAX_FILES = 3;
