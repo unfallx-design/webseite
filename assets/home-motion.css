@@ -1,0 +1,56 @@
+/* Homepage motion is progressive enhancement; all content is visible without JavaScript. */
+.home-experience{--home-red:#e3241c}
+.home-reading-progress{position:fixed;inset:0 0 auto;height:3px;background:#e3241c;transform:scaleX(0);transform-origin:left;z-index:1100;pointer-events:none}
+.home-experience .connect-first{padding-top:155px;background:radial-gradient(ellipse at 50% 38%,#24202c 0,transparent 60%),#10141b}
+.home-experience .connect-first:before{display:none}
+.home-experience .connect-first>.wrap{position:relative;z-index:1}
+.home-atmosphere{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;contain:paint}
+.home-glow{position:absolute;width:min(650px,65vw);aspect-ratio:1;border-radius:50%;filter:blur(75px);opacity:.45}
+.home-glow-red{left:-12%;top:3%;background:radial-gradient(circle,#c7353d99,transparent 68%)}
+.home-glow-blue{right:-15%;top:20%;background:radial-gradient(circle,#3b689d66,transparent 68%)}
+.home-grid{position:absolute;inset:8% -30% 35%;opacity:.2;background-image:linear-gradient(#96a9c529 1px,transparent 1px),linear-gradient(90deg,#96a9c529 1px,transparent 1px);background-size:72px 72px;transform:perspective(650px) rotateX(54deg);mask-image:radial-gradient(ellipse,black,transparent 67%);-webkit-mask-image:radial-gradient(ellipse,black,transparent 67%)}
+.home-orbit{position:absolute;left:50%;top:20%;width:min(1250px,120vw);height:470px;border:1px solid #ff716520;border-radius:50%;transform:translateX(-50%) rotate(-19deg)}
+.home-orbit:after{content:"";position:absolute;top:13%;left:15%;width:5px;height:5px;border-radius:50%;background:#ed5d56;box-shadow:0 0 18px 4px #ef493b55}
+.home-orbit-two{top:23%;height:390px;transform:translateX(-50%) rotate(19deg);border-color:#b2c9e014}.home-orbit-two:after{top:auto;bottom:12%;left:auto;right:15%;background:#a5b8d0;box-shadow:0 0 16px #a5b8d0}
+.home-light-trail{position:absolute;top:35%;left:-20%;width:30%;height:1px;opacity:0;background:linear-gradient(90deg,transparent,#ff554e,transparent);transform:rotate(-20deg)}
+.home-experience .connect-first h1 span{color:var(--home-red);background:none;-webkit-text-fill-color:var(--home-red)}
+.home-experience .connect-first .eyebrow{display:inline-flex;align-items:center;gap:10px;color:#ff8178;font-size:11px;letter-spacing:.15em}
+.home-experience .connect-first .eyebrow:before{content:"";display:block;width:6px;height:6px;border-radius:50%;background:var(--home-red);box-shadow:0 0 0 5px #e3241c18}
+.home-experience .connect-first-copy>p{max-width:680px}
+.home-device-scene{perspective:1400px}
+.home-experience .real-devices{border:1px solid #f3b7b124;box-shadow:0 30px 100px #0005,0 0 75px #dc302411;transform:rotateX(var(--device-rx,0deg)) rotateY(var(--device-ry,0deg));transition:transform .35s ease-out,box-shadow .35s;transform-origin:center}
+.home-experience .real-devices:hover{box-shadow:0 35px 110px #0006,0 0 85px #dc302421}
+.home-experience #main>section{scroll-margin-top:115px}
+.home-experience .app-paths article{position:relative;overflow:hidden;border-color:#e2e5ea;box-shadow:0 10px 40px #17233804;transition:transform .3s,box-shadow .3s,border-color .3s}
+.home-experience .app-paths article:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 0 0,#e3241c0a,transparent 65%);pointer-events:none}
+.home-experience .path-number{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:#e3241c0c;border:1px solid #e3241c12}
+.home-experience .app-paths article a{position:relative;z-index:1}
+.home-experience .app-workflow-section{position:relative;overflow:hidden;background:linear-gradient(125deg,#f8f9fc,#fff8f5)}
+.home-experience .app-workflow-section:before{content:"";position:absolute;width:650px;height:650px;right:-350px;top:-180px;border:1px solid #e3241c13;border-radius:50%;box-shadow:0 0 0 70px #e3241c04,0 0 0 140px #e3241c03;pointer-events:none}
+.home-experience .app-workflow-grid{position:relative}
+.home-experience .connect-steps{position:relative}
+.home-experience .connect-steps:before{content:"";position:absolute;left:16px;top:17px;bottom:30px;width:2px;background:#e1e5eb}
+.home-experience .connect-steps:after{content:"";position:absolute;left:16px;top:17px;bottom:30px;width:2px;background:linear-gradient(#e3241c,#f7b8b3);transform:scaleY(0);transform-origin:top}
+.home-experience .connect-steps li{position:relative;z-index:1}.home-experience .connect-steps b{background:#fff;border-color:#f1c4c0;box-shadow:0 0 0 5px #fff9f6}
+.home-experience .real-tablet{box-shadow:0 35px 60px #1c2a421b;transition:box-shadow .3s,transform .3s}
+.home-experience .store-preview-badge{position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s}.home-experience .store-preview-badge:after{content:"";position:absolute;inset:-40% -80%;pointer-events:none;background:linear-gradient(110deg,transparent 45%,#ffffff09 50%,transparent 55%);transform:translateX(-30%)}
+.home-experience #main .btn{position:relative;overflow:hidden;isolation:isolate;transition:transform .2s,box-shadow .2s,background .2s}
+.home-experience #main .btn:after{content:"";position:absolute;inset:-60% -80%;z-index:-1;background:linear-gradient(110deg,transparent 44%,#ffffff25 50%,transparent 56%);transform:translateX(-40%);pointer-events:none}
+.home-experience .general-contact .portal-card{transition:box-shadow .3s,border-color .3s}.home-experience .general-contact .portal-card:focus-within{border-color:#e3241c66;box-shadow:0 16px 55px #e3241c0b}
+@media(hover:hover) and (pointer:fine){.home-experience .app-paths article:hover{transform:translateY(-6px);box-shadow:0 22px 50px #2331490c;border-color:#e3241c40}.home-experience .real-tablet:hover{transform:translateY(-5px);box-shadow:0 40px 75px #1c2a4226}.home-experience .store-preview-badge:hover{transform:translateX(5px)}.home-experience #main .btn:hover:after{transform:translateX(40%);transition:transform .65s}.home-experience #main .btn:hover{transform:translateY(-2px)}}
+.home-motion-on .is-home-visible .home-glow-red{animation:home-red-drift 16s ease-in-out infinite alternate}
+.home-motion-on .is-home-visible .home-glow-blue{animation:home-blue-drift 19s ease-in-out infinite alternate}
+.home-motion-on .is-home-visible .home-orbit-one{animation:home-orbit 22s ease-in-out infinite alternate}
+.home-motion-on .is-home-visible .home-orbit-two{animation:home-orbit 26s ease-in-out -7s infinite alternate-reverse}
+.home-motion-on .is-home-visible .home-light-trail{animation:home-trail 12s ease-in-out infinite}
+.home-motion-on .is-home-visible .connect-steps:after{animation:home-line 1.6s cubic-bezier(.22,1,.36,1) both}
+.home-motion-on .is-home-visible .store-preview-badge:after{animation:home-sheen 10s ease-in-out infinite}.home-motion-on .is-home-visible .store-preview-badge:nth-child(2):after{animation-delay:3s}
+@keyframes home-red-drift{to{transform:translate(24%,10%) scale(1.15);opacity:.65}}
+@keyframes home-blue-drift{to{transform:translate(-20%,-12%) scale(.9);opacity:.65}}
+@keyframes home-orbit{to{transform:translateX(-50%) rotate(9deg) scale(1.08);opacity:.55}}
+@keyframes home-trail{0%,40%{transform:translate(0,0) rotate(-20deg);opacity:0}46%{opacity:.7}65%,100%{transform:translate(450%,-170px) rotate(-20deg);opacity:0}}
+@keyframes home-line{to{transform:scaleY(1)}}
+@keyframes home-sheen{0%,65%{transform:translateX(-30%)}100%{transform:translateX(30%)}}
+@media(max-width:760px){.home-experience .connect-first{padding-top:115px}.home-glow{width:85vw;filter:blur(45px)}.home-orbit{top:23%;height:230px;width:150vw}.home-orbit-two{top:25%;height:185px}.home-grid{background-size:52px 52px;inset:12% -40% 40%}.home-experience .connect-first .eyebrow{font-size:9px;letter-spacing:.12em}.home-experience .connect-first h1{font-size:clamp(38px,10.8vw,64px)}.home-experience .real-devices{transform:none!important}.home-experience .connect-first-notes{gap:10px 14px}.home-experience .app-priority-section{padding-top:55px}.home-experience #main>section{scroll-margin-top:100px}.home-experience .connect-steps:before,.home-experience .connect-steps:after{bottom:45px}}
+@media(prefers-reduced-motion:reduce){.home-experience *, .home-experience *:before,.home-experience *:after{animation:none!important;transition:none!important}.home-experience .real-devices{transform:none!important}.home-experience .connect-steps:after{transform:scaleY(1)}}
+html[data-motion=off] .home-experience .real-devices{transform:none!important}

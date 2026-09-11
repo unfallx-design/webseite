@@ -138,7 +138,7 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && menu.getAttribute('data-open') === 'true') { setzeMenue(false); toggle.focus(); }
       if (e.key === 'Tab' && menu.getAttribute('data-open') === 'true') {
-        var focusable = [toggle].concat(Array.prototype.slice.call(menu.querySelectorAll('a[href], button:not([disabled])')));
+        var focusable = [toggle].concat(Array.prototype.slice.call(menu.querySelectorAll('a[href], button:not([disabled]), summary')).filter(function (el) { return el.getClientRects().length > 0; }));
         var index = focusable.indexOf(document.activeElement);
         if (e.shiftKey && index <= 0) { e.preventDefault(); focusable[focusable.length - 1].focus(); }
         else if (!e.shiftKey && (index === focusable.length - 1 || index < 0)) { e.preventDefault(); toggle.focus(); }
