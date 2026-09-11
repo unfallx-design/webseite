@@ -12,7 +12,7 @@ test('Partner introduction is public while login, installed workspace and admin 
   for(const [host,url]of [['app.unfallx.com','/login'],['admin.unfallx.com','/'],['admin.unfallx.com','/login']]){const r=await get(host,url);assert.equal(r.status,200);assert.match(r.body,/id="login-form"/);assert(!r.body.includes('id="verdienst"'));}
   for(const host of ['app.unfallx.com','admin.unfallx.com']){const r=await get(host,'/api/portal/me');assert.equal(r.status,401);const manifest=JSON.parse((await get(host,'/app.webmanifest')).body);assert.equal(manifest.start_url,host.startsWith('app.')?'/portal':'/');assert.equal(manifest.scope,'/');}
   const portal=await get('app.unfallx.com','/portal');assert.match(portal.body,/id="portal-root"/);assert(!portal.body.includes('id="verdienst"'));
-  const home=await get('unfallx.com','/');assert.match(home.body,/home-balanced/);assert.match(home.body,/Gutachten anfragen/);assert.match(home.body,/unfallx-ios-overview-small.webp/);
+  const home=await get('unfallx.com','/');assert.match(home.body,/design-hero/);assert.match(home.body,/Gutachten anfragen/);assert.match(home.body,/unfallx-ios-overview-v3-small.webp/);
   const alias=await get('unfallx.com','/partner-start?quelle=test');assert.equal(alias.status,308);assert.equal(alias.headers.location,'https://app.unfallx.com/?quelle=test');
  }finally{child.kill('SIGTERM');await closed;fs.rmSync(temporary,{recursive:true,force:true});}
 });

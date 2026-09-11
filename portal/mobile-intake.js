@@ -27,7 +27,7 @@ function commission(c){
  return {amountCents:amount,invoiceNetCents:f?.invoiceNet||null,percent:amount!==null&&f?.invoiceNet>0?Math.round(amount/f.invoiceNet*10000)/100:null,stage,label,payable:eligible,paidOutAt:f?.paidOutAt||null,receivedInFull:received};
 }
 function overview(cases){
- const items=cases.sort((a,b)=>(b.updatedAt||b.createdAt).localeCompare(a.updatedAt||a.createdAt)).map(c=>({id:c.id,reference:c.mobile?.reference||c.number,plate:c.intake.plate||'',vehicle:c.intake.vehicle||'',customer:c.intake.owner||'',status:c.status,commission:commission(c)}));
+ const items=cases.sort((a,b)=>(b.updatedAt||b.createdAt).localeCompare(a.updatedAt||a.createdAt)).map(c=>({id:c.id,reference:c.mobile?.reference||c.number,plate:c.intake.plate||'',vehicle:c.intake.vehicle||'',customer:c.intake.owner||'',status:c.status,source:c.source,createdAt:c.createdAt||null,submittedAt:c.submittedAt||null,updatedAt:c.updatedAt||null,fileCount:c.fileCount??null,photoCount:c.photoCount??null,documentCount:c.documentCount??null,thumbnailFileId:c.thumbnailFileId||null,latestRequest:c.latestRequest||null,commission:commission(c)}));
  const totals={expectedCents:0,payableCents:0,paidCents:0};
  for(const c of items){const f=c.commission;if(f.amountCents===null)continue;if(f.stage==='paid')totals.paidCents+=f.amountCents;else{totals.expectedCents+=f.amountCents;if(f.payable)totals.payableCents+=f.amountCents;}}
  return {items,totals,updatedAt:new Date().toISOString(),notice:'Voraussichtliche Beträge sind keine Auszahlung. Freigabe erst nach vollständigem Zahlungseingang bei UNFALLX, bestätigter Vergütung und geprüfter Partnerabrechnung.'};
@@ -48,7 +48,7 @@ function createMobileIntake({tx,body,rate,ip,env,authorize}){
    if(c){c=await access(s,data.id,key,a,true);if(!['draft','recording','needs_info'].includes(c.status)){assert(c.mobile?.fieldsHash===data.fieldsHash,'Dieser Fall wird bereits bearbeitet.',409);return {ok:true,id:c.id};}}
    else{await rate(s,'mobile-new:'+a.company.id,100,86400000);assert(!await s.get('mobile_access',data.id),'Fallkennung nicht verfügbar.',409);c={id:data.id,number:'UX-'+new Date().getUTCFullYear()+'-'+data.id.slice(0,8).toUpperCase(),companyId:a.company.id,ownerUserId:a.user.id,source:'mobile',companyName:a.company.name,status:'recording',version:0,intake:{},assignee:null,finance:null,createdAt:new Date().toISOString()};await s.put('mobile_access',{id:c.id,secretHash:key,createdAt:new Date().toISOString()});}
    const changed=c.mobile?.fieldsHash!==data.fieldsHash;
-   if(changed){c.intake={...c.intake,...asIntake(values)};c.mobile={fields:values,fieldsHash:data.fieldsHash,reference:text(data.reference,100),updatedAt:new Date().toISOString()};await event(s,c,a,'Kundendaten aus iPhone-App gespeichert');}
+   if(changed){c.intake={...c.intake,...asIntake(values)};c.mobile={...c.mobile,fields:values,fieldsHash:data.fieldsHash,reference:text(data.reference,100),updatedAt:new Date().toISOString()};await event(s,c,a,'Kundendaten aus iPhone-App gespeichert');}
    return {ok:true,id:c.id};
   });
  }
@@ -70,16 +70,16 @@ function createMobileIntake({tx,body,rate,ip,env,authorize}){
    await s.blob(f.id,bytes);await s.put('file',f,cid);usage.bytes+=bytes.length;await s.put('system',usage);await event(s,c,a,'Datei aus iPhone-App: '+name);return {ok:true,id:f.id};
   });
  }
- async function finish(req,cid,a){const key=capability(req);await body(req,1000);return tx(async s=>{
-  const c=await access(s,cid,key,a,true);if(c.submittedAt&&c.status!=='needs_info')return {ok:true,id:c.id};const files=await s.list('file',cid);
+ async function finish(req,cid,a){const key=capability(req),data=await body(req,1000);const submissionID=data?.submissionID;assert(submissionID===undefined||uuid.test(submissionID),'Ungültige Übermittlungskennung.');return tx(async s=>{
+  const c=await access(s,cid,key,a,true);if(submissionID&&c.mobile?.submittedRequestID===submissionID)return {ok:true,id:c.id,submissionID};if(c.submittedAt&&c.status!=='needs_info')return {ok:true,id:c.id};const files=await s.list('file',cid);
   for(const p of perspectives)if(p!=='other')assert(files.some(f=>f.perspective===p&&(p==='registration'?f.kind==='registration':f.kind==='photo')),'Es fehlen Fahrzeugfotos oder der Fahrzeugschein.');
   for(const kind of ['unfallx','nextright'])assert(files.some(f=>f.kind==='authorization'&&f.orderKind===kind&&f.fieldsHash===c.mobile.fieldsHash),'Es fehlen aktuelle unterschriebene Dokumente.');
-  c.status='submitted';c.submittedAt=new Date().toISOString();await event(s,c,a,'Kundenaufnahme abgeschlossen');return {ok:true,id:c.id};
+  c.status='submitted';c.submittedAt=new Date().toISOString();if(submissionID)c.mobile.submittedRequestID=submissionID;await event(s,c,a,'Kundenaufnahme abgeschlossen');return {ok:true,id:c.id};
  });}
  async function route(path,req){
   if(path==='/mobile/config'&&req.method==='GET')return {version:2,enabled:isEnabled(),authentication:'approved-partner-session'};
   assert(isEnabled(),'Die iPhone-Schnittstelle ist vorübergehend deaktiviert.',501);const a=await actor(req);
-  if(path==='/mobile/overview'&&req.method==='GET')return tx(async s=>overview((await s.list('case',a.company.id)).filter(c=>c.companyId===a.company.id)));
+  if(path==='/mobile/overview'&&req.method==='GET')return tx(async s=>overview(await require('./presentation').summarizeCases(s,(await s.list('case',a.company.id)).filter(c=>c.companyId===a.company.id),a.user)));
   assert(req.method==='POST','Methode nicht erlaubt.',405);
   if(path==='/mobile/cases')return save(req,a);const m=/^\/mobile\/cases\/([a-f0-9-]{36})\/(files|finish)$/.exec(path);assert(m&&uuid.test(m[1]),'Nicht gefunden.',404);return m[2]==='files'?guardedUpload(req,m[1],a):finish(req,m[1],a);
  }

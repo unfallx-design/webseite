@@ -15,3 +15,15 @@ test('completion needs all perspectives and two current orders; completion retri
 test('endpoint can be explicitly disabled',async()=>{const {s,tx}=await setup();try{const api=createMobileIntake({tx,body:async()=>{},rate:async()=>{},ip:()=> 'test',env:{PORTAL_MOBILE_INTAKE_ENABLED:'false'}});await assert.rejects(api.route('/mobile/cases',req(key(),{})),e=>e.status===501);}finally{await s.close();}});
 
 test('zero commission is explicit and never payable',()=>{const c=require('../portal/mobile-intake').commission({finance:{partnerNet:0,invoiceNet:10000,invoiceGross:11900,received:11900}});assert.equal(c.amountCents,0);assert.equal(c.stage,'no_commission');assert.equal(c.payable,false);});
+
+test('explicit submission IDs make finish retries idempotent after a later request for information',async()=>{
+ const {s,tx,api}=await setup();try{
+ const cid=id(),k=key(),data=make(cid),first=id(),second=id(),path='/mobile/cases/'+cid+'/finish';await api.route('/mobile/cases',req(k,data));
+ await tx(async q=>{for(const p of ['frontLeft','frontRight','rearRight','rearLeft','damageOverview','damageDetail','plate','vin','odometer','registration'])await q.put('file',{id:id(),caseId:cid,kind:p==='registration'?'registration':'photo',perspective:p},cid);for(const kind of ['unfallx','nextright'])await q.put('file',{id:id(),caseId:cid,kind:'authorization',orderKind:kind,fieldsHash:data.fieldsHash},cid);});
+ await assert.rejects(api.route(path,req(k,{submissionID:'bad'})),e=>e.status===400);await api.route(path,req(k,{submissionID:first}));
+ await tx(async q=>{const c=await q.get('case',cid);assert.equal(c.mobile.submittedRequestID,first);c.status='needs_info';await q.put('case',c,c.companyId);});
+ const before=(await tx(q=>q.list('event',cid))).length;await api.route(path,req(k,{submissionID:first}));assert.equal((await tx(q=>q.get('case',cid))).status,'needs_info');assert.equal((await tx(q=>q.list('event',cid))).length,before);
+ await api.route(path,req(k,{submissionID:second}));assert.equal((await tx(q=>q.get('case',cid))).status,'submitted');assert.equal((await tx(q=>q.get('case',cid))).mobile.submittedRequestID,second);
+ await assert.rejects(api.route(path,req(key(),{submissionID:second})),e=>e.status===404);
+ }finally{await s.close();}
+});
