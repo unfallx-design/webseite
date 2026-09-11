@@ -43,3 +43,19 @@ test('Missing, inaccessible or incomplete config leaves the existing environment
     assert.deepEqual(env,{SMTP_PASS:'existing-mail'});
   }
 });
+
+test('Private Hostinger S3 config loads atomically without unrelated variables or mixed credentials',()=>{
+ const {loadHostingerStorageEnv}=require('../portal/hostinger-env');
+ const values={PORTAL_FILE_STORAGE:'s3',PORTAL_S3_BUCKET:'unfallx-fixture',PORTAL_S3_REGION:'eu-central-1',PORTAL_S3_ACCOUNT_ID:'123456789012',PORTAL_S3_ACCESS_KEY_ID:'fixture-key',PORTAL_S3_SECRET_ACCESS_KEY:'fixture-secret'};
+ const content=Object.entries({...values,PORTAL_STORAGE_MB:'102400',NODE_OPTIONS:'untrusted',SMTP_PASS:'unrelated'}).map(([k,v])=>k+'='+v).join('\n');
+ const dir=root+'/current/nodejs',read=()=>content,target={};
+ assert.equal(loadHostingerStorageEnv(dir,target,read),true);
+ assert.deepEqual(target,{...values,PORTAL_STORAGE_MB:'102400'});
+ const conflict={PORTAL_S3_ACCESS_KEY_ID:'other-key'};
+ assert.equal(loadHostingerStorageEnv(dir,conflict,read),false);assert.deepEqual(conflict,{PORTAL_S3_ACCESS_KEY_ID:'other-key'});
+ assert.equal(loadHostingerStorageEnv('/tmp/app',{},()=>assert.fail('unexpected read')),false);
+ assert.equal(loadHostingerStorageEnv(dir,{NODE_ENV:'test'},()=>assert.fail('unexpected read')),false);
+ assert.equal(loadHostingerStorageEnv(dir,{},()=> 'PORTAL_FILE_STORAGE=s3'),false);
+ const existingLimit={PORTAL_STORAGE_MB:'2048'};
+ assert.equal(loadHostingerStorageEnv(dir,existingLimit,read),true);assert.equal(existingLimit.PORTAL_STORAGE_MB,'2048');
+});

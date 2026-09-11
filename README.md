@@ -68,3 +68,7 @@ Nach der E-Mail-Bestätigung: Einstellungen → Mobilnummer bestätigen → opti
 SMS-Codes: kryptografischer Zufall, HMAC-Prüfwert, fünf Minuten Gültigkeit, fünf Fehlversuche, an Benutzer und Sitzung gebunden. Versand nur aus bestätigten Konten, 60 Sekunden Abstand, maximal fünf Versuche je Konto/Nummer/Stunde. Globale Limits standardmäßig `SMS_DAILY_LIMIT=100` und `SMS_MONTHLY_LIMIT=1000` (feste 24-Stunden-/30-Tage-Fenster). Ein unklarer Versand zählt mit; keine automatischen kostenpflichtigen Wiederholungen. Beim Anbieter zusätzlich Ausgabenlimits und minimale Protokollaufbewahrung setzen. Produktiv-SMS erst nach einem ausdrücklich abgestimmten Zustelltest aktivieren.
 
 Prüfung: `npm run check`, `npm test`. SMS-Tests injizieren einen lokalen Simulator; sie versenden keine echten SMS oder E-Mails. `PORTAL_LOCAL_DB` ist ausschließlich unter `NODE_ENV=test` nutzbar. SMS- und Wiederherstellungscodes dürfen nicht geloggt werden. Private Fall-PDFs werden nur als Downloads ausgeliefert; eine Formatprüfung ersetzt keinen Malware-Scanner auf den Arbeitsgeräten.
+
+### AWS-Dateispeicher
+
+Die optionale Anbindung an privaten S3-Speicher in Frankfurt ist in [docs/aws-storage.md](docs/aws-storage.md) beschrieben. Ohne konfigurierte Aktivierung bleibt die Datenbank der Dateispeicher. Zugangsschlüssel gehören ausschließlich in die private Hosting-Umgebung. Die Administration kann den Speicher prüfen und vorhandene Originaldateien in verifizierten Schritten übertragen.

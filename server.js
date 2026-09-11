@@ -8,6 +8,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 require('./portal/hostinger-env').loadHostingerGoogleEnv(__dirname);
+require('./portal/hostinger-env').loadHostingerStorageEnv(__dirname);
 const anfrage = require('./anfrage');
 const hosts = require('./portal/hosts');
 const help = require('./assets/help-content');
@@ -63,6 +64,7 @@ const PARTIALS = loadPartials();
 function applyPartials(html) {
   return html.replace(/<!--#include:([a-z0-9_-]+)-->/gi, (match, name) => {
     const key = name.toLowerCase();
+    if(key==='storage-privacy'&&!['PORTAL_S3_BUCKET','PORTAL_S3_REGION','PORTAL_S3_ACCOUNT_ID','PORTAL_S3_ACCESS_KEY_ID','PORTAL_S3_SECRET_ACCESS_KEY'].every(k=>process.env[k]))return '';
     return Object.prototype.hasOwnProperty.call(PARTIALS, key) ? PARTIALS[key] : '';
   });
 }

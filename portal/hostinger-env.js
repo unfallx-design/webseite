@@ -24,4 +24,18 @@ function loadHostingerGoogleEnv(appDir, env = process.env, read = fs.readFileSyn
   }
 }
 
-module.exports = {loadHostingerGoogleEnv};
+function loadHostingerStorageEnv(appDir, env = process.env, read = fs.readFileSync) {
+  const keys=['PORTAL_FILE_STORAGE','PORTAL_S3_BUCKET','PORTAL_S3_REGION','PORTAL_S3_ACCOUNT_ID','PORTAL_S3_ACCESS_KEY_ID','PORTAL_S3_SECRET_ACCESS_KEY'];
+  if(env.NODE_ENV==='test'||keys.every(key=>env[key]))return false;
+  const deployment=String(appDir).match(/^(\/home\/u\d+\/domains\/unfallx\.com\/hbuilds)\/(?:current|versions\/[a-zA-Z0-9-]+)\/nodejs$/);
+  if(!deployment)return false;
+  try {
+    const values=parseEnv(read(deployment[1]+'/config/.env','utf8'));
+    if(!keys.every(key=>values[key])||keys.some(key=>env[key]&&env[key]!==values[key]))return false;
+    for(const key of keys)if(!env[key])env[key]=values[key];
+    if(!env.PORTAL_STORAGE_MB&&values.PORTAL_STORAGE_MB)env.PORTAL_STORAGE_MB=values.PORTAL_STORAGE_MB;
+    return true;
+  } catch {return false;}
+}
+
+module.exports = {loadHostingerGoogleEnv,loadHostingerStorageEnv};

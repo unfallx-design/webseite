@@ -1,4 +1,5 @@
 'use strict';
+const {storageConfig}=require('./file-storage');
 const {assert,text,id,hash,Problem,payable}=require('./domain');
 const sharp=require('sharp');
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -65,7 +66,7 @@ function createMobileIntake({tx,body,rate,ip,env,authorize}){
    const c=await access(s,cid,key,a),files=await s.list('file',cid),sha=hash(bytes),existing=files.find(f=>f.mobileAssetId===asset);
    if(existing){assert(existing.sha256===sha&&existing.kind===kind&&existing.perspective===perspective&&(kind!=='authorization'||existing.orderKind===req.headers['x-order-kind']&&existing.fieldsHash===req.headers['x-fields-hash']),'Diese Dateikennung wurde bereits verwendet.',409);return {ok:true,id:existing.id,alreadyStored:true};}
    assert(files.length<100&&files.reduce((n,f)=>n+f.size,0)+bytes.length<=750*1024*1024,'Das Upload-Limit dieses Falls ist erreicht.',413);
-   const usage=await s.get('system','storage')||{id:'storage',bytes:0};assert(usage.bytes+bytes.length<=Number(env.PORTAL_STORAGE_MB||2048)*1024*1024,'Dokumentenspeicher ist belegt.',507);
+   const usage=await s.get('system','storage')||{id:'storage',bytes:0};assert(usage.bytes+bytes.length<=storageConfig(env).limit,'Dokumentenspeicher ist belegt.',507);
    const f={id:id(),caseId:cid,kind,name,type,size:bytes.length,sha256:sha,at:new Date().toISOString(),by:a.user.name,mobileAssetId:asset,perspective,orderKind:kind==='authorization'?req.headers['x-order-kind']:null,fieldsHash:kind==='authorization'?req.headers['x-fields-hash']:null};
    await s.blob(f.id,bytes);await s.put('file',f,cid);usage.bytes+=bytes.length;await s.put('system',usage);await event(s,c,a,'Datei aus iPhone-App: '+name);return {ok:true,id:f.id};
   });
