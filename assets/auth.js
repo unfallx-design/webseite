@@ -24,7 +24,14 @@ function passwordControls(){
 }
 const ref=new URLSearchParams(location.search).get('ref');if(/^UX-[A-F0-9]{12}$/.test(ref||'')){document.querySelectorAll('input[name=referralCode]').forEach(i=>i.value=ref);document.querySelectorAll('a[data-referral-link]').forEach(a=>{const u=new URL(a.href);u.searchParams.set('ref',ref);a.href=u.href;});const refNote=$('[data-referral-note]'),refCode=$('[data-referral-code]');if(refNote&&refCode){refCode.textContent=ref;refNote.hidden=false;}const refPrimary=$('[data-referral-primary]'),refLabel=$('[data-referral-primary-label]');if(refPrimary&&refLabel){const u=new URL('/registrieren',location.origin);u.searchParams.set('ref',ref);refPrimary.href=u.href;refLabel.textContent='Als Partner registrieren';const intro=$('[data-referral-intro]');if(intro)intro.textContent='Du wurdest zu UNFALLX Connect eingeladen. Als Werkstatt, Abschleppdienst oder Fotopartner übermittelst du Schadenaufnahmen, Originalfotos und unterschriebene Dokumente direkt an unser Team. UNFALLX übernimmt die Gutachtenerstellung.';}}
 async function enterPortal(){let m;try{m=await api('/me');}catch{throw new Error('Die Anmeldung konnte auf diesem Gerät nicht gespeichert werden. Bitte Cookies für diese Website erlauben und erneut anmelden.');}if(!['partner','admin','appraiser'].includes(m.user.role))throw new Error('Dieser Zugang ist nicht für UNFALLX Connect freigeschaltet. Bitte kontaktiere info@unfallx.com.');const home=m.user.role==='partner'?'/portal':'/gutachter-portal';const next=new URLSearchParams(location.search).get('next')||'';const fragment=/^\/(?:portal|gutachter-portal)#(?:fall\/[a-f0-9-]{36}|[a-z-]+)$/.test(next)?next.slice(next.indexOf('#')):'';location.replace(home+(fragment||'#start'));}
-async function providers(){const box=$('[data-oauth-buttons]');if(!box)return;const r=await api('/oauth/providers');box.innerHTML=r.providers.map(p=>`<button class="oauth-button" type="button" data-oauth="${p.id}" ${p.enabled?'':'disabled'}>Mit ${p.name} anmelden${p.enabled?'':' · bald verfügbar'}</button>`).join('');box.querySelectorAll('[data-oauth]').forEach(b=>b.addEventListener('click',async()=>{b.disabled=true;try{const r=await api('/oauth/start',{provider:b.dataset.oauth});location.assign(r.redirect);}catch(e){message(e.message,true);b.disabled=false;}}));}
+async function providers(){
+ const box=$('[data-oauth-buttons]');if(!box)return;
+ const section=$('[data-oauth-section]'),r=await api('/oauth/providers');
+ const available=r.providers.filter(p=>p.enabled&&['google','apple'].includes(p.id));
+ box.innerHTML=available.map(p=>`<button class="oauth-button" type="button" data-oauth="${p.id}">Mit ${esc(p.name)} anmelden</button>`).join('');
+ if(section)section.hidden=!available.length;
+ box.querySelectorAll('[data-oauth]').forEach(b=>b.addEventListener('click',async()=>{b.disabled=true;try{const r=await api('/oauth/start',{provider:b.dataset.oauth});location.assign(r.redirect);}catch(e){message(e.message,true);b.disabled=false;}}));
+}
 async function showFactor(){
  const state=await api('/security/login');csrf=state.csrf;history.replaceState(null,'',location.pathname+'?factor=1');let challenge='';
  $('#auth-root').innerHTML='<h2>Zweiter Schritt. Sicher anmelden.</h2><p>Bestätige deine Anmeldung mit einem SMS-Code an '+esc(state.security.phone)+'. Dein Arbeitsplatz bleibt bis dahin geschützt.</p><button type="button" class="btn btn-block" id="factor-send" '+(state.security.available?'':'disabled')+'>SMS-Code anfordern</button><p id="factor-delivery" role="status">'+(state.security.available?'':'SMS ist vorübergehend nicht verfügbar. Nutze einen deiner Wiederherstellungscodes.')+'</p><form id="factor-code"><label>Sicherheitscode<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="6 Ziffern"></label><button class="btn btn-block" type="submit">Anmeldung bestätigen</button></form><details class="factor-recovery"><summary>Kein Zugriff auf das Handy?</summary><p>Gib einen deiner acht einmalig verwendbaren Wiederherstellungscodes ein. Ein Passwort-Reset hebt die Zwei-Faktor-Anmeldung nicht auf.</p><form id="factor-recovery"><label>Wiederherstellungscode<input name="recoveryCode" autocomplete="off" maxlength="64" required></label><button class="btn btn-block" type="submit">Mit Wiederherstellungscode anmelden</button></form></details><a href="/login">Anmeldung neu starten</a>';
@@ -34,11 +41,11 @@ async function showFactor(){
 }
 async function boot(){
  if(new URLSearchParams(location.search).get('factor')==='1'&&$('#auth-root')){await showFactor();return;}
+ await providers().catch(()=>{});
  const login=$('#login-form');
  if(login){
   bind('#login-form',async d=>{const r=await api('/password-login',d);if(r.mfaRequired)return showFactor();await enterPortal();});
   bind('#magic-form',async d=>message((await api('/login',d)).message));
-  await providers().catch(()=>{const box=$('[data-oauth-buttons]');if(box)box.textContent='Anbieter-Login ist gerade nicht verfügbar. Bitte nutze dein Passwort.';});
   const params=new URLSearchParams(location.hash.slice(1)),token=params.get('token');
   if(token){
    history.replaceState(null,'',location.pathname);
