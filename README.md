@@ -55,15 +55,9 @@ Die Website ist ausschließlich deutschsprachig. Frühere Sprachadressen werden 
 - Sitzungsverwaltung meldet andere Geräte ab und erhält die aktuelle Sitzung. CSV-Fallübersicht entschärft Tabellenformeln; Fotovorschauen nutzen die bestehende geschützte Datei-API.
 - `npm test` prüft Anmeldung, Einladung und Fehlerbehandlung, Rollen/Firmengrenzen, Einstellungen, Sitzungen sowie den Fall- und Zahlungsablauf über einen lokalen HTTP-Server mit temporärer Datenbank. Es werden keine echten E-Mails versandt.
 
-### Connect und Bildung
+### Zwei Arbeitsbereiche
 
-Die Startseite priorisiert Connect. Die Geräte-Szene verwendet unveränderte echte Screenshots der App-Demo mit fiktiven Daten; nur die Geräteumgebung wurde generiert. Privatkunden-Zugänge sind deaktiviert. Fälle werden durch Partnerbetriebe übermittelt und durch das interne Team bearbeitet. Frühere Kundenadressen leiten zum Partnerzugang um. Interne Aktionen, Partnervergütung und fremde Dateien bleiben durch Rollen- und Firmenrechte geschützt.
-
-`/bildung` bietet eine unverbindliche Anmeldung für den einwöchigen Berliner Kurs (1.500 € pro Person) und eine separate Interessentenliste für spätere digitale Kurse. Bis zur Terminbekanntgabe werden Anfragen unter „Start folgt“ gesammelt. Erst nach E-Mail-Bestätigung zählt eine Vormerkung; maximal 26 vorgemerkte oder bestätigte Plätze pro Kurswoche werden innerhalb einer Datenbanktransaktion vergeben. Weitere Anmeldungen landen auf der Warteliste.
-
-Administratoren finden „Bildungsanmeldungen“ im Portal: suchen, filtern, CSV exportieren, stornieren, Plätze bestätigen und den Status per E-Mail mitteilen. Der erste bestätigte Kursstart kann dort einmalig als zukünftiger Montag veröffentlicht werden. Bestehende und noch unbestätigte Vormerkungen werden der ersten Woche zugeordnet; anschließend werden zwölf kommende Wochen zur Auswahl angeboten. Termin, genaue Adresse, Zeiten und Teilnahme müssen persönlich abgestimmt werden. Es gibt keinen Checkout und keine automatische Zahlung. Nicht angekündigte digitale Kurse verbrauchen keine Berliner Kursplätze.
-
-Die Bildungsregistrierung benutzt eigene Einmaltokens (`academy_token`, 24 Stunden), die keine App-Sitzung eröffnen können. Ein bloßer Linkaufruf bestätigt keine Anmeldung; dafür ist ein ausdrücklicher Klick nötig. Mailfehler erscheinen in der Teilnehmerverwaltung und können durch erneutes Speichern des Status wiederholt werden. Neue Datenobjekte verwenden den bestehenden MySQL/SQLite-Store, es ist keine manuelle Migration erforderlich. Test: `npm test` und `npm run check`.
+Die öffentliche Startseite stellt Connect vor. Partner übermitteln Schäden über `app.unfallx.com`; die Bearbeitung findet im internen Dashboard unter `admin.unfallx.com` statt. Das frühere Kursangebot, seine Formulare, E-Mail-Abläufe und Verwaltungsfunktionen sind entfernt. Frühere Angebotsseiten und Endpunkte antworten mit HTTP 410 und nehmen keine Anmeldungen oder Änderungen mehr an. Bestehende Datenbankeinträge werden durch die Entfernung nicht gelöscht. Die Datenbank wird für Fallakten, Originaldateien und Zugänge unverändert weiterverwendet.
 
 ### SMS-Verifizierung und Zwei-Faktor-Anmeldung (2.5)
 

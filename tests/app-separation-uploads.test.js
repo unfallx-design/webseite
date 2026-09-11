@@ -5,7 +5,7 @@ test('Three hosts separate app, reports and education without losing queries or 
  for(const p of ['/login','/app-hilfe','/registrieren','/portal-datenschutz'])assert.equal(hosts.hostPolicy('unfallx.com',p+'?x=1').redirect,'https://app.unfallx.com'+p+'?x=1');
  assert.equal(hosts.hostPolicy('gutachten.unfallx.com','/login').redirect,'https://app.unfallx.com/login');
  for(const p of ['/unfallgutachten','/einsatzgebiete','/wertminderung']){assert.equal(hosts.hostPolicy('unfallx.com',p).redirect,hosts.REPORT_ORIGIN+p);assert.equal(hosts.hostPolicy('app.unfallx.com',p).redirect,hosts.REPORT_ORIGIN+p);assert.equal(hosts.hostPolicy('gutachten.unfallx.com',p).isReport,true);}
- assert.equal(hosts.hostPolicy('gutachten.unfallx.com','/bildung').redirect,hosts.PUBLIC_ORIGIN+'/bildung');
+ assert.equal(hosts.hostPolicy('gutachten.unfallx.com','/bildung').gone,true);
  assert.equal(hosts.hostPolicy('app.unfallx.com','/').redirect,undefined);
  const html='<a href="/portal">Logo</a><a href="/app-hilfe#dateien">Hilfe</a><a href="/impressum">Legal</a><link rel="canonical" href="https://unfallx.com/login">';
  const out=hosts.links(html,true,true);assert.match(out,/https:\/\/app.unfallx.com\/portal/);assert.match(out,/https:\/\/app.unfallx.com\/app-hilfe#dateien/);assert.match(out,/https:\/\/app.unfallx.com\/impressum/);assert.match(out,/canonical" href="https:\/\/app.unfallx.com\/login/);

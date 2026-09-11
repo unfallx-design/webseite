@@ -5,7 +5,7 @@ test('Subdomain routes preserve the public website, queries and app entrypoints'
  assert.deepEqual(hosts.hostPolicy('unfallx.com','/'),{isApp:false,isReport:false,production:true,workspace:null,origin:'https://unfallx.com'});
  assert.equal(hosts.hostPolicy('unfallx.com','/login?next=%2Fportal').redirect,'https://app.unfallx.com/login?next=%2Fportal');
  assert.equal(hosts.hostPolicy('app.unfallx.com','/').isApp,true);
- assert.equal(hosts.hostPolicy('app.unfallx.com','/bildung').redirect,'https://unfallx.com/bildung');
+ assert.equal(hosts.hostPolicy('app.unfallx.com','/bildung').gone,true);
  assert.equal(hosts.hostPolicy('app.unfallx.com','/api/portal/me').isApp,true);
  assert.equal(hosts.hostPolicy('localhost:3000','/login').production,false);
  assert.equal(hosts.links('<a href="/">Home</a><a href="/registrieren?ref=UX-TEST">Join</a><script src="/assets/portal.js"></script>',true,true),'<a href="https://app.unfallx.com/">Home</a><a href="https://app.unfallx.com/registrieren?ref=UX-TEST">Join</a><script src="/assets/portal.js"></script>');
@@ -16,7 +16,7 @@ test('Money is calculated in integer cents, including gross input and independen
  assert.equal(math.calculate({amount:'0.03',basis:'net',vatPercent:'19',partnerPercent:'50',partnerVatPercent:'0'}).partnerNet,2);
  for(const bad of [{amount:'1e3'},{partnerPercent:'100.01'},{vatPercent:'-1'},{amount:'NaN'},{amount:'0'},{amount:'2.001'},{basis:'other'}])assert.throws(()=>math.calculate({amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'50',...bad}));
 });
-test('Connect expansion enforces status rights, confidential PDFs, lawyer handoff, private tracking and course snapshots',async t=>{
+test('Connect expansion enforces status rights, confidential PDFs, lawyer handoff, private tracking',async t=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ux-connect5-'));const env={NODE_ENV:'test',PORTAL_LOCAL_DB:path.join(dir,'portal.sqlite'),PORTAL_ORIGIN:'http://localhost',PORTAL_TRUST_PROXY:'true'};const sent=[];const mail={ready:true,send:async(to,subject,text,files,html)=>sent.push({to,subject,text,files,html})};
  const store=await createStore(env),portal=createPortal({env,store,mail});await portal.ready();const server=http.createServer((req,res)=>portal.handle(req,res,{}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let ip=0;
  async function call(p,data,u={},extra={}){const r=await fetch(base+'/api/portal'+p,{method:data===undefined?'GET':'POST',headers:{Origin:env.PORTAL_ORIGIN,'Content-Type':'application/json','X-Forwarded-For':'test-'+(++ip),Cookie:u.cookie||'','X-CSRF-Token':u.csrf||'',...extra},body:data===undefined?undefined:Buffer.isBuffer(data)?data:JSON.stringify(data)});const bytes=Buffer.from(await r.arrayBuffer());return {status:r.status,json:r.headers.get('content-type')?.includes('application/json')?JSON.parse(bytes):null,bytes,headers:r.headers};}
@@ -81,18 +81,6 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
   await store.transaction(async s=>{await s.put('referral_attribution',{id:'unrelated',referrerId:other.id,companyId:null});const row=await s.get('case',directId);row.status='report_sent';await s.put('case',row);});
   const v=(await call('/cases/'+directId,undefined,a)).json.case.version;await call('/cases/'+directId,{action:'comment',note:'Test',version:v},a);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,0);
   const v2=(await call('/cases/'+directId,undefined,a)).json.case.version;assert.equal((await call('/cases/'+directId,{action:'referral',referralCode:code,version:v2},a)).status,200);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,1);
- });
- await t.test('Course prices, publication, per-course capacity and immutable booking snapshots',async()=>{
-  const course={action:'course',title:'Fotodokumentation',description:'Praxis am Fahrzeug',price:'2000',capacity:2,duration:'1 Woche',location:'Berlin',mode:'berlin',weekly:false,start:'',status:'draft'};
-  assert.equal((await call('/admin/academy',course,p)).status,403);let r=await call('/admin/academy',course,a);assert.equal(r.status,200);let custom=r.json.course;assert.ok(!(await call('/academy/courses')).json.courses.some(c=>c.id===custom.id));
-  r=await call('/admin/academy',{...course,id:custom.id,version:custom.version,status:'published'},a);assert.equal(r.status,200);custom=r.json.course;assert.equal((await call('/academy/courses')).json.courses.find(c=>c.id===custom.id).price,200000);
-  const tokens=[];for(let n=0;n<3;n++){const email='custom-course'+n+'@example.com';r=await call('/academy/register',{mode:'berlin',courseId:custom.id,week:'start-folgt',name:'Kurs Beispiel',phone:'0300000',email,privacy:true});assert.equal(r.status,200);tokens.push(sent.findLast(m=>m.to===email).text.match(/#bestaetigen=([a-f0-9]+)/)[1]);}
-  const verified=await Promise.all(tokens.map(token=>call('/academy/verify',{token})));assert.equal(verified.filter(r=>r.json.status==='requested').length,2);assert.equal(verified.filter(r=>r.json.status==='waitlisted').length,1);
-  assert.equal((await call('/academy/weeks')).json.weeks[0].reserved,0);
-  assert.equal((await call('/admin/academy',{...course,id:custom.id,version:0},a)).status,409);
-  assert.equal((await call('/admin/academy',{...course,id:custom.id,version:custom.version,capacity:1},a)).status,400);
-  r=await call('/admin/academy',{...course,id:custom.id,version:custom.version,status:'published',price:'2200'},a);assert.equal(r.status,200);
-  const regs=(await call('/admin/academy',undefined,a)).json.registrations.filter(r=>r.courseId===custom.id);assert.ok(regs.every(r=>r.course.price===200000));assert.equal((await call('/academy/courses')).json.courses.find(c=>c.id===custom.id).price,220000);
  });
  }finally{await new Promise(r=>server.close(r));await portal.close();fs.rmSync(dir,{recursive:true,force:true});}
 });

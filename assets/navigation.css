@@ -4,3 +4,7 @@
 @media(max-width:500px){.ux-header .logo svg.wordmark{width:120px}.ux-header .logo{gap:7px}.ux-header .logo svg.mark{width:24px}.ux-header .ux-login{font-size:12px;padding:12px 10px}.ux-header .ux-login span{display:none}.ux-header .nav{gap:7px;padding-left:12px;padding-right:12px}.ux-header .nav-toggle{width:40px;height:40px;min-width:40px}.ux-header-actions{gap:6px}}
 @media(max-width:360px){.ux-header .ux-login{font-size:11px;padding:12px 8px}.ux-header .logo svg.wordmark{width:99px}}
 .ux-mega-columns>section{padding:0;margin:0;background:transparent}.ux-mega-columns>section+section{padding-left:30px}.ux-mobile-menu .ux-mobile-group{margin:0;padding:16px;background:#fff}
+
+/* Two product areas after retiring the course offering. */
+.ux-mega-columns{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:760px){.sticky-bar{grid-template-columns:1fr 1.5fr}}

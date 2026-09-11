@@ -7,7 +7,6 @@ const {createStore}=require('./store');
 const {createMailer}=require('./mail');
 const sharp=require('sharp');
 const {accessEmail}=require('./email-templates');
-const {createAcademy}=require('./academy');
 const passwords=require('./passwords');
 const {notice}=require('./brand-mail');
 const {publicUser}=D;
@@ -110,12 +109,12 @@ function createPortal(options={}) {
  const notifications=createNotifications({tx,mail,origin,rate,tracking,recipientOrigin:user=>local&&!scope().production?origin:internal(user)?hosts.ADMIN_ORIGIN:hosts.APP_ORIGIN});
  const security=createSecurity({env,tx,rate,mail,origin,recipientOrigin,...(options.sms?{sms:options.sms}:{})});
  const oauth=createOAuth({env,origin,tx,rate,ip,body,auth,issueSession,mail,referrals,requestOrigin,checkWorkspace});
- const academy=createAcademy({tx,rate,mail,origin});
  async function route(req,res,url){
- assert(local||scope().workspace||url.pathname.startsWith('/api/portal/academy/'),'Bitte den passenden UNFALLX-Portalzugang öffnen.',403);
+ assert(!hosts.educationApi(url.pathname),'Dieser Bereich ist nicht mehr verfügbar.',410);
+ assert(local||scope().workspace,'Bitte den passenden UNFALLX-Portalzugang öffnen.',403);
  const path=url.pathname.replace('/api/portal','');
  if(/^\/oauth\/(google|apple)\/callback$/.test(path)&&['GET','POST'].includes(req.method))return oauth.route(path,req,res,url);
- if(req.method==='POST')assert(req.headers.origin===requestOrigin()||(path.startsWith('/academy/')&&req.headers.origin===(env.PUBLIC_ORIGIN||'https://unfallx.com')),'Anfrageherkunft nicht erlaubt.',403);
+ if(req.method==='POST')assert(req.headers.origin===requestOrigin(),'Anfrageherkunft nicht erlaubt.',403);
  assert(['GET','POST'].includes(req.method),'Methode nicht erlaubt.',405);
  if(path==='/tracking'&&req.method==='POST')return tracking.read(await body(req),ip(req));
  if(path==='/lawyers/register'&&req.method==='POST')return lawyers.register(req,await body(req),ip(req));
@@ -143,7 +142,6 @@ function createPortal(options={}) {
  if(path==='/register'&&req.method==='POST')return loginRequest(req,await body(req),true);
  if(path==='/exchange'&&req.method==='POST'){const result=await exchange(req,await body(req));res.setHeader('Set-Cookie',result.cookie);delete result.cookie;return result;}
  if(path==='/register-customer'&&req.method==='POST')throw new Problem(410,unavailable);
- if(path.startsWith('/academy/'))return academy.publicRoute(path,req,await (req.method==='POST'?body(req):Promise.resolve({})),ip(req));
  const {user,session}=await tx(s=>auth(req,s));
  if(path==='/security'&&req.method==='GET')return tx(async s=>({security:await security.view(s,user),recoveryLogin:!!session.recoveryLogin}));
  if(path==='/security/phone/send'&&req.method==='POST')return security.start(user,session,await body(req));
@@ -179,7 +177,6 @@ function createPortal(options={}) {
  if(path==='/admin/notifications'&&req.method==='GET')return notifications.overview();
  if(path==='/admin/notifications/retry'&&req.method==='POST')return notifications.retry(await body(req),user);
  if(path==='/admin/auth-status'&&req.method==='GET')return {providers:oauth.config(),callbacks:{google:requestOrigin()+'/api/portal/oauth/google/callback',apple:requestOrigin()+'/api/portal/oauth/apple/callback'}};
- if(path==='/admin/academy')return academy.adminRoute(req,await (req.method==='POST'?body(req):Promise.resolve({})),user);
  if(path==='/admin/overview'&&req.method==='GET')return tx(async s=>({companies:await s.list('company'),team:(await s.list('user')).filter(u=>internal(u)).map(publicUser),storage:await s.get('system','storage')}));
  if(path==='/admin/company'&&req.method==='POST'){const data=await body(req);return tx(async s=>{const co=await s.get('company',text(data.id,128,true));assert(co,'Firma nicht gefunden.',404);assert(['approved','rejected','suspended','pending'].includes(data.status),'Ungültiger Status.');co.status=data.status;co.reviewNote=text(data.note,2000);co.reviewedBy=user.id;co.reviewedAt=new Date().toISOString();await s.put('company',co);await s.put('admin_event',{id:id(),action:'Firma '+co.name+': '+co.status,actor:user.id,at:co.reviewedAt});return {company:co};});}
  if(path==='/admin/invite'&&req.method==='POST')return invite(user,await body(req));
@@ -192,6 +189,6 @@ function createPortal(options={}) {
  function handle(req,res,headers={}){if(hosts.isRetiredHost(req.headers.host)){res.writeHead(410,{...headers,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({error:'Die separate Aufnahme-App wurde eingestellt. Bitte im Partnerportal unter app.unfallx.com anmelden.',redirect:hosts.APP_ORIGIN+'/login'}));return;}const workspace=hosts.workspaceForHost(req.headers.host)||(local?env.PORTAL_PREVIEW_WORKSPACE:null);const production=!!hosts.workspaceForHost(req.headers.host);return context.run({workspace,production,origin:production?hosts.workspaces[workspace].origin:origin},()=>handleScoped(req,res,headers));}
  const notificationTimer=setInterval(()=>{if(database)void notifications.flush();},30000);notificationTimer.unref();
  const cleanupTimer=setInterval(()=>{if(database)tx(cleanup).catch(()=>{});},hour);cleanupTimer.unref();
- return {handle,catalog:academy.catalog,status:()=>({database:database?'ready':'pending',mail:mail.ready}),ready:db,close:async()=>{clearInterval(cleanupTimer);clearInterval(notificationTimer);if(database)await database.close();}};
+ return {handle,status:()=>({database:database?'ready':'pending',mail:mail.ready}),ready:db,close:async()=>{clearInterval(cleanupTimer);clearInterval(notificationTimer);if(database)await database.close();}};
 }
 module.exports={createPortal};

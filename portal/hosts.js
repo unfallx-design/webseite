@@ -10,8 +10,12 @@ const sharedPages=new Set(['/impressum','/datenschutz','/agb']);
 const clean=p=>p.replace(/\.html$/i,'').replace(/\/$/,'');
 const appPath=p=>appPages.has(clean(p)),reportPath=p=>reportPages.has(clean(p));
 const assetPath=p=>/^\/(?:api\/|assets\/|health$|(?:app|site)\.webmanifest$|apple-touch-icon(?:-precomposed)?\.png$|favicon\.ico$|robots\.txt$|sitemap\.xml$)/.test(p);
+const educationPages=new Set(['/bildung','/bildung-foerderung','/kfz-gutachter-werden','/schadenfotos-lernen','/gutachten-aufbau']);
+const educationPath=p=>educationPages.has(clean(p).toLowerCase())||/^\/bildung\//i.test(p);
+const educationApi=p=>/^\/api\/portal\/(?:admin\/)?academy(?:\/|$)/i.test(p);
 function hostPolicy(host,url){
  const u=new URL(url,PUBLIC_ORIGIN),name=String(host||'').toLowerCase().split(':')[0],workspace=workspaceForHost(host);
+ if(educationPath(u.pathname))return {gone:true,production:true,origin:workspaces[workspace]?.origin||PUBLIC_ORIGIN};
  if(isRetiredHost(host)){const p=clean(u.pathname),target=['','/app'].includes(p)?'/':['/mobile','/mobile-app','/partner-app'].includes(p)?'/portal':p==='/app-demo'?'/portal':p==='/mitglied-werden'?'/registrieren':u.pathname;return {retired:true,production:true,redirect:APP_ORIGIN+target+u.search};}
  const isApp=!!workspace,isReport=name==='gutachten.unfallx.com',isPublic=['unfallx.com','www.unfallx.com'].includes(name),production=isApp||isReport||isPublic;
  const p=clean(u.pathname),own=workspaces[workspace]?.origin;
@@ -54,4 +58,4 @@ function links(html,isApp,production,isReport=false,workspace='partner'){
  out=out.replace(/(<(?:link rel="canonical" href|meta property="og:url" content)=")https:\/\/unfallx\.com([^" ]*)/g,(_,a,p)=>a+origin+(isApp&&p==='/app'?'/':p));
  return out.replace(/https:\/\/unfallx\.com\/(unfallgutachten|wertgutachten|kostenvoranschlag|kfz-gutachten|kfz-gutachter-berlin|kfz-gutachter-brandenburg|einsatzgebiete|unfall-checkliste|wertminderung|nutzungsausfall|mietwagen|totalschaden)(?=["#?/])/g,REPORT_ORIGIN+'/$1');
 }
-module.exports={APP_ORIGIN,ADMIN_ORIGIN,MOBILE_ORIGIN,PUBLIC_ORIGIN,REPORT_ORIGIN,workspaces,isRetiredHost,workspaceForHost,appPath,reportPath,hostPolicy,links};
+module.exports={APP_ORIGIN,ADMIN_ORIGIN,MOBILE_ORIGIN,PUBLIC_ORIGIN,REPORT_ORIGIN,workspaces,educationPath,educationApi,isRetiredHost,workspaceForHost,appPath,reportPath,hostPolicy,links};

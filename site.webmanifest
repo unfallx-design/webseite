@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "UNFALLX Connect – App, Gutachten & Bildung",
+  "name": "UNFALLX – Partnerportal & Kfz-Gutachten",
   "short_name": "UNFALLX",
-  "description": "Digitale Schadenaufnahme für Partner und Privatkunden. Bildung und Gutachten mit UNFALLX.",
+  "description": "Digitale Fallübermittlung für Partner und unabhängige Kfz-Gutachten mit UNFALLX.",
   "lang": "de",
   "start_url": "/",
   "scope": "/",
@@ -31,7 +31,7 @@
   ],
   "shortcuts": [
     {
-      "name": "UNFALLX Connect",
+      "name": "Partnerportal öffnen",
       "url": "/login",
       "icons": [
         {
@@ -41,16 +41,8 @@
       ]
     },
     {
-      "name": "Schaden aufnehmen",
-      "url": "/schaden-melden"
-    },
-    {
       "name": "App-Hilfe",
       "url": "/app-hilfe"
-    },
-    {
-      "name": "Bildung & Kurse",
-      "url": "/bildung"
     }
   ]
 }

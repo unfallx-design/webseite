@@ -186,9 +186,11 @@ const server = http.createServer((req, res) => {
   let hostInfo;try{hostInfo=hosts.hostPolicy(req.headers.host,req.url);}catch{return sendError(res,400,isHead);}
   if(process.env.NODE_ENV==='test'&&process.env.PORTAL_PREVIEW_WORKSPACE&&!hostInfo.production){hostInfo={...hostInfo,isApp:true,workspace:process.env.PORTAL_PREVIEW_WORKSPACE};}
   if(hostInfo.retired&&(!['GET','HEAD'].includes(req.method)||req.url.split('?')[0].startsWith('/api/')))return send(res,410,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Die separate Aufnahme-App wurde eingestellt. Bitte im Partnerportal unter app.unfallx.com anmelden.',redirect:hosts.APP_ORIGIN+'/login'}),isHead);
+  if(hostInfo.gone)return send(res,410,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'},'<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Seite nicht mehr verfügbar | UNFALLX</title><link rel="stylesheet" href="/assets/workspace.css"></head><body class="workspace-login"><main class="workspace-login-main"><h1>Diese Seite ist nicht mehr verfügbar.</h1><p>Hier geht es zu UNFALLX und deinem Portalzugang.</p><a href="'+hostInfo.origin+'/">Zur Übersicht →</a></main></body></html>',isHead);
+  if(hosts.educationApi(req.url.split('?')[0]))return send(res,410,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex'},JSON.stringify({error:'Dieser Bereich ist nicht mehr verfügbar.'}),isHead);
   if(hostInfo.redirect)return send(res,308,{Location:hostInfo.redirect,'Cache-Control':'no-store'},'',isHead);
   const apiPath=req.url.split('?')[0];
-  if(hostInfo.production&&!hostInfo.isApp&&apiPath.startsWith('/api/portal/')&&!apiPath.startsWith('/api/portal/academy/'))return send(res,409,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Die App ist umgezogen. Bitte app.unfallx.com/login öffnen und dort anmelden.',redirect:hosts.APP_ORIGIN+'/login'}),isHead);
+  if(hostInfo.production&&!hostInfo.isApp&&apiPath.startsWith('/api/portal/'))return send(res,409,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Die App ist umgezogen. Bitte app.unfallx.com/login öffnen und dort anmelden.',redirect:hosts.APP_ORIGIN+'/login'}),isHead);
   if (req.url.split('?')[0].startsWith('/api/portal/')) return portal.handle(req, res, SECURITY_HEADERS);
 
   /* Anfrageformular: POST /api/anfrage (JSON) */
@@ -229,7 +231,7 @@ const server = http.createServer((req, res) => {
   }
 
   if(hostInfo.production&&urlPath==='/sitemap.xml'){
-    const paths=hostInfo.isApp?[]:hostInfo.isReport?['/',...['unfallgutachten','wertgutachten','kostenvoranschlag','kfz-gutachten','kfz-gutachter-berlin','kfz-gutachter-brandenburg','einsatzgebiete','unfall-checkliste','wertminderung','nutzungsausfall','mietwagen','totalschaden'].map(p=>'/'+p)]:['/',...fs.readdirSync(ROOT).filter(f=>f.endsWith('.html')&&(f.startsWith('bildung')||['kfz-gutachter-werden.html','schadenfotos-lernen.html','gutachten-aufbau.html'].includes(f))).map(f=>'/'+f.slice(0,-5))];
+    const paths=hostInfo.isApp?[]:hostInfo.isReport?['/',...['unfallgutachten','wertgutachten','kostenvoranschlag','kfz-gutachten','kfz-gutachter-berlin','kfz-gutachter-brandenburg','einsatzgebiete','unfall-checkliste','wertminderung','nutzungsausfall','mietwagen','totalschaden'].map(p=>'/'+p)]:['/'];
     const domain=hostInfo.isReport?hosts.REPORT_ORIGIN:hosts.PUBLIC_ORIGIN;
     return send(res,200,{'Content-Type':'application/xml; charset=utf-8','Cache-Control':'no-cache'},'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+paths.map(p=>'<url><loc>'+domain+p+'</loc></url>').join('')+'</urlset>',isHead);
   }
@@ -294,13 +296,6 @@ const server = http.createServer((req, res) => {
       if (ext === '.html') {
         let page;
         try { let html=renderPage(file,hostInfo);
-          if(!hostInfo.isApp&&html.includes('data-course-price')||path.basename(file)==='bildung.html'){
-            const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-            const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n/100);
-            try{const courses=await portal.catalog(),primary=courses.find(c=>c.id==='praxis-berlin');html=html.replace(/(<span data-course-price>)[^<]*(<\/span>)/g,'$1'+(primary?euro(primary.price):'siehe Kursangebot')+'$2');
-              if(path.basename(file)==='bildung.html'){const cards=courses.map(c=>'<article class="portal-card"><span class="eyebrow">'+(c.mode==='digital'?'DIGITAL':'PRÄSENZ')+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.description)+'</p><p><strong>'+(!c.price&&c.mode==='digital'?'Preis wird bekannt gegeben':euro(c.price)+' pro Person')+'</strong><br>'+esc(c.duration)+' · '+esc(c.location)+'<br>'+(c.start?'Start: '+esc(c.weeks[0]?.week||c.start):'Start wird demnächst bekannt gegeben')+'</p><p>'+c.capacity+' Plätze pro Termin</p><a class="btn btn-outline" href="#kursanmeldung">Kurs auswählen →</a></article>').join('')||'<p>Neue Kurse werden demnächst veröffentlicht.</p>';html=html.replace('<div class="partner-grid" id="course-catalog"><p>Kursangebot wird geladen …</p></div>','<div class="partner-grid" id="course-catalog">'+cards+'</div>');}
-            }catch{html=html.replace(/(<span data-course-price>)[^<]*(<\/span>)/g,'$1Preis auf Anfrage$2');}
-          }
           page = Buffer.from(hosts.links(html,hostInfo.isApp,hostInfo.production,hostInfo.isReport,hostInfo.workspace), 'utf8'); }
         catch (e) { return sendError(res, 500, isHead); }
         return send(res, 200, {
