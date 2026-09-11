@@ -65,7 +65,7 @@
       });
       result.textContent = count + (count === 1 ? ' Gebiet gefunden' : ' Gebiete gefunden');
       empty.hidden = count !== 0;
-      var other = empty.querySelector('a'); other.href = '/' + '?ort=' + encodeURIComponent(input.value.trim().slice(0, 120)) + '#anfrage';
+      var other = empty.querySelector('a'); other.href = '/' + '?ort=' + encodeURIComponent(input.value.trim().slice(0, 120)) + '#kontakt';
     }
     input.addEventListener('input', filter);
     filters.forEach(function (button) { button.addEventListener('click', function () {

@@ -1,0 +1,2 @@
+/* The supporting public pages use the same navigation and footer as the homepage. */
+body:not([data-workspace]){background:#f8f9fb}body:not([data-workspace]) .connect-footer{margin-top:45px}body:not([data-workspace]) .connect-footer .wrap{max-width:1320px}body:not([data-workspace]) main .page-head{padding-top:150px}body:not([data-workspace]) main .card,body:not([data-workspace]) main details{border-radius:20px}

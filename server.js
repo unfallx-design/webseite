@@ -97,8 +97,7 @@ function versionAssets(html) {
 function renderPage(file, context={}) {
   let html=fs.readFileSync(file,'utf8');
   if(path.basename(file)==='app-hilfe.html'){const role=context.workspace==='admin'?'admin':'partner';html=html.replace('{{helpContent}}',help.render(role)).replace('{{helpTitle}}','Hilfe · '+hosts.workspaces[role].title);}
-  if(context.isReport)html=html.replace('<!--#include:header-->','<!--#include:gutachten-header-->');
-  if(context.isApp)html=html.replace(/<!--#include:(?:app-)?header-->/g,'<!--#include:workspace-header-->').replace(/<!--#include:(?:app-)?footer-->/g,'<!--#include:workspace-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
+  if(context.isApp)html=html.replace(/<!--#include:(?:(?:app|home)-)?header-->/g,'<!--#include:workspace-header-->').replace(/<!--#include:(?:(?:app|home)-)?footer-->/g,'<!--#include:workspace-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
   if(context.isApp&&!['workspace-login.html','passwort.html','registrieren.html','app-hilfe.html','partner-start.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
   if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
   html=applyPartials(html);
@@ -110,6 +109,7 @@ function renderPage(file, context={}) {
     html=html.replace('<body','<body data-workspace="'+w+'"').replaceAll('{{workspaceTitle}}',title).replaceAll('{{workspaceHeading}}',labels[w][0]).replaceAll('{{workspaceCopy}}',labels[w][1]).replaceAll('{{workspaceEnrollment}}',w==='admin'?'<p class="workspace-enrollment">Interne Zugänge werden durch UNFALLX eingeladen.</p>':'<p class="workspace-enrollment">Noch kein Partnerkonto?<a href="/registrieren">Als Partner registrieren →</a></p>');
     if(path.basename(file)!=='partner-start.html'&&!html.includes('/assets/workspace.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace.css"></head>');
   }
+  if(context.isApp&&!html.includes('/assets/workspace-unified.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace-unified.css"></head>');
   return versionAssets(html);
 }
 
@@ -187,6 +187,7 @@ const server = http.createServer((req, res) => {
   const isHead = req.method === 'HEAD';
   let hostInfo;try{hostInfo=hosts.hostPolicy(req.headers.host,req.url);}catch{return sendError(res,400,isHead);}
   if(process.env.NODE_ENV==='test'&&process.env.PORTAL_PREVIEW_WORKSPACE&&!hostInfo.production){hostInfo={...hostInfo,isApp:true,workspace:process.env.PORTAL_PREVIEW_WORKSPACE};}
+  if(hostInfo.retiredReport&&(!['GET','HEAD'].includes(req.method)||req.url.split('?')[0].startsWith('/api/')))return send(res,410,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Diese Gutachten-Adresse ist stillgelegt. Bitte nutzen Sie unfallx.com/ueber-uns für Informationen oder Ihren geschützten Arbeitsbereich für Falldaten.'}),isHead);
   if(hostInfo.retired&&(!['GET','HEAD'].includes(req.method)||req.url.split('?')[0].startsWith('/api/')))return send(res,410,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Die separate Aufnahme-App wurde eingestellt. Bitte im Partnerportal unter app.unfallx.com anmelden.',redirect:hosts.APP_ORIGIN+'/login'}),isHead);
   if(hostInfo.gone)return send(res,410,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'},'<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Seite nicht mehr verfügbar | UNFALLX</title><link rel="stylesheet" href="/assets/workspace.css"></head><body class="workspace-login"><main class="workspace-login-main"><h1>Diese Seite ist nicht mehr verfügbar.</h1><p>Hier geht es zu UNFALLX und deinem Portalzugang.</p><a href="'+hostInfo.origin+'/">Zur Übersicht →</a></main></body></html>',isHead);
   if(hosts.educationApi(req.url.split('?')[0]))return send(res,410,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex'},JSON.stringify({error:'Dieser Bereich ist nicht mehr verfügbar.'}),isHead);
@@ -233,11 +234,10 @@ const server = http.createServer((req, res) => {
   }
 
   if(hostInfo.production&&urlPath==='/sitemap.xml'){
-    const paths=hostInfo.isApp?[]:hostInfo.isReport?['/',...['unfallgutachten','wertgutachten','kostenvoranschlag','kfz-gutachten','kfz-gutachter-berlin','kfz-gutachter-brandenburg','einsatzgebiete','unfall-checkliste','wertminderung','nutzungsausfall','mietwagen','totalschaden'].map(p=>'/'+p)]:['/'];
-    const domain=hostInfo.isReport?hosts.REPORT_ORIGIN:hosts.PUBLIC_ORIGIN;
+    const paths=hostInfo.isApp?[]:['/','/ueber-uns'];
+    const domain=hosts.PUBLIC_ORIGIN;
     return send(res,200,{'Content-Type':'application/xml; charset=utf-8','Cache-Control':'no-cache'},'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+paths.map(p=>'<url><loc>'+domain+p+'</loc></url>').join('')+'</urlset>',isHead);
   }
-  if(hostInfo.isReport&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain'},'User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://gutachten.unfallx.com/sitemap.xml\n',isHead);
   if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
   if(hostInfo.isApp&&['/app.webmanifest','/site.webmanifest'].includes(urlPath)){
     const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'app.webmanifest'),'utf8')),w=hostInfo.workspace||'partner';
@@ -272,7 +272,8 @@ const server = http.createServer((req, res) => {
   const relative = hostInfo.isApp&&urlPath==='/datenschutz'?'portal-datenschutz.html':
     hostInfo.workspace==='partner'&&urlPath==='/'?'partner-start.html':
     hostInfo.isApp&&['/','/login'].includes(urlPath)?'workspace-login.html':
-    urlPath==='/'?(hostInfo.isReport?'gutachten-start.html':'index.html'):
+    urlPath==='/'?'index.html':
+    urlPath==='/login'?'workspace-login.html':
     ['/portal','/gutachter-portal'].includes(urlPath)?'partner-app.html':urlPath.replace(/^\/+/,'');
   const resolved = path.resolve(ROOT, relative);
 

@@ -10,7 +10,7 @@ test('Retired education URLs are gone on every domain, including old HTML and bo
  }
  for(const role of ['partner','admin','appraiser'])assert.doesNotMatch(JSON.stringify(Help.forRole(role)),/Bildung|AZAV|Kursanmeldung|Vormerkungen|Teilnehmer/);
  const root=path.join(__dirname,'..');
- for(const file of ['index.html','partials/header.html','partials/gutachten-header.html','partials/footer.html','site.webmanifest','assets/portal.js','sitemap.xml'])assert.doesNotMatch(fs.readFileSync(path.join(root,file),'utf8'),/bildung|academy|AZAV|curriculum/i,file);
+ for(const file of ['index.html','partials/home-header.html','partials/home-footer.html','partials/workspace-header.html','site.webmanifest','assets/portal.js','sitemap.xml'])assert.doesNotMatch(fs.readFileSync(path.join(root,file),'utf8'),/bildung|academy|AZAV|curriculum/i,file);
 });
 
 test('Retired course APIs cannot read or mutate historical records or send email for any role',async()=>{

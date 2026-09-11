@@ -1,7 +1,7 @@
 /* UNFALLX – kleine Helfer, ohne Framework */
 (function () {
   'use strict';
-  if(['unfallx.com','www.unfallx.com'].includes(location.hostname)&&['gutachten','anfrage','leistungen','vorteile','ablauf','halle','unfallservice','ueber-uns','vertrauen','desag-zertifikat','bewertungen','einsatzgebiet','ratgeber','faq','schadenbilder','standort'].includes(location.hash.slice(1))){location.replace('https://gutachten.unfallx.com/'+location.hash);return;}
+  if(['unfallx.com','www.unfallx.com'].includes(location.hostname)&&location.pathname==='/'&&['gutachten','anfrage','leistungen','vorteile','ablauf','halle','unfallservice','ueber-uns','vertrauen','desag-zertifikat','bewertungen','einsatzgebiet','ratgeber','faq','schadenbilder','standort'].includes(location.hash.slice(1))){location.replace('/ueber-uns'+location.search+location.hash);return;}
 
 
   /* Deutsche Oberflächentexte. */
