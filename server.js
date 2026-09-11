@@ -99,14 +99,14 @@ function renderPage(file, context={}) {
   if(path.basename(file)==='app-hilfe.html'){const role=context.workspace==='admin'?'admin':'partner';html=html.replace('{{helpContent}}',help.render(role)).replace('{{helpTitle}}','Hilfe · '+hosts.workspaces[role].title);}
   if(context.isReport)html=html.replace('<!--#include:header-->','<!--#include:gutachten-header-->');
   if(context.isApp)html=html.replace(/<!--#include:(?:app-)?header-->/g,'<!--#include:workspace-header-->').replace(/<!--#include:(?:app-)?footer-->/g,'<!--#include:workspace-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
-  if(context.isApp&&!['workspace-login.html','app-hilfe.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
+  if(context.isApp&&!['workspace-login.html','app-hilfe.html','partner-start.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
   if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
   html=applyPartials(html);
   if(!context.isApp&&html.includes('ux-header'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/navigation.css"><script src="/assets/navigation.js" defer></script></head>');
   if(context.isApp){const w=context.workspace||'partner',title=hosts.workspaces[w].title;
     const labels={partner:['Willkommen zurück.','Melde dich an, um Fälle, Fotos und Unterlagen an UNFALLX zu übermitteln.'],admin:['Das interne Dashboard.','Geschützter Zugang für die Administration und das UNFALLX-Team.']};
     html=html.replace('<body','<body data-workspace="'+w+'"').replaceAll('{{workspaceTitle}}',title).replaceAll('{{workspaceHeading}}',labels[w][0]).replaceAll('{{workspaceCopy}}',labels[w][1]).replaceAll('{{workspaceEnrollment}}',w==='admin'?'<p class="workspace-enrollment">Interne Zugänge werden durch UNFALLX eingeladen.</p>':'<p class="workspace-enrollment">Noch kein Partnerkonto?<a href="/registrieren">Als Partner registrieren →</a></p>');
-    if(!html.includes('/assets/workspace.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace.css"></head>');
+    if(path.basename(file)!=='partner-start.html'&&!html.includes('/assets/workspace.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace.css"></head>');
   }
   return versionAssets(html);
 }
@@ -239,7 +239,7 @@ const server = http.createServer((req, res) => {
   if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
   if(hostInfo.isApp&&['/app.webmanifest','/site.webmanifest'].includes(urlPath)){
     const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'app.webmanifest'),'utf8')),w=hostInfo.workspace||'partner';
-    Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='admin'?'UX Team':'UX Partner',start_url:'/',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
+    Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='admin'?'UX Team':'UX Partner',start_url:w==='partner'?'/portal':'/',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
     return send(res,200,{'Content-Type':MIME['.webmanifest'],'Cache-Control':'no-cache'},JSON.stringify(manifest),isHead);
   }
   /* Healthcheck für Hostinger */
@@ -268,6 +268,7 @@ const server = http.createServer((req, res) => {
   }
 
   const relative = hostInfo.isApp&&urlPath==='/datenschutz'?'portal-datenschutz.html':
+    hostInfo.workspace==='partner'&&urlPath==='/'?'partner-start.html':
     hostInfo.isApp&&['/','/login'].includes(urlPath)?'workspace-login.html':
     urlPath==='/'?(hostInfo.isReport?'gutachten-start.html':'index.html'):
     ['/portal','/gutachter-portal'].includes(urlPath)?'partner-app.html':urlPath.replace(/^\/+/,'');

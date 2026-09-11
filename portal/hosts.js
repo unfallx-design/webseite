@@ -25,6 +25,7 @@ function hostPolicy(host,url){
  if(['/kundenportal','/schaden-melden'].includes(p))return {redirect:(production?APP_ORIGIN:'')+(p==='/kundenportal'?'/login':'/mitglied-werden')+u.search};
  if(!production)return {isApp:false,isReport:false,production:false,workspace:null};
  const info={isApp,isReport,production,workspace,origin:own|| (isReport?REPORT_ORIGIN:PUBLIC_ORIGIN)};
+ if(p==='/partner-start')return {redirect:APP_ORIGIN+'/'+u.search};
  if(p==='/gutachten-start')return {redirect:REPORT_ORIGIN+'/'+u.search};
  if(p==='/gutachter-portal'&&workspace!=='admin')return {redirect:ADMIN_ORIGIN+u.pathname+u.search};
  if(workspace==='admin'&&['/registrieren','/mitglied-werden','/konto-vervollstaendigen','/app-demo','/empfehlen','/kanzleipartner'].includes(p))return {redirect:ADMIN_ORIGIN+'/login'};
