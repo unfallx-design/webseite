@@ -2,7 +2,7 @@
 const {assert,text,id,hash,Problem,payable}=require('./domain');
 const sharp=require('sharp');
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
-const fields=new Set(['claimant.first','claimant.last','claimant.street','claimant.zip','claimant.city','claimant.phone','claimant.email','claimant.birthdate','claimant.iban','plate','vin','make','model','subtype','firstRegistration','kw','displacement','fuel','color','accident.date','accident.place','accident.description','inspection.at','previousOwners','purchase','serviceHistory','claimant.vat','leased','financed','policeRecorded','policeAttached','legalProtection']);
+const fields=new Set(['claimant.company','claimant.first','claimant.last','claimant.street','claimant.zip','claimant.city','claimant.phone','claimant.email','claimant.birthdate','claimant.iban','plate','vin','make','model','subtype','firstRegistration','kw','displacement','fuel','color','accident.date','accident.place','accident.description','inspection.at','previousOwners','purchase','serviceHistory','claimant.vat','leased','financed','policeRecorded','policeAttached','legalProtection']);
 const required=['claimant.first','claimant.last','claimant.street','claimant.zip','claimant.city','plate'];
 const perspectives=new Set(['frontLeft','frontRight','rearRight','rearLeft','damageOverview','damageDetail','plate','vin','odometer','registration','other']);
 function clean(input){
@@ -11,7 +11,7 @@ function clean(input){
  for(const key of required)assert(result[key]?.trim(),'Bitte Name, Vorname, Kennzeichen und vollständige Adresse angeben.');return result;
 }
 function capability(req){const match=/^Bearer ([a-f0-9]{64})$/.exec(req.headers.authorization||'');assert(match,'Fallzugang fehlt.',401);return hash(match[1]);}
-function asIntake(f){return {ownerFirstName:f['claimant.first'],ownerLastName:f['claimant.last'],owner:f['claimant.first']+' '+f['claimant.last'],ownerStreet:f['claimant.street'],ownerPostcode:f['claimant.zip'],ownerCity:f['claimant.city'],customerEmail:f['claimant.email']||'',ownerContact:f['claimant.phone']||'',ownerPhone:f['claimant.phone']||'',ownerIban:f['claimant.iban']||'',plate:f.plate,vehicle:[f.make,f.model].filter(Boolean).join(' '),vin:f.vin||'',accidentDate:f['accident.date']||'',location:f['accident.place']||'',description:f['accident.description']||''};}
+function asIntake(f){return {ownerType:f['claimant.company']?'company':'person',ownerCompany:f['claimant.company']||'',ownerFirstName:f['claimant.first'],ownerLastName:f['claimant.last'],owner:[f['claimant.company'],f['claimant.first']+' '+f['claimant.last']].filter(Boolean).join(' · '),ownerStreet:f['claimant.street'],ownerPostcode:f['claimant.zip'],ownerCity:f['claimant.city'],customerEmail:f['claimant.email']||'',ownerContact:f['claimant.phone']||'',ownerPhone:f['claimant.phone']||'',ownerIban:f['claimant.iban']||'',plate:f.plate,vehicle:[f.make,f.model].filter(Boolean).join(' '),vin:f.vin||'',accidentDate:f['accident.date']||'',location:f['accident.place']||'',description:f['accident.description']||''};}
 function commission(c){
  const f=c.finance,amount=Number.isSafeInteger(f?.partnerNet)&&f.partnerNet>=0&&f.invoiceNet>0?f.partnerNet:null;
  const paid=!!f?.paidOutAt,received=!!f?.invoiceGross&&f.received>=f.invoiceGross,eligible=payable(c)&&!!f?.partnerInvoiceApproved&&!paid;

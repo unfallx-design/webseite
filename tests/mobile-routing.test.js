@@ -58,6 +58,26 @@ test('admin receives native case; own company sees it; other companies cannot re
   assert.deepEqual(overview.json.totals,{expectedCents:0,payableCents:0,paidCents:0});
  }finally{await portal.close();}
 });
+test('optional customer company is persisted, editable and independent of the partner company',async()=>{
+ const {portal,call,headers}=await fixture();try{
+  const id=crypto.randomUUID(),authorization='Bearer '+crypto.randomBytes(32).toString('hex');
+  const save=f=>call('app.unfallx.com','/mobile/cases',{id,reference:'TEST-FIRMA',fields:f,fieldsHash:hash(JSON.stringify(f))},{...headers(),authorization});
+  const read=async()=> (await call('admin.unfallx.com','/cases/'+id,undefined,headers('admin'))).json.case;
+  assert.equal((await save({...fields,'claimant.company':'  Musterfirma GmbH  '})).status,200);
+  let c=await read();
+  assert.equal(c.mobile.fields['claimant.company'],'Musterfirma GmbH');
+  assert.equal(c.intake.ownerCompany,'Musterfirma GmbH');assert.equal(c.intake.ownerType,'company');
+  assert.equal(c.intake.owner,'Musterfirma GmbH · Alex Beispiel');
+  assert.equal(c.companyId,'company-partner');assert.equal(c.companyName,'Testfirma partner');
+  assert.equal((await save({...fields,'claimant.company':'Andere Firma GmbH'})).status,200);
+  assert.equal((await read()).intake.ownerCompany,'Andere Firma GmbH');
+  assert.equal((await save({...fields,'claimant.company':'Firma','claimant.first':''})).status,400);
+  assert.equal((await save({...fields,'claimant.unknown':'Nicht erlaubt'})).status,400);
+  assert.equal((await save({...fields,'claimant.company':''})).status,200);
+  c=await read();assert.equal(c.intake.ownerCompany,'');assert.equal(c.intake.ownerType,'person');assert.equal(c.intake.owner,'Alex Beispiel');
+  assert.equal((await save(fields)).status,200);
+ }finally{await portal.close();}
+});
 test('real admin finance calculation flows into native 50% commission and payment gates',async()=>{
  const {store,portal,call,headers}=await fixture();try{
   const id=crypto.randomUUID(),token=crypto.randomBytes(32).toString('hex');
