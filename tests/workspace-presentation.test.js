@@ -4,7 +4,7 @@ const {createStore}=require('../portal/store'),{createPortal}=require('../portal
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 test('presentation metadata excludes hidden reports, partner invoices and internal messages',()=>{
  const c={status:'needs_info'},files=[{id:'photo',kind:'photo',type:'image/jpeg'},{id:'report',kind:'report',type:'application/pdf'},{id:'invoice',kind:'partner_invoice',type:'application/pdf'}],events=[{id:'secret',action:'Nachricht',note:'INTERNAL',internal:true,at:'2026-09-12'},{id:'request',action:'Status: Rückfrage',note:'Fahrzeugschein fehlt',internal:false,at:'2026-09-11'},{id:'message',action:'Nachricht',note:'Hallo',at:'2026-09-10'}];
- const p=summarize(c,files,events,{role:'partner'});assert.equal(p.fileCount,2);assert.equal(p.photoCount,1);assert.equal(p.documentCount,1);assert.equal(p.thumbnailFileId,'photo');assert.equal(p.latestRequest.note,'Fahrzeugschein fehlt');assert.equal(p.lastMessage.note,'Hallo');assert(!JSON.stringify(p).includes('INTERNAL'));assert.equal(p.submittedAt,undefined);
+ const p=summarize(c,files,events,{role:'partner'});assert.equal(p.fileCount,2);assert.equal(p.photoCount,1);assert.equal(p.documentCount,1);assert.equal(p.thumbnailFileId,'photo');assert.equal(p.latestRequest.note,'Fahrzeugschein fehlt');assert.equal(p.lastMessage.note,'Hallo');assert.equal(p.recentEvents.length,2);assert.equal(p.recentEvents[0].action,'Status: Rückfrage');assert(summarize(c,files,events,{role:'admin'}).recentEvents.some(e=>e.note==='INTERNAL'));assert(!JSON.stringify(p).includes('INTERNAL'));assert.equal(p.submittedAt,undefined);
  assert.equal(summarize(c,files,events,{role:'appraiser'}).fileCount,2);
 });
 async function fixture(){

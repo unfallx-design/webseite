@@ -24,7 +24,7 @@ function commission(c){
   if(paid){stage='paid';label='Ausgezahlt';}
   if(amount===0){stage='no_commission';label='Keine Provision vereinbart';}
  }
- return {amountCents:amount,invoiceNetCents:f?.invoiceNet||null,percent:amount!==null&&f?.invoiceNet>0?Math.round(amount/f.invoiceNet*10000)/100:null,stage,label,payable:eligible,paidOutAt:f?.paidOutAt||null,receivedInFull:received};
+ return {amountCents:amount,invoiceNetCents:f?.invoiceNet||null,percent:f?.calculation?.partnerMode!=='fixed'&&amount!==null&&f?.invoiceNet>0?Math.round(amount/f.invoiceNet*10000)/100:null,stage,label,payable:eligible,paidOutAt:f?.paidOutAt||null,receivedInFull:received};
 }
 function overview(cases){
  const items=cases.sort((a,b)=>(b.updatedAt||b.createdAt).localeCompare(a.updatedAt||a.createdAt)).map(c=>({id:c.id,reference:c.mobile?.reference||c.number,plate:c.intake.plate||'',vehicle:c.intake.vehicle||'',customer:c.intake.owner||'',status:c.status,source:c.source,createdAt:c.createdAt||null,submittedAt:c.submittedAt||null,updatedAt:c.updatedAt||null,fileCount:c.fileCount??null,photoCount:c.photoCount??null,documentCount:c.documentCount??null,thumbnailFileId:c.thumbnailFileId||null,latestRequest:c.latestRequest||null,commission:commission(c)}));

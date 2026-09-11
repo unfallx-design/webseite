@@ -16,6 +16,12 @@ test('Money is calculated in integer cents, including gross input and independen
  assert.equal(math.calculate({amount:'0.03',basis:'net',vatPercent:'19',partnerPercent:'50',partnerVatPercent:'0'}).partnerNet,2);
  for(const bad of [{amount:'1e3'},{partnerPercent:'100.01'},{vatPercent:'-1'},{amount:'NaN'},{amount:'0'},{amount:'2.001'},{basis:'other'}])assert.throws(()=>math.calculate({amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'50',...bad}));
 });
+test('Fixed net commission is cent-exact, bounded by the fee and independent of legacy percentage input',()=>{
+ const base={amount:'2800',basis:'net',vatPercent:'19',partnerMode:'fixed',partnerAmount:'1387,65',partnerVatPercent:'19'};
+ const r=math.calculate({...base,partnerPercent:'invalid'});assert.equal(r.partnerNet,138765);assert.equal(r.partnerTax,26365);assert.equal(r.partnerGross,165130);assert.equal(r.invoiceGross,333200);assert.equal(r.calculation.partnerMode,'fixed');assert.equal(r.calculation.partnerPercent,null);
+ assert.equal(math.calculate({...base,partnerVatPercent:'0'}).partnerGross,138765);
+ for(const bad of [{partnerAmount:'2800.01'},{partnerAmount:'-1'},{partnerAmount:'1e3'},{partnerAmount:'0.001'},{partnerMode:'unknown'}])assert.throws(()=>math.calculate({...base,...bad}));
+});
 test('Connect expansion enforces status rights, confidential PDFs, lawyer handoff, private tracking',async t=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ux-connect5-'));const env={NODE_ENV:'test',PORTAL_LOCAL_DB:path.join(dir,'portal.sqlite'),PORTAL_ORIGIN:'http://localhost',PORTAL_TRUST_PROXY:'true'};const sent=[];const mail={ready:true,send:async(to,subject,text,files,html)=>sent.push({to,subject,text,files,html})};
  const store=await createStore(env),portal=createPortal({env,store,mail});await portal.ready();const server=http.createServer((req,res)=>portal.handle(req,res,{}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let ip=0;
@@ -76,6 +82,10 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
  await t.test('Percentage calculator persists verified amounts and referral attribution avoids unrelated private accounts',async()=>{
   const r=await act(a,{action:'finance',invoiceNumber:'R-TEST',agreement:'50 % der Nettovergütung',invoiceNet:'99999',calculation:{amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'50',partnerVatPercent:'19'}});assert.equal(r.status,200);assert.equal(r.json.case.finance.invoiceGross,119000);assert.equal(r.json.case.finance.partnerNet,50000);assert.equal(r.json.case.finance.partnerGross,59500);
   assert.equal((await act(p,{action:'finance',calculation:{}})).status,403);assert.equal((await act(a,{action:'finance',calculation:{amount:'1000',basis:'net',vatPercent:'19',partnerPercent:'200'}})).status,400);
+  const fixed=await act(a,{action:'finance',invoiceNumber:'R-FIXED',agreement:'Fester Nettobetrag je Auftrag',partnerNet:'99999',calculation:{amount:'2800',basis:'net',vatPercent:'19',partnerMode:'fixed',partnerAmount:'1387.65',partnerVatPercent:'19'}});assert.equal(fixed.status,200);assert.equal(fixed.json.case.finance.partnerNet,138765);
+  const partnerView=(await call('/cases/'+cid,undefined,p)).json.case;assert.equal(partnerView.finance.partnerNet,138765);assert.equal(partnerView.finance.invoiceNet,undefined);assert.equal(partnerView.finance.partnerAcceptedAt,null);assert.equal(partnerView.finance.payable,false);
+  const native=(await call('/mobile/overview',undefined,p)).json;assert.equal(native.items.find(x=>x.id===cid).commission.amountCents,138765);assert.equal(native.items.find(x=>x.id===cid).commission.percent,null);
+  assert.equal((await act(other,{action:'finance',calculation:{}})).status,404);
   assert.equal((await call('/referrals/join',{accepted:true},other)).status,200);const code=(await call('/referrals',undefined,other)).json.code;
   const direct=await call('/cases',{...input,customerEmail:'direct@example.com'},a);assert.equal(direct.status,200);const directId=direct.json.case.id;
   await store.transaction(async s=>{await s.put('referral_attribution',{id:'unrelated',referrerId:other.id,companyId:null});const row=await s.get('case',directId);row.status='report_sent';await s.put('case',row);});

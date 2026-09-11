@@ -13,10 +13,11 @@ function summarize(c, files, events, user) {
   const publicEvents = events.filter(e => !e.internal).sort((a,b) => b.at.localeCompare(a.at));
   const request = publicEvents.find(e => e.action === 'Status: Rückfrage' && e.note);
   const lastMessage = publicEvents.find(e => e.action === 'Nachricht' && e.note);
+  const recentEvents = events.filter(e => !['partner','customer'].includes(user.role) || !e.internal).sort((a,b)=>b.at.localeCompare(a.at)).slice(0,5).map(e=>({id:e.id,action:e.action,note:e.note,at:e.at,actor:e.actor,internal:!!e.internal}));
   const eventView = e => e ? {id:e.id, note:e.note, at:e.at, actor:e.actor} : null;
   return {...c, fileCount:visibleFiles.length, photoCount:photos.length, documentCount:visibleFiles.length-photos.length,
     thumbnailFileId:(preview.find(f => f.perspective === 'frontLeft') || preview[0])?.id || null,
-    latestRequest:eventView(request), lastMessage:eventView(lastMessage)};
+    latestRequest:eventView(request), lastMessage:eventView(lastMessage), recentEvents};
 }
 async function summarizeCases(s, cases, user) {
   const result=[];
