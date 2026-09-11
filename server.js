@@ -7,6 +7,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+require('./portal/hostinger-env').loadHostingerGoogleEnv(__dirname);
 const anfrage = require('./anfrage');
 const hosts = require('./portal/hosts');
 const help = require('./assets/help-content');
