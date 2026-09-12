@@ -2,3 +2,42 @@
 .scan-heading{display:flex;gap:16px;align-items:center}.scan-heading h2{margin:4px 0;font-size:1.45rem}.scan-heading p{margin:6px 0 0}.scan-symbol{display:grid;place-items:center;flex-shrink:0;width:52px;height:52px;border-radius:16px;background:#f52e25;color:white}.scan-symbol svg{width:30px;height:30px}.scan-actions{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 10px}.scan-hint{color:#5e6169;font-size:.88rem;line-height:1.6}.scan-workspace{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:24px;margin-top:22px}.scan-workspace[hidden]{display:none}.scan-preview img{display:block;max-width:100%;max-height:520px;object-fit:contain;border-radius:16px;background:#e9eaed}.scan-preview{min-width:0}.scan-results{min-width:0}.scan-results>p{font-weight:600}.scan-results progress{width:100%;height:10px;accent-color:#f52e25}.scan-field-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}.scan-field{min-width:0;background:white;padding:14px;border:1px solid #e2e4e8;border-radius:16px}.scan-field .portal-check{font-size:.85rem;margin-bottom:8px}.scan-field input:not([type=checkbox]){min-width:0;width:100%;font-size:16px}.scan-field small{display:block;margin-top:6px;overflow-wrap:anywhere;color:#636875}.scan-holder-confirm{margin:18px 0}.scan-field-list+.scan-hint{margin-top:15px}[data-scan-existing]{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}[data-scan-existing]:empty{display:none}
 .autoixpert-transfer-card{border:1px solid #dce4ee;background:linear-gradient(145deg,#f7fbff,white);border-radius:22px;padding:24px;margin:24px 0}.autoixpert-brand{display:flex;align-items:center;flex-wrap:wrap;gap:18px}.autoixpert-brand img{width:152px;height:auto}.autoixpert-brand span{font-size:.78rem;font-weight:700;padding:6px 10px;border-radius:20px;background:#e8edf3;color:#364252}.autoixpert-transfer-card h3{margin-top:20px}.autoixpert-transfer-card .btn{margin-top:12px}.autoixpert-transfer-card details{margin-top:24px}.autoixpert-transfer-card .portal-check{line-height:1.6}.autoixpert-transfer-card .portal-actions{margin-top:12px}.autoixpert-transfer-card .transfer-summary{padding:12px 16px;border-radius:14px;background:white;border:1px solid #e5e9ef}
 @media(max-width:680px){.registration-scanner{padding:18px;border-radius:20px}.scan-heading{align-items:flex-start;gap:12px}.scan-heading h2{font-size:1.2rem}.scan-symbol{width:40px;height:40px;border-radius:13px}.scan-symbol svg{width:25px;height:25px}.scan-workspace{grid-template-columns:1fr;gap:18px}.scan-preview img{max-height:280px;margin:auto}.scan-field-list{grid-template-columns:1fr}.scan-actions>.btn,.scan-actions>.portal-button{width:100%;justify-content:center}.autoixpert-transfer-card{padding:18px}.scan-heading p{font-size:.94rem}}
+/* Scoped above dashboard defaults: the scanner is one centered, self-contained control. */
+body.design-workspace .registration-scanner{padding:28px;margin-bottom:28px;overflow:hidden;text-align:center}
+body.design-workspace .registration-scanner .scan-heading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;max-width:640px;margin:auto}
+body.design-workspace .registration-scanner .scan-symbol{width:54px;height:54px;display:grid;place-items:center;background:var(--brand,#e00000);border-radius:18px}
+body.design-workspace .registration-scanner .scan-symbol svg{width:28px;height:28px;display:block;margin:0}
+body.design-workspace .registration-scanner .scan-heading h2{margin:6px 0 8px;line-height:1.3;font-size:24px}
+body.design-workspace .registration-scanner .scan-actions{display:flex;justify-content:center;align-items:stretch;gap:12px;margin:22px auto 14px;max-width:660px}
+body.design-workspace .registration-scanner .scan-actions>button{display:inline-flex;align-items:center;justify-content:center;gap:10px;flex:1;min-height:52px;width:auto;padding:13px 18px;margin:0;line-height:1.4;text-align:center;border-radius:16px;font-size:14px;font-weight:650;white-space:normal}
+body.design-workspace .registration-scanner .scan-entry svg{display:block;width:22px;height:22px;flex:0 0 22px;margin:0}
+body.design-workspace .registration-scanner .scan-entry span{display:block;min-width:0;flex:0 1 auto}
+body.design-workspace .registration-scanner>.scan-hint{max-width:740px;margin:12px auto 0;line-height:1.75}
+body.design-workspace .scan-workspace{text-align:left}
+body.design-workspace .scan-workspace .scan-actions{flex-direction:column}
+body.design-workspace .scan-workspace .scan-actions>button{flex:auto}
+body.design-workspace .scan-results .portal-check{margin:0 0 8px}
+body.design-workspace .scan-results .scan-holder-confirm{margin:20px 0}
+body.design-workspace .scan-results [data-scan-apply]{width:100%;display:flex;justify-content:center;min-height:52px;text-align:center}
+body.design-workspace [data-scan-existing]{justify-content:center}
+.scan-dialog{box-sizing:border-box;width:min(880px,calc(100% - 28px));max-height:94dvh;border:1px solid #e1e4e9;border-radius:24px;padding:24px;color:#252a33;background:#fff;overflow:auto;overscroll-behavior:contain;box-shadow:0 25px 90px #10152040;margin:auto}
+.scan-dialog::backdrop{background:#10151ec7;backdrop-filter:blur(5px)}
+.scan-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px}
+body.design-workspace .scan-dialog h2{font-size:22px;line-height:1.35;margin:0}
+.scan-dialog .scan-close{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border:1px solid #dce0e5;border-radius:14px;background:#f4f6f8;color:#262a32;cursor:pointer}
+.scan-dialog-intro{font-size:14px;line-height:1.65;margin:0 0 18px}
+.scan-dialog-actions,.scan-dialog-tools{display:flex;justify-content:center;align-items:stretch;gap:12px;flex-wrap:wrap;margin:16px 0 0}
+body.design-workspace .scan-dialog :is(.btn,.portal-button){display:inline-flex;justify-content:center;align-items:center;gap:9px;min-height:50px;padding:12px 18px;text-align:center;line-height:1.4;border-radius:16px;font-size:14px}
+.scan-dialog-actions>button{flex:1}
+.scan-camera-stage{position:relative;background:#161a20;border-radius:20px;overflow:hidden;min-height:220px}
+.scan-camera-stage video{display:block;width:100%;max-height:56dvh;min-height:220px;object-fit:contain}
+.scan-camera-guide{position:absolute;inset:10% 6%;border:2px solid #fff;border-radius:14px;pointer-events:none;box-shadow:0 0 0 100vmax #0002}
+.scan-camera-guide span{position:absolute;top:-5px;left:50%;transform:translate(-50%,-100%);white-space:nowrap;color:#fff;background:#151a20d9;padding:5px 9px;border-radius:8px;font-size:11px}
+.scan-crop-stage{position:relative;max-width:100%;margin:24px auto;background:#e8e9ed;border-radius:6px;touch-action:none}
+.scan-crop-stage canvas{display:block;width:100%;height:100%;border-radius:6px}
+.scan-crop-box{position:absolute;box-sizing:border-box;border:2px solid #e00000;pointer-events:none}
+body.design-workspace .scan-dialog .scan-crop-handle{position:absolute;pointer-events:auto;touch-action:none;width:38px;height:38px;padding:0;border:0;border-radius:50%;background:#e00000;box-shadow:0 0 0 3px white;cursor:move;transform:translate(-50%,-50%)}
+.scan-crop-handle::after{content:'+';font-size:24px;line-height:1;color:#fff;display:block}
+.scan-crop-handle[data-corner=nw]{left:0;top:0}.scan-crop-handle[data-corner=ne]{left:100%;top:0}.scan-crop-handle[data-corner=sw]{left:0;top:100%}.scan-crop-handle[data-corner=se]{left:100%;top:100%}
+.scan-dialog [data-camera-status]{font-size:13px;min-height:40px;line-height:1.6}
+@media(max-width:680px){body.design-workspace .registration-scanner{padding:23px 16px}body.design-workspace .registration-scanner .scan-heading h2{font-size:21px}body.design-workspace .registration-scanner .scan-actions{flex-direction:column;width:100%;gap:10px}body.design-workspace .registration-scanner .scan-actions>button{width:100%;min-height:54px;font-size:14px}body.design-workspace .registration-scanner .scan-heading p{font-size:14px}.scan-dialog{padding:20px;width:calc(100% - 16px);max-height:calc(100dvh - 16px)}body.design-workspace .scan-dialog h2{font-size:20px}.scan-dialog-actions{flex-direction:column}.scan-dialog-actions>button{width:100%}.scan-camera-guide span{font-size:9px}.scan-dialog-tools{gap:8px}.scan-dialog-tools>button{flex:1}.scan-dialog-intro{font-size:13px}}

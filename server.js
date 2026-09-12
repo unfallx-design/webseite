@@ -156,7 +156,7 @@ const SECURITY_HEADERS = {
   ...(process.env.NODE_ENV==='test'?{}:{'Strict-Transport-Security':'max-age=31536000'}),
   'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=(self)',
   'Content-Security-Policy':
     "default-src 'self'; img-src 'self' data: blob: https://www.desag.de; media-src 'self'; style-src 'self'; frame-src https://www.google.com; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
