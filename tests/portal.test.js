@@ -29,6 +29,14 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  const intake={...require('./fixtures/intake')(),vehicle:'BMW Test',plate:'TEST',accidentDate:'2026-09-08',location:'Leipzig',owner:'Testkunde',ownerContact:'customer@example.com',description:'Testschaden',authority:true,shareWithLawyer:false};
  assert.equal((await call('/cases',intake,p1)).status,403);assert.equal((await call('/admin/overview',undefined,p1)).status,403);assert.equal((await call('/admin/company',{id:p1.company.id,status:'approved'},p1)).status,403);checks+=3;
  for(const p of [p1,p2])assert.equal((await call('/admin/company',{id:p.company.id,status:'approved'},admin)).status,200);
+ await t.test('administration cannot create direct cases or create on behalf of a partner',async()=>{
+  const before=(await call('/cases',undefined,admin)).json.cases;
+  for(const data of [intake,{...intake,companyId:p1.company.id}]){
+   const result=await call('/cases',data,admin);
+   assert.equal(result.status,403);assert.match(result.json.error,/ausschließlich freigeschaltete Partner/);
+  }
+  assert.deepEqual((await call('/cases',undefined,admin)).json.cases,before);
+ });
  const created=await call('/cases',intake,p1);assert.equal(created.status,200,JSON.stringify(created.json));const cid=created.json.case.id;let c=created.json.case;
  assert.equal((await call('/cases/'+cid,undefined,p2)).status,404);assert.equal((await call('/cases',undefined,p2)).json.cases.length,0);assert.equal((await call('/cases/'+cid,{action:'finance',version:c.version},p1)).status,403);assert.equal((await call('/cases/'+cid,{action:'comment',note:'x',version:c.version},{cookie:p1.cookie})).status,403);checks+=4;
  assert.equal((await call('/cases/'+cid,{action:'submit',version:c.version},p1)).status,400);checks++;
@@ -60,7 +68,7 @@ test('Real HTTP, durable database, tenant boundaries and full case/payment workf
  assert.equal((await call('/admin/resend-invitation',{id:D.hash('failed@example.com')},admin)).json.invitationSent,true);
  await call('/admin/team',{id:D.hash('failed@example.com'),active:false},admin);
  const blockedToken=sent.findLast(m=>m.to==='failed@example.com').text.match(/#token=([a-f0-9]+)/)[1];assert.equal((await call('/exchange',{token:blockedToken})).status,403);
- });assert.equal((await call('/cases/'+cid,undefined,expert)).status,404);await action(admin,{action:'assign',assignee:expert.user.id});assert.equal((await call('/cases/'+cid,undefined,expert)).status,200);await action(expert,{action:'payment',amount:'1'},403);checks+=3;
+ });assert.equal((await call('/cases',intake,expert)).status,403);assert.equal((await call('/cases/'+cid,undefined,expert)).status,404);await action(admin,{action:'assign',assignee:expert.user.id});assert.equal((await call('/cases/'+cid,undefined,expert)).status,200);await action(expert,{action:'payment',amount:'1'},403);checks+=3;
  const pdf=Buffer.from('%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF');const report=await upload(expert,'report',pdf,'application/pdf','gutachten.pdf');assert.equal(report.status,200);assert.equal((await fetch(base+'/api/portal/files/'+report.json.file.id,{headers:{Cookie:p1.cookie}})).status,403);checks++;
  await action(expert,{action:'internal_note',note:'Interne fachliche Notiz'});assert.equal((await call('/cases/'+cid,undefined,expert)).json.case.internalNote,'Interne fachliche Notiz');assert.equal((await call('/cases/'+cid,undefined,p1)).json.case.internalNote,undefined);checks+=2;await action(expert,{action:'status',status:'report_ready'});await action(expert,{action:'status',status:'report_sent',confirmed:true,reference:'Testversand, autorisierter Empfänger'});
  await action(admin,{action:'finance',invoiceNumber:'UX-TEST-1',invoiceNet:'1000',invoiceGross:'1190',partnerNet:'400',agreement:'Individuelle Testvereinbarung'});await action(p1,{action:'accept_terms'});await action(admin,{action:'payment',amount:'600',date:'2026-09-09',reference:'Teilzahlung 1'});

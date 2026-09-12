@@ -87,7 +87,8 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
   const native=(await call('/mobile/overview',undefined,p)).json;assert.equal(native.items.find(x=>x.id===cid).commission.amountCents,138765);assert.equal(native.items.find(x=>x.id===cid).commission.percent,null);
   assert.equal((await act(other,{action:'finance',calculation:{}})).status,404);
   assert.equal((await call('/referrals/join',{accepted:true},other)).status,410);await store.transaction(s=>s.put('referral_code',{id:'UX-BBBBBBBBBBBB',userId:other.id,active:true},other.id));const code=(await call('/referrals',undefined,other)).json.code;
-  const direct=await call('/cases',{...input,customerEmail:'direct@example.com'},a);assert.equal(direct.status,200);const directId=direct.json.case.id;
+  // Existing direct cases remain manageable even though admins can no longer create them.
+  const directId=D.id();await store.transaction(s=>s.put('case',{id:directId,number:'UX-LEGACY-TEST',companyId:null,ownerUserId:null,source:'internal',companyName:'Direktauftrag von UNFALLX',status:'draft',version:0,intake:D.intake({...input,customerEmail:'direct@example.com'}),assignee:null,createdAt:new Date().toISOString(),finance:null}));
   await store.transaction(async s=>{await s.put('referral_attribution',{id:'unrelated',referrerId:other.id,companyId:null});const row=await s.get('case',directId);row.status='report_sent';await s.put('case',row);});
   const v=(await call('/cases/'+directId,undefined,a)).json.case.version;await call('/cases/'+directId,{action:'comment',note:'Test',version:v},a);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,0);
   const v2=(await call('/cases/'+directId,undefined,a)).json.case.version;assert.equal((await call('/cases/'+directId,{action:'referral',referralCode:code,version:v2},a)).status,200);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,1);

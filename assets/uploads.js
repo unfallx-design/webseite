@@ -42,7 +42,7 @@ function mount(el,kind=()=> 'auto',options={}){
    const wrap=document.createElement(image?'details':'div');wrap.className='upload-kind';wrap.innerHTML=(image?'<summary>Als Dokument zuordnen</summary>':'')+'<label>Dateiart<select aria-label="Dateiart für '+esc(x.file.name)+'">'+Object.entries(kinds).filter(([k])=>k!=='photo'||image).map(([k,t])=>'<option value="'+k+'">'+esc(t)+'</option>').join('')+'</select></label>';li.append(wrap);
    wrap.querySelector('select').onchange=e=>{batch.classify(x,e.target.value);paint();el.dispatchEvent(new Event('change',{bubbles:true}));};
   }
-  if(image&&options.onScan){const scan=document.createElement('button');scan.type='button';scan.className='portal-button';scan.dataset.scanRegistration='';scan.textContent='Fahrzeugschein scannen';scan.onclick=()=>options.onScan(x);li.append(scan);}li.querySelector('.upload-remove').onclick=()=>remove(x.key);
+  li.querySelector('.upload-remove').onclick=()=>remove(x.key);
   if(image){const hint=document.createElement('small');hint.className='upload-quality';hint.textContent=x.quality||'';li.append(hint);li.querySelector('img').addEventListener('load',e=>{const img=e.target;if(img.naturalWidth<1200||img.naturalHeight<800){x.quality='Kleine Auflösung – bitte Lesbarkeit und Details prüfen.';hint.textContent=x.quality;}});li.querySelector('.upload-image-open').onclick=()=>viewer.open(x.key);li.querySelector('img').onerror=e=>{e.target.hidden=true;li.querySelector('.upload-image-fallback').hidden=false;};}
   return li;
  }
@@ -52,7 +52,7 @@ function mount(el,kind=()=> 'auto',options={}){
   const keys=new Set(batch.items.map(x=>x.key));for(const [key,node] of nodes)if(!keys.has(key)){node.remove();nodes.delete(key);if(urls.has(key)){URL.revokeObjectURL(urls.get(key));urls.delete(key);}}
   for(const x of batch.items){let li=nodes.get(x.key);if(!li){li=card(x);nodes.set(x.key,li);list.append(li);}li.dataset.state=x.state;
    li.querySelector('[data-item-status]').textContent=x.error||({done:'Original sicher gespeichert',uploading:'Übertragung · '+Math.round(x.progress)+' %',waiting:(kinds[x.kind]||'PDF')+' · bereit'}[x.state]||'Erneut versuchen');
-   const scan=li.querySelector('[data-scan-registration]');if(scan){scan.hidden=!['registration','case_bundle'].includes(x.kind);scan.disabled=batch.running||x.state==='invalid';}const button=li.querySelector('.upload-remove');button.hidden=x.state==='done';button.disabled=batch.running;
+   const button=li.querySelector('.upload-remove');button.hidden=x.state==='done';button.disabled=batch.running;
    const select=li.querySelector('select');if(select){select.value=x.kind;select.disabled=batch.running||x.state==='done';}
    const progress=li.querySelector('progress');progress.hidden=x.state!=='uploading';progress.value=x.progress;
   }

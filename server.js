@@ -13,7 +13,6 @@ require('./portal/hostinger-env').loadHostingerAutoixpertEnv(__dirname);
 const anfrage = require('./anfrage');
 const hosts = require('./portal/hosts');
 const help = require('./assets/help-content');
-const ocrAssets = require('./portal/ocr-assets');
 const portal = require('./portal/app').createPortal();
 portal.ready().catch(() => {});
 
@@ -156,11 +155,11 @@ const SECURITY_HEADERS = {
   ...(process.env.NODE_ENV==='test'?{}:{'Strict-Transport-Security':'max-age=31536000'}),
   'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'geolocation=(), microphone=(), camera=(self)',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
   'Content-Security-Policy':
     "default-src 'self'; img-src 'self' data: blob: https://www.desag.de; media-src 'self'; style-src 'self'; frame-src https://www.google.com; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
-    "worker-src 'self'; form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
+    "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
 
 function cacheFor(ext, versioniert) {
@@ -229,7 +228,6 @@ const server = http.createServer((req, res) => {
     return sendError(res, 400, isHead);
   }
 
-  if(ocrAssets.serve(req,res,urlPath,SECURITY_HEADERS))return;
 
   /* Alte Sprachadressen behalten ihren Weg zum entsprechenden deutschen Inhalt. */
   if (/^\/ru(?:\/|$)/i.test(urlPath)) {

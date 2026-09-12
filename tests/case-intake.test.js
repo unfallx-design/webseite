@@ -53,7 +53,7 @@ test('Structured intake survives save, reload, file classification and submit, w
   const exp=(await call('/export',undefined,partner)).json;assert.deepEqual(exp.cases[0].intake,D.intake(complete));assert.equal((await call('/export',undefined,other)).json.cases.length,0);
   const token=D.random();await store.transaction(s=>s.put('tracking_token',{id:D.hash(token),caseId:cid,email:complete.customerEmail,epoch:reloaded.json.case.trackingEpoch||0,expires:Date.now()+3600000},cid));const status=await call('/tracking',{token});assert.equal(status.status,200);const exposed=JSON.stringify(status.json);for(const value of [complete.ownerIban,complete.vin,complete.ownerStreet,complete.policeFileNumber,complete.inspectionAttendees])assert.ok(!exposed.includes(value));
   for(let n=0;n<100;n++){const rows=await store.transaction(s=>s.list('notification'));if(!rows.some(r=>['pending','sending'].includes(r.state)))break;await new Promise(r=>setTimeout(r,10));}assert.ok(sent.length>0);const mails=JSON.stringify(sent);for(const value of [complete.ownerIban,complete.vin,complete.ownerStreet,complete.inspectionAttendees])assert.ok(!mails.includes(value),value);
-  const direct=await call('/cases',{...fixture(),draft:false,status:'submitted'},admin);assert.equal(direct.json.case.status,'draft');assert.equal((await call('/cases',{},admin)).status,400);
+  const draft=await call('/cases',{...fixture(),draft:false,status:'submitted',role:'admin'},partner);assert.equal(draft.status,200);assert.equal(draft.json.case.status,'draft');assert.equal((await call('/cases',{},admin)).status,403);
  });
  }finally{await new Promise(r=>server.close(r));await portal.close();fs.rmSync(dir,{recursive:true,force:true});}
 });

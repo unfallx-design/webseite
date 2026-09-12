@@ -28,4 +28,13 @@ test('capture is directly reachable from overview, primary navigation, mobile ba
 test('unapproved partners see approval guidance instead of active capture links',async()=>{for(const status of ['pending','rejected','suspended']){const r=await render({status});for(const html of [r.html,r.nav,r.mobile,r.top])assert.doesNotMatch(html,/href="#neu"/);assert.match(r.top,/Hilfe zum Einstieg/);}});
 test('unapproved partner cannot open intake via a copied deep link',async()=>{const r=await render({status:'pending',hash:'#neu'});assert.match(r.html,/Prüfung ausstehend/);assert.doesNotMatch(r.html,/id="case-new"/);});
 
+test('internal roles have no creation action and old intake links open the case list',async()=>{
+ for(const role of ['admin','appraiser'])for(const hash of ['','#faelle','#neu']){
+  const r=await render({role,hash});
+  assert.match(r.html,/Fallübersicht/);
+  for(const html of [r.html,r.nav,r.mobile,r.top])assert.doesNotMatch(html,/href="#neu"|id="case-new"|Neuer Fall/);
+  if(hash==='#neu')assert(r.redirects.some(url=>url.endsWith('#faelle')));
+ }
+});
+
 test('partner and admin can reach independent archive and trash with correct empty states',async()=>{for(const role of ['partner','admin'])for(const [hash,folder,title]of [['#faelle/archiv','archived','Dein Archiv ist leer'],['#faelle/papierkorb','deleted','Dein Papierkorb ist leer']]){const r=await render({role,hash});assert(r.calls.includes('/api/portal/cases?folder='+folder));assert.match(r.html,/aria-label="Fallablage"/);assert.match(r.html,/href="#faelle\/archiv"/);assert.match(r.html,/href="#faelle\/papierkorb"/);assert.match(r.html,/href="#hilfe\/fallablage"/);}});
