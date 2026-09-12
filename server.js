@@ -13,6 +13,7 @@ require('./portal/hostinger-env').loadHostingerAutoixpertEnv(__dirname);
 const anfrage = require('./anfrage');
 const hosts = require('./portal/hosts');
 const help = require('./assets/help-content');
+const ocrAssets = require('./portal/ocr-assets');
 const portal = require('./portal/app').createPortal();
 portal.ready().catch(() => {});
 
@@ -159,7 +160,7 @@ const SECURITY_HEADERS = {
   'Content-Security-Policy':
     "default-src 'self'; img-src 'self' data: blob: https://www.desag.de; media-src 'self'; style-src 'self'; frame-src https://www.google.com; " +
     ("script-src 'self' " + SCRIPT_HASHES).trim() + '; ' +
-    "form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
+    "worker-src 'self'; form-action 'self' mailto:; base-uri 'self'; frame-ancestors 'self'"
 };
 
 function cacheFor(ext, versioniert) {
@@ -227,6 +228,8 @@ const server = http.createServer((req, res) => {
   } catch (e) {
     return sendError(res, 400, isHead);
   }
+
+  if(ocrAssets.serve(req,res,urlPath,SECURITY_HEADERS))return;
 
   /* Alte Sprachadressen behalten ihren Weg zum entsprechenden deutschen Inhalt. */
   if (/^\/ru(?:\/|$)/i.test(urlPath)) {
