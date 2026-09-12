@@ -15,3 +15,7 @@ test('Private PDFs and report uploads reject photos and oversized originals befo
 test('A partial PDF batch retries only unsuccessful files',async()=>{
  const q=new Batch({pdfOnly:true});q.add([new File(['first'],'first.pdf'),new File(['second'],'second.pdf')],'document');const calls=[];await assert.rejects(q.send(async item=>{calls.push(item.file.name);if(item.file.name==='second.pdf')throw Error('connection lost');}),/Einige Dateien/);await q.send(async item=>calls.push(item.file.name));assert.deepEqual(calls,['first.pdf','second.pdf','second.pdf']);assert.equal(q.pending(),false);
 });
+test('Lost confirmation at the case limit recognizes an identical stored original by SHA-256',async()=>{
+ const q=new Batch(),file=new File(['exact original'],'lost.jpg',{type:'image/jpeg'});q.add([file]);q.items[0].state='error';const sha=require('node:crypto').createHash('sha256').update('exact original').digest('hex');const existing=Array.from({length:99},(_,i)=>({id:'other'+i,size:1,type:'image/jpeg',kind:'photo',sha256:'none'}));existing.push({id:'stored',size:file.size,type:'image/jpeg',kind:'photo',sha256:sha});await q.send(()=>assert.fail('Already uploaded'),()=>{},existing);assert.equal(q.items[0].result.file.id,'stored');assert.equal(q.pending(),false);
+ const other=new Batch();other.add([new File(['new original'],'new.jpg',{type:'image/jpeg'})]);await assert.rejects(other.send(()=>assert.fail('Over limit'),()=>{},existing),/100 Dateien/);assert.equal(other.running,false);
+});

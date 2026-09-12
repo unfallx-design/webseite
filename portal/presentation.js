@@ -11,7 +11,8 @@ function summarize(c, files, events, user) {
   const photos = visibleFiles.filter(f => f.kind === 'photo');
   const preview = photos.filter(f => ['image/jpeg', 'image/png', 'image/webp'].includes(f.type));
   const publicEvents = events.filter(e => !e.internal).sort((a,b) => b.at.localeCompare(a.at));
-  const request = publicEvents.find(e => e.action === 'Status: Rückfrage' && e.note);
+  const pendingRequest=(c.requests||[]).find(r=>r.state==='open');
+  const request = pendingRequest?{...pendingRequest,at:pendingRequest.createdAt,actor:pendingRequest.createdBy}:c.requests?.length?null:publicEvents.find(e => e.action === 'Status: Rückfrage' && e.note);
   const lastMessage = publicEvents.find(e => e.action === 'Nachricht' && e.note);
   const recentEvents = events.filter(e => !['partner','customer'].includes(user.role) || !e.internal).sort((a,b)=>b.at.localeCompare(a.at)).slice(0,5).map(e=>({id:e.id,action:e.action,note:e.note,at:e.at,actor:e.actor,internal:!!e.internal}));
   const eventView = e => e ? {id:e.id, note:e.note, at:e.at, actor:e.actor} : null;

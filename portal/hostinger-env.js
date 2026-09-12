@@ -38,4 +38,23 @@ function loadHostingerStorageEnv(appDir, env = process.env, read = fs.readFileSy
   } catch {return false;}
 }
 
-module.exports = {loadHostingerGoogleEnv,loadHostingerStorageEnv};
+function loadHostingerAutoixpertEnv(appDir, env = process.env, read = fs.readFileSync) {
+  if (env.NODE_ENV === 'test' || (env.AUTOIXPERT_ASSESSOR_ID && env.AUTOIXPERT_API_KEY)) return false;
+  const deployment = String(appDir).match(/^(\/home\/u\d+\/domains\/unfallx\.com\/hbuilds)\/(?:current|versions\/[a-zA-Z0-9-]+)\/nodejs$/);
+  if (!deployment) return false;
+  try {
+    const values = parseEnv(read(deployment[1] + '/config/.env', 'utf8'));
+    if (!values.AUTOIXPERT_ASSESSOR_ID || !values.AUTOIXPERT_API_KEY) return false;
+    const keys = ['AUTOIXPERT_ASSESSOR_ID', 'AUTOIXPERT_API_KEY'];
+    // Never accidentally combine credentials belonging to different clients.
+    if (keys.some(key => env[key] && env[key] !== values[key])) return false;
+    for (const key of keys) if (!env[key]) env[key] = values[key];
+    return true;
+  } catch {
+    // A missing private config must not take password login or uploads offline.
+    // Never log file contents, credentials or parser errors.
+    return false;
+  }
+}
+
+module.exports = {loadHostingerGoogleEnv,loadHostingerStorageEnv,loadHostingerAutoixpertEnv};

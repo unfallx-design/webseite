@@ -59,3 +59,11 @@ test('Private Hostinger S3 config loads atomically without unrelated variables o
  const existingLimit={PORTAL_STORAGE_MB:'2048'};
  assert.equal(loadHostingerStorageEnv(dir,existingLimit,read),true);assert.equal(existingLimit.PORTAL_STORAGE_MB,'2048');
 });
+
+test('autoiXpert credentials only load as a consistent pair from the private hosting config',()=>{
+ const {loadHostingerAutoixpertEnv}=require('../portal/hostinger-env'),dir='/home/u123/domains/unfallx.com/hbuilds/current/nodejs',fixture='AUTOIXPERT_API_KEY=test-secret\nAUTOIXPERT_ASSESSOR_ID=assessor\nUNRELATED=value',env={};
+ assert.equal(loadHostingerAutoixpertEnv(dir,env,()=>fixture),true);assert.deepEqual(env,{AUTOIXPERT_API_KEY:'test-secret',AUTOIXPERT_ASSESSOR_ID:'assessor'});
+ assert.equal(loadHostingerAutoixpertEnv('/tmp/app',{},()=>assert.fail('Unexpected read')),false);
+ assert.equal(loadHostingerAutoixpertEnv(dir,{AUTOIXPERT_API_KEY:'other'},()=>fixture),false);
+ assert.equal(loadHostingerAutoixpertEnv(dir,{},()=> 'AUTOIXPERT_API_KEY=test'),false);
+});

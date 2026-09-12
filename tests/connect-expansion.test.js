@@ -86,7 +86,7 @@ test('Connect expansion enforces status rights, confidential PDFs, lawyer handof
   const partnerView=(await call('/cases/'+cid,undefined,p)).json.case;assert.equal(partnerView.finance.partnerNet,138765);assert.equal(partnerView.finance.invoiceNet,undefined);assert.equal(partnerView.finance.partnerAcceptedAt,null);assert.equal(partnerView.finance.payable,false);
   const native=(await call('/mobile/overview',undefined,p)).json;assert.equal(native.items.find(x=>x.id===cid).commission.amountCents,138765);assert.equal(native.items.find(x=>x.id===cid).commission.percent,null);
   assert.equal((await act(other,{action:'finance',calculation:{}})).status,404);
-  assert.equal((await call('/referrals/join',{accepted:true},other)).status,200);const code=(await call('/referrals',undefined,other)).json.code;
+  assert.equal((await call('/referrals/join',{accepted:true},other)).status,410);await store.transaction(s=>s.put('referral_code',{id:'UX-BBBBBBBBBBBB',userId:other.id,active:true},other.id));const code=(await call('/referrals',undefined,other)).json.code;
   const direct=await call('/cases',{...input,customerEmail:'direct@example.com'},a);assert.equal(direct.status,200);const directId=direct.json.case.id;
   await store.transaction(async s=>{await s.put('referral_attribution',{id:'unrelated',referrerId:other.id,companyId:null});const row=await s.get('case',directId);row.status='report_sent';await s.put('case',row);});
   const v=(await call('/cases/'+directId,undefined,a)).json.case.version;await call('/cases/'+directId,{action:'comment',note:'Test',version:v},a);assert.equal((await call('/referrals',undefined,other)).json.rewards.length,0);

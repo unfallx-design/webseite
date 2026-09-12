@@ -33,7 +33,7 @@ function overview(cases){
  for(const c of items){const f=c.commission;if(f.amountCents===null)continue;if(f.stage==='paid')totals.paidCents+=f.amountCents;else{totals.expectedCents+=f.amountCents;if(f.payable)totals.payableCents+=f.amountCents;}}
  return {items,totals,updatedAt:new Date().toISOString(),notice:'Voraussichtliche Beträge sind keine Auszahlung. Freigabe erst nach vollständigem Zahlungseingang bei UNFALLX, bestätigter Vergütung und geprüfter Partnerabrechnung.'};
 }
-function createMobileIntake({tx,body,rate,ip,env,authorize}){
+function createMobileIntake({tx,body,rate,ip,env,authorize,onSubmitted=async()=>{}}){
  const isEnabled=()=>env.PORTAL_MOBILE_INTAKE_ENABLED!=='false';
  async function actor(req){assert(typeof authorize==='function','Anmeldung erforderlich.',401);const a=await authorize(req);assert(a?.user?.role==='partner'&&a.company?.id===a.user.companyId,'Partnerzugang erforderlich.',403);assert(a.company.status==='approved','Dein Zugang wartet auf die Freischaltung durch UNFALLX.',403);return a;}
  async function access(s,cid,key,a,completed=false){
@@ -41,7 +41,7 @@ function createMobileIntake({tx,body,rate,ip,env,authorize}){
   const c=await s.get('case',cid);assert(c&&c.source==='mobile'&&c.companyId===a.company.id,'Fall nicht gefunden.',404);
   assert((completed&&['submitted','review','accepted','in_progress','report_ready','report_sent','closed'].includes(c.status))||['draft','recording','needs_info'].includes(c.status),'Der Fall wird bereits bearbeitet. Bitte UNFALLX kontaktieren.',409);return c;
  }
- async function event(s,c,a,action){await s.put('event',{id:id(),caseId:c.id,actor:a.user.name,action,internal:false,at:new Date().toISOString()},c.id);c.updatedAt=new Date().toISOString();c.version++;await s.put('case',c,c.companyId);}
+ async function event(s,c,a,action){const e={id:id(),caseId:c.id,actor:a.user.name,action,internal:false,at:new Date().toISOString()};await s.put('event',e,c.id);c.updatedAt=new Date().toISOString();c.version++;await s.put('case',c,c.companyId);return e;}
  async function save(req,a){
   const key=capability(req),data=await body(req,25000);assert(uuid.test(data.id||''),'Ungültige Fallkennung.');assert(/^[a-f0-9]{64}$/.test(data.fieldsHash||''),'Datenstand fehlt.');const values=clean(data.fields);
   return tx(async s=>{
@@ -75,7 +75,7 @@ function createMobileIntake({tx,body,rate,ip,env,authorize}){
   const c=await access(s,cid,key,a,true);if(submissionID&&c.mobile?.submittedRequestID===submissionID)return {ok:true,id:c.id,submissionID};if(c.submittedAt&&c.status!=='needs_info')return {ok:true,id:c.id};const files=await s.list('file',cid);
   for(const p of perspectives)if(p!=='other')assert(files.some(f=>f.perspective===p&&(p==='registration'?f.kind==='registration':f.kind==='photo')),'Es fehlen Fahrzeugfotos oder der Fahrzeugschein.');
   for(const kind of ['unfallx','nextright'])assert(files.some(f=>f.kind==='authorization'&&f.orderKind===kind&&f.fieldsHash===c.mobile.fieldsHash),'Es fehlen aktuelle unterschriebene Dokumente.');
-  c.status='submitted';c.submittedAt=new Date().toISOString();if(submissionID)c.mobile.submittedRequestID=submissionID;await event(s,c,a,'Kundenaufnahme abgeschlossen');return {ok:true,id:c.id};
+  c.status='submitted';c.submittedAt=new Date().toISOString();if(submissionID)c.mobile.submittedRequestID=submissionID;const completedEvent=await event(s,c,a,'Kundenaufnahme abgeschlossen');await onSubmitted(s,a.user,c,completedEvent);return {ok:true,id:c.id};
  });}
  async function route(path,req){
   if(path==='/mobile/config'&&req.method==='GET')return {version:2,enabled:isEnabled(),authentication:'approved-partner-session'};
