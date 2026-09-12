@@ -12,7 +12,7 @@ test('Partner introduction is public while login, installed workspace and admin 
   for(const [host,url]of [['app.unfallx.com','/login'],['admin.unfallx.com','/'],['admin.unfallx.com','/login']]){const r=await get(host,url);assert.equal(r.status,200);assert.match(r.body,/id="login-form"/);assert(!r.body.includes('id="verdienst"'));}
   for(const host of ['app.unfallx.com','admin.unfallx.com']){const r=await get(host,'/api/portal/me');assert.equal(r.status,401);const manifest=JSON.parse((await get(host,'/app.webmanifest')).body);assert.equal(manifest.start_url,host.startsWith('app.')?'/portal':'/');assert.equal(manifest.scope,'/');}
   const portal=await get('app.unfallx.com','/portal');assert.match(portal.body,/id="portal-root"/);assert(!portal.body.includes('id="verdienst"'));
-  const home=await get('unfallx.com','/');assert.match(home.body,/design-hero/);assert.match(home.body,/Über uns &amp; unsere Leistungen/);assert.match(home.body,/unfallx-ios-overview-v3-small.webp/);
+  const home=await get('unfallx.com','/');assert.match(home.body,/design-hero/);assert.match(home.body,/Über uns &amp; unsere Leistungen/);assert.match(home.body,/unfallx-ios-overview-v4-small.webp/);
   const about=await get('unfallx.com','/ueber-uns');assert.equal(about.status,200);assert.match(about.body,/canonical" href="https:\/\/unfallx.com\/ueber-uns"/);assert(!about.body.includes('gutachten.unfallx.com'));assert.equal((about.body.match(/<h1[ >]/g)||[]).length,1);
   for(const slug of ['unfallgutachten','wertgutachten','kostenvoranschlag','kfz-gutachten','kfz-gutachter-berlin','kfz-gutachter-brandenburg','einsatzgebiete','unfall-checkliste','wertminderung','nutzungsausfall','mietwagen','totalschaden']){
    assert(about.body.includes('id="'+slug+'"'));

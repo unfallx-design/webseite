@@ -5,6 +5,8 @@
   var large = dialog.querySelector('[data-photo-large]');
   var title = dialog.querySelector('[data-photo-title]');
   var trigger;
+  var note = dialog.querySelector('.photo-dialog-note');
+  var originalNote = note ? note.textContent : ''; 
   document.querySelectorAll('[data-photo-open]').forEach(function (link) {
     link.addEventListener('click', function (event) {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
@@ -12,7 +14,11 @@
       trigger = link;
       large.src = link.href;
       large.alt = link.querySelector('img').alt;
-      title.textContent = link.closest('figure').querySelector('h3').textContent;
+      var heading = link.closest('figure') && link.closest('figure').querySelector('h3');
+      title.textContent = link.getAttribute('data-photo-title') || (heading ? heading.textContent : large.alt);
+      var wide = link.hasAttribute('data-photo-wide');
+      dialog.classList.toggle('photo-dialog-wide', wide);
+      if (note) note.textContent = wide ? 'Echter Screenshot des aktuellen Webportals · Fiktive Beispieldaten.' : originalNote;
       dialog.showModal();
     });
   });
