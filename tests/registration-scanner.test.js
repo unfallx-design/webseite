@@ -21,7 +21,7 @@ test('only explicitly selected fields merge; holder needs confirmation; unrelate
  r=P.merge(current,proposed,['plate','ownerLastName'],true);assert.equal(r.values.plate,'B NEU 123');assert.equal(r.values.ownerLastName,'Neu');assert.equal(r.values.ownership,'leasing');assert.equal(r.values.ownerType,'person');
 });
 test('OCR assets expose only explicit installed engine/model files, never arbitrary dependencies',()=>{
- for(const url of ['/assets/ocr-v1/tesseract.min.js','/assets/ocr-v1/worker.min.js','/assets/ocr-v1/deu.traineddata.gz','/assets/ocr-v1/tesseract-core-relaxedsimd-lstm.wasm.js','/assets/ocr-v1/tesseract-core-lstm.wasm.js','/assets/ocr-v1/LICENSE.txt'])assert(fs.existsSync(A.asset(url).file),url);
+ for(const url of ['/assets/ocr-v2/tesseract.min.js','/assets/ocr-v2/worker.min.js','/assets/ocr-v2/deu.traineddata.gz','/assets/ocr-v2/tesseract-core-relaxedsimd-lstm.wasm.js','/assets/ocr-v2/tesseract-core-lstm.wasm.js','/assets/ocr-v2/LICENSE.txt'])assert(fs.existsSync(A.asset(url).file),url);
  for(const path of ['../package.json','../../.env','package.json','worker.min.js.map','constructor','__proto__','deu.traineddata.gz/../../.env'])assert.equal(A.asset(A.PREFIX+path),false);
  assert.equal(A.asset('/assets/portal.js'),null);
  const client=fs.readFileSync(require.resolve('../assets/registration-scanner.js'),'utf8');assert(client.includes('workerBlobURL:false'));assert(!client.includes('cdn.jsdelivr'));assert(!client.includes('console.log'));
@@ -32,4 +32,9 @@ test('installed German OCR reads a rendered test document without any external O
  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1500"><rect width="1800" height="1500" fill="#eff0df"/><g font-family="Arial" fill="#111"><text x="100" y="100" font-size="36">TESTDATEN – KEIN AMTLICHES DOKUMENT</text><text x="100" y="185" font-size="38">Zulassungsbescheinigung Teil I</text>${rows.map(([k,v],i)=>`<text x="100" y="${280+i*88}" font-size="32">${k}</text><text x="310" y="${280+i*88}" font-size="38">${v}</text>`).join('')}</g></svg>`;
  const png=await sharp(Buffer.from(svg)).png().toBuffer(),worker=await createWorker('deu',1,{langPath:require('@tesseract.js-data/deu').langPath,cacheMethod:'none'});
  try{await worker.setParameters({tessedit_pageseg_mode:'3',preserve_interword_spaces:'1'});const result=await worker.recognize(png),fields=P.parse(result.data.text).fields;assert.equal(fields.vin,'WVGZZZ5NZLW123456');assert.equal(fields.plate,'B UX 1234');assert.equal(fields.ownerLastName,'MUSTERMANN');assert.equal(fields.ownerStreet,'Beispielstraße');assert.equal(fields.firstRegistration,'2020-03-15');assert.equal(fields.vehicle,'VOLKSWAGEN TIGUAN');}finally{await worker.terminate();}
+});
+test('public OCR delivery returns complete engine bytes and excludes shared CDN caching',async t=>{
+ const http=require('node:http'),url=A.PREFIX+'tesseract-core-relaxedsimd-lstm.wasm.js',server=http.createServer((req,res)=>{if(!A.serve(req,res,req.url,{})){res.writeHead(404);res.end();}});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));t.after(()=>{server.closeAllConnections();server.close();});
+ const origin='http://127.0.0.1:'+server.address().port,r=await fetch(origin+url);assert.equal(r.status,200);assert.match(r.headers.get('Cache-Control'),/^private/);assert.equal(r.headers.get('CDN-Cache-Control'),'no-store');const expected=fs.readFileSync(A.asset(url).file),bytes=Buffer.from(await r.arrayBuffer());assert.equal(Number(r.headers.get('Content-Length')),expected.length);assert.deepEqual(bytes,expected);assert.equal((await fetch(origin+A.PREFIX+'package.json')).status,404);
 });
