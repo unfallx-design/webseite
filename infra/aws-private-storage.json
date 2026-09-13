@@ -78,9 +78,7 @@
             {
               "Id": "RemoveExpiredDeleteMarkers",
               "Status": "Enabled",
-              "Expiration": {
-                "ExpiredObjectDeleteMarker": true
-              }
+              "ExpiredObjectDeleteMarker": true
             }
           ]
         },
