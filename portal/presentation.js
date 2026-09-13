@@ -2,6 +2,7 @@
 
 // Presentation metadata follows the same per-case visibility as original downloads.
 function fileVisible(file, c, user) {
+  if (file.deletedAt) return false;
   if (user.role === 'appraiser' && file.kind === 'partner_invoice') return false;
   if (user.role === 'partner' && file.kind === 'report' && !['report_ready', 'report_sent', 'closed'].includes(c.status)) return false;
   return true;

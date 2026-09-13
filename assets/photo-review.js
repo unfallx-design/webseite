@@ -3,7 +3,7 @@
 'use strict';
 function create(options){
  const dialog=document.createElement('dialog');dialog.className='photo-review';dialog.setAttribute('aria-label','Fotos prüfen');
- dialog.innerHTML='<header><button type="button" data-remove aria-label="Dieses Foto aus der Auswahl entfernen">× <span>Foto entfernen</span></button><strong data-count aria-live="polite"></strong><button type="button" data-close aria-label="Fotovorschau schließen">Fertig ×</button></header><div class="photo-review-stage"><img alt="" draggable="false"><p data-fallback hidden>Diese Vorschau kann auf deinem Gerät nicht angezeigt werden. Das Original bleibt unverändert erhalten.</p></div><div class="photo-review-meta"><strong data-name></strong><span data-hint>Nach links oder rechts wischen · oder Pfeiltasten verwenden</span></div><footer><button type="button" data-prev aria-label="Vorheriges Foto">←</button><button type="button" data-add>＋ Fotos hinzufügen</button><a data-download download>Original herunterladen</a><button type="button" data-next aria-label="Nächstes Foto">→</button></footer>';
+ dialog.innerHTML='<header><button type="button" data-remove aria-label="Foto entfernen">× <span>Foto entfernen</span></button><strong data-count aria-live="polite"></strong><button type="button" data-close aria-label="Fotovorschau schließen">Fertig ×</button></header><div class="photo-review-stage"><img alt="" draggable="false"><p data-fallback hidden>Diese Vorschau kann auf deinem Gerät nicht angezeigt werden. Das Original bleibt unverändert erhalten.</p></div><div class="photo-review-meta"><strong data-name></strong><span data-removal-note hidden></span><span data-hint>Nach links oder rechts wischen · oder Pfeiltasten verwenden</span></div><footer><button type="button" data-prev aria-label="Vorheriges Foto">←</button><button type="button" data-add>＋ Fotos hinzufügen</button><a data-download download>Original herunterladen</a><button type="button" data-next aria-label="Nächstes Foto">→</button></footer>';
  document.body.append(dialog);
  const q=s=>dialog.querySelector(s),image=q('img'),stage=q('.photo-review-stage');let key=null,opener=null,start=null;
  const items=()=>options.items();
@@ -14,6 +14,7 @@ function create(options){
   if(image.getAttribute('src')!==item.src){image.hidden=!item.src;q('[data-fallback]').hidden=!!item.src;if(item.src)image.src=item.src;else image.removeAttribute('src');}
   image.alt=item.name;q('[data-prev]').disabled=index===0;q('[data-next]').disabled=index===all.length-1;
   q('[data-remove]').hidden=!options.remove;q('[data-remove]').disabled=!!options.locked?.()||item.removable===false;
+  q('[data-removal-note]').hidden=!options.remove||!item.removalBlockedReason;q('[data-removal-note]').textContent=item.removalBlockedReason||'';
   q('[data-add]').hidden=!options.add;q('[data-add]').disabled=!!options.locked?.();
   const link=q('[data-download]');link.hidden=!item.download;if(item.download){link.href=item.download;link.download=item.name;}else link.removeAttribute('href');
  }

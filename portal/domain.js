@@ -16,7 +16,7 @@ function intake(body){
  const clean={};for(const f of Intake.fields){const v=body[f.name];if(f.type==='checkbox')clean[f.name]=v===true;else if(f.type==='multiselect'){assert(v===undefined||Array.isArray(v)&&v.length<=Object.keys(Intake.options[f.name]).length,'Ungültige Hilfsmittelauswahl.');clean[f.name]=(v||[]).map(x=>text(x,40,true));assert(clean[f.name].every(x=>Object.hasOwn(Intake.options[f.name],x)),'Ungültige Hilfsmittelauswahl.');}else{clean[f.name]=text(v,f.max);if(f.type==='select'&&clean[f.name])assert(Object.hasOwn(Intake.options[f.name],clean[f.name]),'Ungültige Auswahl: '+f.label);}}
  clean.owner=text(body.owner,400);clean.ownerContact=text(body.ownerContact,400);return Intake.normalize(clean);
 }
-function submissionErrors(c,files){return [...Intake.errors(c.intake),...Intake.fileErrors(files)];}
+function submissionErrors(c,files){return [...Intake.errors(c.intake),...Intake.fileErrors(files.filter(f=>!f.deletedAt))];}
 function validateSubmission(c,files){const errors=submissionErrors(c,files);if(errors.length){const error=new Problem(400,'Vor dem Einreichen fehlen Angaben oder Unterlagen: '+errors.map(e=>e.label).join(', ')+'. Bitte die Fallaufnahme ergänzen.');error.fields=errors;throw error;}}
 
 function companyData(body){const type=text(body.type,30,true);assert(['Werkstatt','Gutachter / Fotopartner','Abschleppdienst','Sonstiges Unternehmen'].includes(type),'Bitte die Unternehmensart wählen.');return {name:text(body.company,180,true),contact:text(body.contact,120,true),type,street:text(body.street,180,true),postcode:text(body.postcode,12,true),city:text(body.city,100,true),phone:text(body.phone,40,true),taxId:text(body.taxId,40),register:text(body.register,100),privacyVersion:'2026-09-09'};}

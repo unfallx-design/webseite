@@ -28,7 +28,7 @@ async function apply(s,user,c,data,audit){
  if(a==='request_reply'){
   D.assert(user.role==='partner','Die Antwort erfolgt durch den Partner.',403);D.assert(request.state!=='resolved','Diese Rückfrage wurde bereits erledigt.');
   const note=D.text(data.note,2000),ids=[...new Set(Array.isArray(data.fileIds)?data.fileIds:[])];D.assert(note||ids.length,'Bitte eine Antwort oder Unterlagen ergänzen.');D.assert(ids.length<=100,'Zu viele Dateien.');
-  const files=await Promise.all(ids.map(id=>s.get('file',id)));D.assert(files.every(f=>f&&f.caseId===c.id&&!['report','partner_invoice'].includes(f.kind)),'Unterlage nicht gefunden.',404);
+  const files=await Promise.all(ids.map(id=>s.get('file',id)));D.assert(files.every(f=>f&&!f.deletedAt&&f.caseId===c.id&&!['report','partner_invoice'].includes(f.kind)),'Unterlage nicht gefunden.',404);
   D.assert(request.replies.length<50,'Bitte UNFALLX direkt kontaktieren.');request.replies.push({id:D.id(),note,fileIds:ids,at:now,actor:user.name});request.state='answered';
   await audit(s,user,c,'Rückfrage beantwortet',request.title);return true;
  }

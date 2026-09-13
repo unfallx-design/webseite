@@ -3,3 +3,6 @@
 .workspace-brand{gap:10px;color:#111820!important}.workspace-brand img{width:28px;height:32px}.workspace-brand strong{font:italic 850 29px/1 system-ui;letter-spacing:-1px}
 
 .workspace-top nav{display:flex;align-items:center;gap:18px}.workspace-top nav a{font-size:14px}.help-page .workspace-top{background:white}
+
+/* File lifecycle: keep controls accessible on narrow screens. */
+.ws-photo-item{min-width:0;display:flex;flex-direction:column;gap:8px}.ws-photo-item .ws-photo{width:100%;flex:1}.ws-photo-remove{align-self:stretch;justify-content:center;min-height:44px}.ws-photo-remove svg,.ws-file-trash summary svg{width:18px;height:18px;flex-shrink:0}.ws-file-trash{margin:24px 0;padding:18px;border:1px solid #e4e7ec;border-radius:20px;background:#f8fafc}.ws-file-trash summary{font-weight:700;cursor:pointer;min-height:28px}.ws-file-trash p,.ws-file-lock{color:#596476;line-height:1.6}.portal-file>div{min-width:0;overflow-wrap:anywhere}.ws-file-lock{max-width:30ch}.ws-file-trash .portal-file strong{overflow-wrap:anywhere}@media(max-width:600px){.portal-file{flex-wrap:wrap;gap:12px}.portal-file>div{flex:1 1 180px}.portal-file>.portal-button{flex:1 1 auto;min-height:44px}.ws-file-lock{max-width:none;width:100%}.ws-file-trash{padding:14px}}
