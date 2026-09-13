@@ -26,34 +26,36 @@ test('original bytes roundtrip with SHA256, encryption, expected owner and opaqu
   f.state.corruptRead=true;
   await assert.rejects(f.files.read(ref),/FILE_STORAGE_INTEGRITY/);
 });
+const put=(s,bytes)=>s.writeBlob(bytes,async(q,stage)=>{await stage.attach(q);return stage.id;});
+const drain=async s=>{await s.cleanupBlobs();await s.cleanupBlobs();};
 test('S3 upload failure never commits file metadata or consumed quota; uncertain PUTs are cleaned',async()=>{
   for(const failure of ['failPut','putThenFail']) {
     const f=fakeS3(),s=await createStore(env,{fileStorage:f.files}),id=randomUUID();
     try {
       f.state[failure]=true;
-      await assert.rejects(s.transaction(async q=>{await q.blob(id,Buffer.from('original'));await q.put('file',{id});await q.put('system',{id:'storage',bytes:8});}),/FILE_STORAGE_UNAVAILABLE/);
+      await assert.rejects(s.writeBlob(Buffer.from('original'),async(q,stage)=>{await stage.attach(q);await q.put('file',{id});await q.put('system',{id:'storage',bytes:8});}),/FILE_STORAGE_UNAVAILABLE/);
       assert.equal(await s.transaction(q=>q.get('file',id)),null);
       assert.equal(await s.transaction(q=>q.get('system','storage')),null);
       assert.equal(await s.transaction(q=>q.get('blob_location',id)),null);
-      assert.equal(f.objects.size,0);
+      await drain(s);assert.equal(f.objects.size,0);
     } finally {await s.close();}
   }
 });
 test('SQL rollback cleans remote objects; committed delete is recoverable after an S3 outage',async()=>{
   const f=fakeS3(),s=await createStore(env,{fileStorage:f.files});
   try {
-    await assert.rejects(s.transaction(async q=>{await q.blob(randomUUID(),Buffer.from('test'));throw Error('ROLLBACK');}),/ROLLBACK/);
-    assert.equal(f.objects.size,0);
-    const id=randomUUID(),bytes=Buffer.from('keep');await s.transaction(q=>q.blob(id,bytes));
+    await assert.rejects(s.writeBlob(Buffer.from('test'),async(q,stage)=>{await stage.attach(q);throw Error('ROLLBACK');}),/ROLLBACK/);
+    await drain(s);assert.equal(f.objects.size,0);
+    const bytes=Buffer.from('keep'),id=await put(s,bytes);
     await assert.rejects(s.transaction(async q=>{await q.removeBlob(id);throw Error('ROLLBACK');}),/ROLLBACK/);
-    assert.deepEqual(await s.transaction(q=>q.blob(id)),bytes);
+    assert.deepEqual(await s.readBlob(id),bytes);
     f.state.failDelete=true;
     await s.transaction(q=>q.removeBlob(id));
     assert.equal(f.objects.size,1);
-    assert.equal((await s.transaction(q=>q.storageStats())).pendingDeletes,1);
+    await drain(s);assert.equal((await s.transaction(q=>q.storageStats())).pendingDeletes,1);
     f.state.failDelete=false;
-    await s.transaction(q=>q.get('system','storage'));
-    assert.equal(f.objects.size,0);
+    await s.transaction(async q=>{for(const j of await q.list('blob_delete')){j.nextAttempt=0;await q.put('blob_delete',j);}});await drain(s);
+    await drain(s);assert.equal(f.objects.size,0);
     assert.equal((await s.transaction(q=>q.storageStats())).pendingDeletes,0);
   } finally {await s.close();}
 });
@@ -63,19 +65,19 @@ test('database originals survive migration failure; verified migration survives 
   try {
     await s.transaction(async q=>{await q.blob(id,bytes);await q.put('file',{id,size:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});});
     await s.close();s=await createStore({...env,PORTAL_LOCAL_DB:db},{fileStorage:f.files});
-    assert.deepEqual(await s.transaction(q=>q.blob(id)),bytes);
+    assert.deepEqual(await s.readBlob(id),bytes);
     f.state.corruptRead=true;
-    await assert.rejects(s.transaction(q=>q.migrateBlob(id)),/FILE_STORAGE_INTEGRITY/);
-    assert.deepEqual(await s.transaction(q=>q.blob(id)),bytes);
+    await assert.rejects(s.migrateBlob(id),/FILE_STORAGE_INTEGRITY/);
+    assert.deepEqual(await s.readBlob(id),bytes);
     assert.equal((await s.transaction(q=>q.storageStats())).legacyFiles,1);
-    assert.equal(f.objects.size,0);
+    await drain(s);assert.equal(f.objects.size,0);
     f.state.corruptRead=false;
-    assert.equal((await s.transaction(q=>q.migrateBlob(id))).migrated,true);
+    assert.equal((await s.migrateBlob(id)).migrated,true);
     assert.equal((await s.transaction(q=>q.storageStats())).legacyFiles,0);
-    assert.deepEqual(await s.transaction(q=>q.blob(id)),bytes);
-    assert.equal((await s.transaction(q=>q.migrateBlob(id))).migrated,false);
+    assert.deepEqual(await s.readBlob(id),bytes);
+    assert.equal((await s.migrateBlob(id)).migrated,false);
     await s.close();s=await createStore({...env,PORTAL_LOCAL_DB:db,PORTAL_FILE_STORAGE:'database'},{fileStorage:f.files});
-    assert.deepEqual(await s.transaction(q=>q.blob(id)),bytes);
+    assert.deepEqual(await s.readBlob(id),bytes);
     const second=randomUUID();await s.transaction(q=>q.blob(second,bytes));
     assert.equal((await s.transaction(q=>q.storageStats())).legacyFiles,1);
     await assert.rejects(s.transaction(q=>q.blob(id,bytes)),/FILE_ALREADY_EXISTS/);
@@ -84,13 +86,13 @@ test('database originals survive migration failure; verified migration survives 
 test('failed cleanup after SQL rollback is persisted and retried without deleting another original',async()=>{
   const f=fakeS3(),s=await createStore(env,{fileStorage:f.files});
   try {
-    const kept=randomUUID();await s.transaction(q=>q.blob(kept,Buffer.from('keep')));
+    const kept=await put(s,Buffer.from('keep'));
     f.state.failDelete=true;
-    await assert.rejects(s.transaction(async q=>{await q.blob(randomUUID(),Buffer.from('discard'));throw Error('ROLLBACK');}),/ROLLBACK/);
-    assert.equal((await s.transaction(q=>q.storageStats())).pendingDeletes,1);
+    await assert.rejects(s.writeBlob(Buffer.from('discard'),async(q,stage)=>{await stage.attach(q);throw Error('ROLLBACK');}),/ROLLBACK/);
+    await drain(s);assert.equal((await s.transaction(q=>q.storageStats())).pendingDeletes,1);
     f.state.failDelete=false;
-    await s.transaction(q=>q.get('system','storage'));
+    await s.transaction(async q=>{for(const j of await q.list('blob_delete')){j.nextAttempt=0;await q.put('blob_delete',j);}});await drain(s);
     assert.equal(f.objects.size,1);
-    assert.equal((await s.transaction(q=>q.blob(kept))).toString(),'keep');
+    assert.equal((await s.readBlob(kept)).toString(),'keep');
   } finally {await s.close();}
 });

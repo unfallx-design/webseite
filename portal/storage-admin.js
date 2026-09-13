@@ -3,21 +3,19 @@ const {randomUUID, randomBytes} = require('node:crypto');
 const {assert} = require('./domain');
 const {storageConfig} = require('./file-storage');
 
-function createStorageAdmin({tx, env, rate}) {
+function createStorageAdmin({tx, env, rate, blobs}) {
   const configuration = storageConfig(env);
   async function overview() {
     return tx(async s => ({...await s.storageStats(), limit:configuration.limit, used:(await s.get('system','storage'))?.bytes||0}));
   }
   async function check(user) {
     assert(user.role==='admin','Nur die Administration darf den Speicher prüfen.',403);
-    await tx(async s => {
-      await rate(s,'storage-check:'+user.id,6);
-      const id=randomUUID(),bytes=randomBytes(64);
-      await s.blob(id,bytes);
-      const saved=await s.blob(id);
-      assert(saved?.equals(bytes),'Die Dateiprüfung ist fehlgeschlagen.',503);
-      await s.removeBlob(id);
-    });
+    await tx(s=>rate(s,'storage-check:'+user.id,6));
+    const bytes=randomBytes(64);let id;
+    try {
+      id=await blobs.write(bytes,async(s,staged)=>{await staged.attach(s);return staged.id;});
+      const saved=await blobs.read(id);assert(saved?.equals(bytes),'Die Dateiprüfung ist fehlgeschlagen.',503);
+    } finally {if(id)await tx(s=>s.removeBlob(id));await blobs.cleanup();}
     return {ok:true,message:'Schreiben, Lesen und Original-Prüfsumme erfolgreich geprüft.',storage:await overview()};
   }
   async function migrate(user,data) {
@@ -27,9 +25,9 @@ function createStorageAdmin({tx, env, rate}) {
     await tx(s=>rate(s,'storage-migrate:'+user.id,120));
     const ids=await tx(s=>s.legacyBlobIds(5));
     let migrated=0,bytes=0;
-    // One transaction per original; a later failure preserves earlier progress.
+    // Transfer and verification occur outside the metadata transaction.
     for(const id of ids) {
-      const result=await tx(s=>s.migrateBlob(id));
+      const result=await blobs.migrate(id);
       if(result.migrated){migrated++;bytes+=result.bytes;}
     }
     await tx(s=>s.put('admin_event',{id:randomUUID(),actor:user.id,action:'Originaldateien nach AWS S3 übertragen',files:migrated,bytes,at:new Date().toISOString()}));

@@ -31,7 +31,11 @@ test('HTTP S3 integration: original photos, previews, PDFs, tenant boundaries, q
     assert.equal(created.status,200,JSON.stringify(created.json));
     const cid=created.json.case.id;
     const image=await sharp({create:{width:30,height:20,channels:3,background:'#e12428'}}).jpeg().toBuffer();
-    const photo=await call('/cases/'+cid+'/files',image,partner,{'Content-Type':'image/jpeg','X-File-Kind':'photo','X-File-Name':'Original.jpg'});
+    let release,entered;const stalled=new Promise(r=>release=r),started=new Promise(r=>entered=r),originalWrite=f.files.write;
+    f.files.write=async(...a)=>{const ref=await originalWrite(...a);entered();await stalled;return ref;};
+    const uploading=call('/cases/'+cid+'/files',image,partner,{'Content-Type':'image/jpeg','X-File-Kind':'photo','X-File-Name':'Original.jpg'});await started;
+    const simultaneous=await Promise.race([Promise.all([call('/me',undefined,admin),call('/cases/'+cid,undefined,partner)]),new Promise((_,reject)=>{const t=setTimeout(()=>reject(Error('Slow S3 blocked another user')),500);t.unref();})]);assert(simultaneous.every(r=>r.status===200));
+    release();const photo=await uploading;f.files.write=originalWrite;
     assert.equal(photo.status,200,JSON.stringify(photo.json));
     assert.equal(JSON.stringify(photo.json).includes('originals/'),false);
     assert.equal(JSON.stringify(photo.json).includes(env.PORTAL_S3_BUCKET),false);
@@ -59,10 +63,10 @@ test('HTTP S3 integration: original photos, previews, PDFs, tenant boundaries, q
     f.state.failGet=true;
     assert.equal((await call('/me',undefined,partner)).status,200);
     assert.equal((await call('/cases/'+cid,undefined,admin)).status,200);
-    assert.equal((await call('/files/'+fid,undefined,admin)).status,500);
+    assert.equal((await call('/files/'+fid,undefined,admin)).status,503);
     f.state.failGet=false;f.state.failPut=true;
     const failed=await call('/documents',Buffer.from('%PDF-1.7\ndifferent\n%%EOF'),partner,{'Content-Type':'application/pdf','X-File-Name':'Andere.pdf'});
-    assert.equal(failed.status,500);assert(!failed.bytes.toString().includes('fixture-private-provider-error'));
+    assert.equal(failed.status,503);assert(!failed.bytes.toString().includes('fixture-private-provider-error'));
     assert.equal((await call('/admin/storage',undefined,admin)).json.used,image.length+pdf.length);
     f.state.failPut=false;
     // Existing SQL originals can be migrated through the admin-only API.
@@ -74,6 +78,11 @@ test('HTTP S3 integration: original photos, previews, PDFs, tenant boundaries, q
     assert.equal(migration.status,200,JSON.stringify(migration.json));assert.equal(migration.json.migrated,1);
     assert.deepEqual((await call('/documents/'+old,undefined,partner)).bytes,bytes);
     assert.equal((await call('/admin/storage/migrate',{confirmed:true},admin)).json.migrated,0);
+    const readMethod=f.files.read;let releaseRead,readEntered;const delayRead=new Promise(r=>releaseRead=r),startedRead=new Promise(r=>readEntered=r);
+    f.files.read=async ref=>{const bytes=await readMethod(ref);readEntered();await delayRead;return bytes;};
+    const loading=call('/files/'+fid,undefined,partner);await startedRead;
+    const sessionId=digest(partner.cookie.split('=')[1]);await store.transaction(async s=>{const session=await s.get('session',sessionId);session.expires=0;await s.put('session',session);});releaseRead();assert.equal((await loading).status,401);f.files.read=readMethod;
+    await store.transaction(async s=>{const session=await s.get('session',sessionId);session.expires=Date.now()+600000;await s.put('session',session);});
     const before=f.objects.size;
     await store.transaction(s=>s.put('system',{id:'storage',bytes:10*1024*1024}));
     assert.equal((await call('/documents',Buffer.from('%PDF-1.7\nquota\n%%EOF'),partner,{'Content-Type':'application/pdf','X-File-Name':'Limit.pdf'})).status,507);
@@ -84,15 +93,16 @@ test('HTTP S3 integration: original photos, previews, PDFs, tenant boundaries, q
 test('native iPhone intake also persists original photo and PDF bytes in S3',async()=>{
   const {createMobileIntake}=require('../portal/mobile-intake');
   const f=fakeS3(),s=await createStore(fixtureEnv,{fileStorage:f.files}),cid=randomUUID(),token=randomBytes(32).toString('hex');
-  const tx=fn=>s.transaction(fn),api=createMobileIntake({tx,body:async(req,max,raw)=>raw?req.bytes:req.payload,rate:async()=>{},ip:()=> 'local',env:{...fixtureEnv,PORTAL_MOBILE_INTAKE_ENABLED:'true'},authorize:async()=>({user:{id:'partner',name:'Testpartner',role:'partner',companyId:'company'},company:{id:'company',status:'approved',name:'Testbetrieb'}})});
+  const tx=fn=>s.transaction(fn),api=createMobileIntake({tx,blobs:{write:s.writeBlob.bind(s)},body:async(req,max,raw)=>raw?req.bytes:req.payload,rate:async()=>{},ip:()=> 'local',env:{...fixtureEnv,PORTAL_MOBILE_INTAKE_ENABLED:'true'},authorize:async()=>({user:{id:'partner',name:'Testpartner',role:'partner',companyId:'company'},company:{id:'company',status:'approved',name:'Testbetrieb'}})});
   const fields={'claimant.first':'Alex','claimant.last':'Beispiel','claimant.street':'Musterstraße 12','claimant.zip':'10115','claimant.city':'Berlin',plate:'B UX 123'};
   const req=(payload,bytes,headers={})=>({method:'POST',payload,bytes,headers:{authorization:'Bearer '+token,...headers}});
   try {
+    await tx(async q=>{await q.put('user',{id:'partner',name:'Testpartner',role:'partner',companyId:'company',active:true});await q.put('company',{id:'company',status:'approved'});});
     await api.route('/mobile/cases',req({id:cid,fields,fieldsHash:digest(JSON.stringify(fields)),reference:'TEST'}));
     const photo=await sharp({create:{width:10,height:10,channels:3,background:'white'}}).jpeg().toBuffer();
     for(const [kind,type,name,bytes] of [['photo','image/jpeg','Original.jpg',photo],['authorization','application/pdf','Auftrag.pdf',Buffer.from('%PDF-1.7\nNative test\n%%EOF')]]) {
       const uploaded=await api.route('/mobile/cases/'+cid+'/files',req(null,bytes,{'x-file-kind':kind,'x-file-name':name,'content-type':type,'x-asset-id':randomUUID(),'x-order-kind':'unfallx','x-fields-hash':digest(JSON.stringify(fields))}));
-      assert.deepEqual(await tx(q=>q.blob(uploaded.id)),bytes);
+      assert.deepEqual(await s.readBlob(uploaded.id),bytes);
     }
     const stats=await tx(q=>q.storageStats());assert.equal(stats.remoteFiles,2);assert.equal(stats.legacyFiles,0);
   } finally {await s.close();}

@@ -2,7 +2,7 @@
 // MySQL is the production source of truth. SQLite is restricted to local tests.
 const crypto = require('crypto');
 const {createFileStorage, storageConfig} = require('./file-storage');
-function storeApi(run, dialect, files, backend, effects) {
+function storeApi(run, dialect, files, backend) {
   async function legacyBlob(id) {
     const legacy=await run('SELECT content FROM ux_blobs WHERE id=?',[id]);
     if(legacy[0])return Buffer.from(legacy[0].content);
@@ -17,6 +17,9 @@ function storeApi(run, dialect, files, backend, effects) {
     async list(kind, owner) { const rows = await run('SELECT payload FROM ux_records WHERE kind=?'+(owner === undefined ? '' : ' AND owner_id=?')+' ORDER BY updated DESC', owner === undefined ? [kind] : [kind,owner]); return rows.map(r=>JSON.parse(r.payload)); },
     async put(kind, row, owner = '') { const args=[kind,row.id,owner,JSON.stringify(row),Date.now()]; await run(dialect==='mysql' ? 'INSERT INTO ux_records (kind,id,owner_id,payload,updated) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE owner_id=VALUES(owner_id),payload=VALUES(payload),updated=VALUES(updated)' : 'INSERT INTO ux_records (kind,id,owner_id,payload,updated) VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET owner_id=excluded.owner_id,payload=excluded.payload,updated=excluded.updated', args); return row; },
     async remove(kind,id) { await run('DELETE FROM ux_records WHERE kind=? AND id=?',[kind,id]); },
+    legacyBytes:legacyBlob, removeLegacy,
+    async blobSource(id,includeBytes=true) {const ref=await api.get('blob_location',id);if(ref)return {ref};const bytes=await legacyBlob(id);return bytes?{bytes:includeBytes?bytes:null}:null;},
+    async attachBlob(id,ref) {if(await api.get('blob_location',id))throw new Error('FILE_ALREADY_EXISTS');await api.put('blob_location',{...ref,id});},
     async probeBlob(id,data) {
       // Startup checks the database independently. An S3 outage must not prevent
       // partners logging in, viewing statuses or exchanging case messages.
@@ -26,17 +29,13 @@ function storeApi(run, dialect, files, backend, effects) {
     async blob(id,data) {
       if(data){
         if(await api.get('blob_location',id) || await legacyBlob(id))throw new Error('FILE_ALREADY_EXISTS');
-        if(backend==='s3') {
-          const ref=await files.write(data,ref=>effects.created.push(ref));
-          await api.put('blob_location',{id,...ref});
-          return;
-        }
+        if(backend==='s3')throw new Error('FILE_IO_REQUIRES_STORE');
         if(data.length<=1024*1024){await run('INSERT INTO ux_blobs (id,content) VALUES (?,?)',[id,data]);return;}
         for(let n=0;n<data.length;n+=1024*1024)await run('INSERT INTO ux_blob_parts (id,part,content) VALUES (?,?,?)',[id,n/(1024*1024),data.subarray(n,n+1024*1024)]);
         return;
       }
       const ref=await api.get('blob_location',id);
-      if(ref) {if(!files)throw new Error('FILE_STORAGE_CONFIGURATION');return files.read(ref);}
+      if(ref)throw new Error('FILE_IO_REQUIRES_STORE');
       return legacyBlob(id);
     },
     async removeBlob(id) {
@@ -54,22 +53,6 @@ function storeApi(run, dialect, files, backend, effects) {
       if(!Number.isInteger(limit)||limit<1||limit>10)throw new Error('INVALID_BATCH');
       return (await run('SELECT id FROM ux_blobs UNION SELECT id FROM ux_blob_parts ORDER BY id LIMIT '+limit)).map(r=>r.id);
     },
-    async migrateBlob(id) {
-      if(backend!=='s3'||!files)throw new Error('FILE_STORAGE_NOT_ENABLED');
-      const bytes=await legacyBlob(id);
-      if(!bytes)return {migrated:false,bytes:0};
-      const expected=(await api.get('file',id))||(await api.get('vault_document',id));
-      const hash=crypto.createHash('sha256').update(bytes).digest('hex');
-      if(expected&&(expected.size!==bytes.length||expected.sha256&&expected.sha256!==hash))throw new Error('FILE_STORAGE_INTEGRITY');
-      let ref=await api.get('blob_location',id);
-      if(!ref)ref=await files.write(bytes,ref=>effects.created.push(ref));
-      // Download and verify the destination before removing any database bytes.
-      const saved=await files.read(ref);
-      if(!saved.equals(bytes))throw new Error('FILE_STORAGE_INTEGRITY');
-      await api.put('blob_location',{id,...ref});
-      await removeLegacy(id);
-      return {migrated:true,bytes:bytes.length};
-    },
     async storageStats() {
       const [single]=await run('SELECT COUNT(*) AS files, COALESCE(SUM(LENGTH(content)),0) AS bytes FROM ux_blobs');
       const [parts]=await run('SELECT COUNT(DISTINCT id) AS files, COALESCE(SUM(LENGTH(content)),0) AS bytes FROM ux_blob_parts');
@@ -81,27 +64,17 @@ function storeApi(run, dialect, files, backend, effects) {
   return api;
 }
 async function transactionWork(run,dialect,files,backend,fn,begin,commit,rollback) {
-  const effects={created:[]},api=storeApi(run,dialect,files,backend,effects);
+  const api=storeApi(run,dialect,files,backend);
   let committing=false;
   await begin();
   try {
     const result=await fn(api);
     committing=true;
     await commit();
-    // Failed cleanup never turns an already committed upload into a failed upload.
-    if(files)try {
-      for(const ref of (await api.list('blob_delete')).slice(0,3)) {
-        await files.remove(ref);await api.remove('blob_delete',ref.id);
-      }
-    } catch {console.error('Portal file cleanup pending');}
     return result;
   } catch(error) {
+    if(committing)error.commitUncertain=true;
     await rollback();
-    // A lost COMMIT response has an uncertain outcome: retain remote originals.
-    if(!committing&&files)for(const ref of effects.created) {
-      try {await files.remove(ref);}
-      catch {try {await api.put('blob_delete',{...ref,id:crypto.randomUUID()});} catch {console.error('Portal file cleanup requires review');}}
-    }
     throw error;
   }
 }
@@ -114,7 +87,7 @@ async function createStore(env=process.env,options={}) {
     db.exec('CREATE TABLE IF NOT EXISTS ux_blob_parts(id TEXT,part INTEGER,content BLOB,PRIMARY KEY(id,part));');
     let queue=Promise.resolve();
     const run=async(sql,args=[])=>/^SELECT/.test(sql) ? db.prepare(sql).all(...args) : db.prepare(sql).run(...args);
-    return {transaction(fn) {const job=queue.then(()=>transactionWork(run,'sqlite',files,backend,fn,()=>db.exec('BEGIN IMMEDIATE'),()=>db.exec('COMMIT'),()=>db.exec('ROLLBACK')));queue=job.catch(()=>{});return job;},close:()=>{files?.close();db.close();}};
+    return require('./blob-service').attachBlobService({ping:async()=>{await queue;return run('SELECT 1 AS ok');},transaction(fn) {const job=queue.then(()=>transactionWork(run,'sqlite',files,backend,fn,()=>db.exec('BEGIN IMMEDIATE'),()=>db.exec('COMMIT'),()=>db.exec('ROLLBACK')));queue=job.catch(()=>{});return job;},close:()=>{files?.close();db.close();}},files,backend);
   }
   if(!env.DB_NAME || !env.DB_USER || !env.DB_PASSWORD) throw new Error('PORTAL_DATABASE_NOT_CONFIGURED');
   const mysql=require('mysql2/promise');
@@ -123,6 +96,6 @@ async function createStore(env=process.env,options={}) {
   await pool.execute('CREATE TABLE IF NOT EXISTS ux_blobs (id VARCHAR(128) PRIMARY KEY,content LONGBLOB NOT NULL) ENGINE=InnoDB');
   await pool.execute('CREATE TABLE IF NOT EXISTS ux_blob_parts (id VARCHAR(128) NOT NULL,part INT NOT NULL,content MEDIUMBLOB NOT NULL,PRIMARY KEY(id,part)) ENGINE=InnoDB');
   const lockName='ux_'+crypto.createHash('sha256').update(env.DB_NAME).digest('hex').slice(0,40);
-  return {async transaction(fn) { const c=await pool.getConnection();let locked=false;try {const [rows]=await c.execute('SELECT GET_LOCK(?,15) AS acquired',[lockName]);if(Number(rows[0].acquired)!==1)throw new Error('DATABASE_BUSY');locked=true;return await transactionWork(async(sql,args=[])=>{const [rows]=await c.execute(sql,args);return rows;},'mysql',files,backend,fn,()=>c.beginTransaction(),()=>c.commit(),async()=>{try{await c.rollback();}catch{c.destroy();throw new Error('DATABASE_ROLLBACK_FAILED');}});}finally{if(locked)await c.execute('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{});c.release();}},close:async()=>{files?.close();await pool.end();}};
+  return require('./blob-service').attachBlobService({ping:()=>pool.query({sql:'SELECT 1 AS ok',timeout:2500}),async transaction(fn) { const c=await pool.getConnection();let locked=false;try {const [rows]=await c.execute('SELECT GET_LOCK(?,15) AS acquired',[lockName]);if(Number(rows[0].acquired)!==1)throw new Error('DATABASE_BUSY');locked=true;return await transactionWork(async(sql,args=[])=>{const [rows]=await c.execute(sql,args);return rows;},'mysql',files,backend,fn,()=>c.beginTransaction(),()=>c.commit(),async()=>{try{await c.rollback();}catch{c.destroy();throw new Error('DATABASE_ROLLBACK_FAILED');}});}finally{if(locked)await c.execute('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{});c.release();}},close:async()=>{files?.close();await pool.end();}},files,backend);
 }
 module.exports={createStore};

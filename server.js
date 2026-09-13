@@ -187,7 +187,7 @@ function sendError(res, status, isHead, urlPath) {
     status === 404 ? 'Nicht gefunden' : 'Fehler', isHead);
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const isHead = req.method === 'HEAD';
   let hostInfo;try{hostInfo=hosts.hostPolicy(req.headers.host,req.url);}catch{return sendError(res,400,isHead);}
   if(process.env.NODE_ENV==='test'&&process.env.PORTAL_PREVIEW_WORKSPACE&&!hostInfo.production){hostInfo={...hostInfo,isApp:true,workspace:process.env.PORTAL_PREVIEW_WORKSPACE};}
@@ -205,7 +205,7 @@ const server = http.createServer((req, res) => {
     let p = '';
     try { p = new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname; } catch (e) {}
     if (p === '/api/anfrage') {
-      return anfrage.handle(req, res, SECURITY_HEADERS);
+      return anfrage.handle(req, res, SECURITY_HEADERS, portal.submitContact);
     }
     return send(res, 404, { 'Content-Type': 'application/json; charset=utf-8' },
       JSON.stringify({ ok: false, error: 'Nicht gefunden' }), false);
@@ -249,12 +249,10 @@ const server = http.createServer((req, res) => {
     Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='admin'?'UX Team':'UX Partner',start_url:w==='partner'?'/portal':'/',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
     return send(res,200,{'Content-Type':MIME['.webmanifest'],'Cache-Control':'no-cache'},JSON.stringify(manifest),isHead);
   }
-  /* Healthcheck für Hostinger */
-  if (urlPath === '/health') {
-    return send(res, 200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store'
-    }, JSON.stringify({ status: 'ok', contact: anfrage.contactStatus(), portal: portal.status() }), isHead);
+  // Liveness does not imply provider readiness. No credentials or tenant data are public.
+  if(urlPath==='/health'||urlPath==='/ready'){
+    const ok=urlPath==='/health'||await portal.readiness();
+    return send(res,ok?200:503,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({status:ok?'ok':'unavailable',check:urlPath==='/health'?'liveness':'database-readiness'}),isHead);
   }
 
   /* Nachgestellten Slash entfernen: /impressum/ -> /impressum */

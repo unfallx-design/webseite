@@ -2,8 +2,7 @@
  * UNFALLX – Anfrageformular (Backend)
  *
  * Nimmt POST /api/anfrage als JSON entgegen, prueft und bereinigt die Angaben
- * und leitet sie per E-Mail weiter. Ohne konfigurierten Mailversand werden
- * Anfragen als Datei unter data/anfragen/ abgelegt, damit nichts verloren geht.
+ * und übergibt sie an den dauerhaften Datenbank-Eingang mit Versandwarteschlange.
  *
  * Schutzmassnahmen: Groessenlimit, Rate-Limit je IP, Honeypot, Mindestzeit
  * seit Seitenaufruf, serverseitige Validierung, Escaping in der E-Mail,
@@ -21,10 +20,6 @@
  */
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const { brandHtml, logoAttachment } = require('./portal/brand-mail');
-
 const MAX_BODY = 22 * 1024 * 1024;        // Drei Fotos à 5 MB, Base64-Aufschlag und Formularfelder
 const MAX_FILES = 3;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;   // 5 MB je Foto
@@ -32,15 +27,7 @@ const MIN_FORM_MS = 3000;                 // Mindestzeit zwischen Laden und Send
 const WINDOW_MS = 10 * 60 * 1000;
 const LIMIT = Math.max(1, parseInt(process.env.ANFRAGE_LIMIT || '8', 10) || 8);
 const MAIL_TO = 'info@unfallx.com';
-const DATA_DIR = path.join(__dirname, 'data', 'anfragen');
 
-/* nodemailer ist optional: fehlt es, greift der Datei-Fallback */
-let nodemailer = null;
-try { nodemailer = require('nodemailer'); } catch (e) { nodemailer = null; }
-
-function mailerKonfiguriert() {
-  return !!(nodemailer && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-}
 
 /* ---------- Rate-Limit (im Speicher, je Prozess) ------------------------- */
 
@@ -195,93 +182,6 @@ const LABEL = {
   kontaktweg: { telefon: 'Telefon', whatsapp: 'WhatsApp', email: 'E-Mail' }
 };
 
-function mailText(d, meta) {
-  const z = [];
-  z.push('Neue Anfrage ueber unfallx.com');
-  z.push('================================');
-  z.push('Anliegen:        ' + LABEL.anliegen[d.anliegen]);
-  z.push('Name:            ' + d.name);
-  z.push('Telefon:         ' + d.telefon);
-  if (d.email) z.push('E-Mail:          ' + d.email);
-  z.push('Rueckruf per:    ' + LABEL.kontaktweg[d.kontaktweg]);
-  if (d.ort) z.push('PLZ / Unfallort: ' + d.ort);
-  if (d.datum) z.push('Unfalldatum:     ' + d.datum.split('-').reverse().join('.'));
-  if (d.fahrzeug) z.push('Fahrzeug:        ' + d.fahrzeug);
-  z.push('Fotos:           ' + (d.fotos.length ? d.fotos.length + ' im Anhang' : 'keine'));
-  z.push('');
-  z.push('Schilderung:');
-  z.push(d.beschreibung);
-  z.push('');
-  z.push('--');
-  z.push('Eingegangen: ' + meta.zeit + ' | IP: ' + meta.ip);
-  return z.join('\n');
-}
-
-function mailHtml(d, meta) {
-  const row = (k, v) => v ? `<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap">${k}</td><td style="padding:6px 0">${escapeHtml(v)}</td></tr>` : '';
-  return `<div style="font:15px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#14171c">
-<h2 style="margin:0 0 14px;font-size:18px">Neue Anfrage &uuml;ber unfallx.com</h2>
-<table style="border-collapse:collapse;font-size:15px">
-${row('Anliegen', LABEL.anliegen[d.anliegen])}
-${row('Name', d.name)}
-${row('Telefon', d.telefon)}
-${row('E-Mail', d.email)}
-${row('R&uuml;ckruf per', LABEL.kontaktweg[d.kontaktweg])}
-${row('PLZ / Unfallort', d.ort)}
-${row('Unfalldatum', d.datum ? d.datum.split('-').reverse().join('.') : '')}
-${row('Fahrzeug', d.fahrzeug)}
-${row('Fotos', d.fotos.length ? d.fotos.length + ' im Anhang' : 'keine')}
-</table>
-<h3 style="margin:18px 0 6px;font-size:15px">Schilderung</h3>
-<p style="white-space:pre-wrap;margin:0 0 18px">${escapeHtml(d.beschreibung)}</p>
-<p style="color:#888;font-size:12px;margin:0">Eingegangen: ${escapeHtml(meta.zeit)} &middot; IP: ${escapeHtml(meta.ip)}</p>
-</div>`;
-}
-
-async function sendeMail(d, meta) {
-  const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '465', 10),
-    secure: String(process.env.SMTP_SECURE || 'true') === 'true',
-    requireTLS: true,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-  });
-  const betreff = `[UNFALLX] ${LABEL.anliegen[d.anliegen]} – ${d.name}`;
-  const receipt = await transport.sendMail({
-    from: process.env.MAIL_FROM || process.env.SMTP_USER,
-    to: MAIL_TO,
-    replyTo: d.email || undefined,
-    subject: betreff,
-    text: mailText(d, meta),
-    html: brandHtml(mailHtml(d, meta)),
-    attachments: [logoAttachment(), ...d.fotos.map((f, i) => ({
-      filename: `foto-${i + 1}.${BILDTYPEN[f.typ].ext}`,
-      content: f.buf,
-      contentType: f.typ
-    }))]
-  });
-  if (!receipt.accepted || !receipt.accepted.some((address) => String(address).toLowerCase() === MAIL_TO)) {
-    throw new Error('Der Mailserver hat den Empfaenger nicht angenommen.');
-  }
-}
-
-function speichereDatei(d, meta) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  const id = meta.zeit.replace(/[^\d]/g, '').slice(0, 14) + '-' + Math.random().toString(36).slice(2, 8);
-  const ordner = path.join(DATA_DIR, id);
-  fs.mkdirSync(ordner, { recursive: true });
-  const kopie = Object.assign({}, d, { fotos: d.fotos.map((f, i) => `foto-${i + 1}.${BILDTYPEN[f.typ].ext}`) });
-  fs.writeFileSync(path.join(ordner, 'anfrage.json'), JSON.stringify({ meta, daten: kopie }, null, 2), 'utf8');
-  fs.writeFileSync(path.join(ordner, 'anfrage.txt'), mailText(d, meta), 'utf8');
-  d.fotos.forEach((f, i) => fs.writeFileSync(path.join(ordner, `foto-${i + 1}.${BILDTYPEN[f.typ].ext}`), f.buf));
-  return id;
-}
-
-/* ---------- HTTP-Handler -------------------------------------------------- */
-
 function antwort(res, status, obj, headers) {
   const body = JSON.stringify(obj);
   res.writeHead(status, Object.assign({}, headers || {}, {
@@ -292,7 +192,7 @@ function antwort(res, status, obj, headers) {
   res.end(body);
 }
 
-function handle(req, res, securityHeaders) {
+function handle(req, res, securityHeaders, submit) {
   const ip = clientIp(req);
   const ct = String(req.headers['content-type'] || '');
   if (!/application\/json/i.test(ct)) {
@@ -337,28 +237,12 @@ function handle(req, res, securityHeaders) {
     const d = ergebnis.daten;
     const meta = { zeit: new Date().toISOString(), ip };
 
-    if (mailerKonfiguriert()) {
-      try {
-        await sendeMail(d, meta);
-        return antwort(res, 200, { ok: true, delivery: 'email' }, securityHeaders);
-      } catch (e) {
-        console.error('[anfrage] Mailversand fehlgeschlagen:', e && e.message);
-        /* weiter zum Datei-Fallback, damit die Anfrage nicht verloren geht */
-      }
-    } else {
-      console.warn('[anfrage] Kein Mailversand konfiguriert (SMTP_* fehlt) – Anfrage wird als Datei abgelegt.');
-    }
-
     try {
-      const id = speichereDatei(d, meta);
-      console.log('[anfrage] Anfrage gespeichert unter data/anfragen/' + id);
-      return antwort(res, 202, {
-        ok: false, delivery: 'stored', reference: id,
-        error: 'Ihre Anfrage wurde auf dem Server gesichert, konnte aber noch nicht per E-Mail zugestellt werden. Bitte kontaktieren Sie uns direkt: info@unfallx.com oder 0176 64 365 185.'
-      }, securityHeaders);
-    } catch (e) {
-      console.error('[anfrage] Speichern fehlgeschlagen:', e && e.message);
-      return antwort(res, 503, { ok: false, error: 'Die Anfrage konnte gerade nicht übermittelt werden. Bitte rufen Sie uns an oder schreiben Sie an info@unfallx.com.' }, securityHeaders);
+      if(!submit)throw new Error('CONTACT_STORE_UNAVAILABLE');
+      const result=await submit(d,meta);
+      return antwort(res,202,result,securityHeaders);
+    } catch(e) {
+      return antwort(res,e.status||503,{ok:false,error:e.status?e.message:'Ihre Anfrage konnte gerade nicht bestätigt werden. Bitte versuchen Sie es erneut oder schreiben Sie an info@unfallx.com.'},securityHeaders);
     }
   });
   req.on('error', () => {
@@ -366,4 +250,4 @@ function handle(req, res, securityHeaders) {
   });
 }
 
-module.exports = { handle, pruefe, contactStatus: () => ({ recipient: MAIL_TO, configured: mailerKonfiguriert() }) };
+module.exports = { handle, pruefe };

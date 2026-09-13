@@ -74,13 +74,12 @@ Jede Datei wird nach dem Upload vollständig zurückgelesen und verglichen.
 Erst danach werden ihre Speicherreferenz und das Entfernen der Datenbankkopie
 gemeinsam in einer SQL-Transaktion bestätigt. Fehlgeschlagene Übertragungen
 lassen die Datenbankkopie unverändert. Wiederholte Durchläufe überspringen
-bereits umgestellte Dateien. Eine zweite Person kann währenddessen weiter
-auf bestehende Dateien zugreifen, gegebenenfalls mit kurzer Wartezeit.
+bereits umgestellte Dateien. Die S3-Übertragung hält keine globale Datenbanksperre. Rechte, Quoten und Dateiversion werden in kurzen Transaktionen vor und nach der Übertragung geprüft.
 
 Bei Datenbankfehlern werden neu erzeugte S3-Dateien bereinigt. Ein unklarer
 COMMIT-Ausgang löscht keine möglicherweise bereits referenzierte S3-Datei.
 Fehlgeschlagene reguläre Löschungen werden als interne Aufträge gespeichert
-und nach späteren erfolgreichen Transaktionen erneut versucht. Serverabbruch
+und über eine separate, alle 30 Sekunden angestoßene Bereinigung erneut versucht. Serverabbruch
 oder unklarer COMMIT kann eine nicht referenzierte Datei hinterlassen: solche
 Dateien anhand der Datenbankreferenzen prüfen, keinesfalls pauschal löschen.
 
@@ -117,3 +116,11 @@ Referenzen: [S3-Sicherheit](https://docs.aws.amazon.com/AmazonS3/latest/userguid
 [Prüfsummen](https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity-upload.html),
 [AWS-Datenschutz](https://aws.amazon.com/compliance/gdpr-center/),
 [AWS-Budgets](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html).
+
+## Kurze Datenbankschritte statt S3 unter GET_LOCK
+
+Alle Anwendungsaufrufe verwenden `store.writeBlob`, `readBlob` und `migrateBlob`. Direkte Remote-Lese-/Schreibaufrufe innerhalb von `transaction` werden abgewiesen. Neue Uploads besitzen vor dem PUT einen dauerhaften Staging-Eintrag mit zehn Minuten Ablaufzeit. Der finale Metadatenschritt prüft Rechte, Duplikate und Quota erneut. Abgelaufene oder verworfene Uploads werden nur bereinigt, wenn keine bestätigte Speicherreferenz auf den Objektschlüssel zeigt. Ein verlorenes COMMIT-Ergebnis darf kein gespeichertes Original zerstören.
+
+Löschaufträge werden für zwei Minuten beansprucht, außerhalb der SQL-Sperre abgearbeitet und danach bestätigt. Fehlgeschlagene Bereinigungen haben begrenzte Batchgröße und Wartezeit. Ein Prozessneustart verliert die Aufträge nicht. Nicht aktuelle S3-Versionen unterliegen weiterhin der separaten AWS-Aufbewahrung.
+
+Der Prüfablauf für Sicherungen und die Grenzen des lokalen Wiederherstellungstests stehen in [operations-and-backups.md](operations-and-backups.md).

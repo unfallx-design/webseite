@@ -48,7 +48,7 @@ function createFileStorage(env = process.env, options = {}) {
       if (!Buffer.isBuffer(bytes) || !bytes.length || bytes.length > MAX_FILE_BYTES) throw failure('FILE_STORAGE_SIZE');
       const ref = {backend:'s3', bucket, region, account, key:'originals/' + randomUUID(), size:bytes.length, sha256:digest(bytes)};
       // Register cleanup before sending: a timed-out PUT may still have succeeded.
-      onAttempt(ref);
+      await onAttempt(ref);
       await send(new PutObjectCommand({...base, Key:ref.key, Body:bytes, ContentLength:bytes.length,
         ContentType:'application/octet-stream', ServerSideEncryption:'AES256',
         ChecksumSHA256:Buffer.from(ref.sha256, 'hex').toString('base64'),

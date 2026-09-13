@@ -11,7 +11,7 @@ const reportAnchorTargets={gutachten:'leistungen',anfrage:'kontakt',leistungen:'
 const sharedPages=new Set(['/impressum','/datenschutz','/agb']);
 const clean=p=>p.replace(/\.html$/i,'').replace(/\/$/,'');
 const appPath=p=>appPages.has(clean(p)),reportPath=p=>reportPages.has(clean(p));
-const assetPath=p=>/^\/(?:api\/|assets\/|health$|(?:app|site)\.webmanifest$|apple-touch-icon(?:-precomposed)?\.png$|favicon\.ico$|robots\.txt$|sitemap\.xml$)/.test(p);
+const assetPath=p=>/^\/(?:api\/|assets\/|health$|ready$|(?:app|site)\.webmanifest$|apple-touch-icon(?:-precomposed)?\.png$|favicon\.ico$|robots\.txt$|sitemap\.xml$)/.test(p);
 const educationPages=new Set(['/bildung','/bildung-foerderung','/kfz-gutachter-werden','/schadenfotos-lernen','/gutachten-aufbau']);
 const educationPath=p=>educationPages.has(clean(p).toLowerCase())||/^\/bildung\//i.test(p);
 const educationApi=p=>/^\/api\/portal\/(?:admin\/)?academy(?:\/|$)/i.test(p);

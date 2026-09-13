@@ -22,9 +22,9 @@ test('Mail transport refuses unconfigured, rejected and uncertain delivery inste
  await assert.rejects(createMailer(config).send('test@example.test','Test','Text'),/MAIL_NOT_ACCEPTED/);
  const broken=load('portal/mail.js',()=>({sendMail:async()=>{throw Error('SMTP timeout');}}));await assert.rejects(broken.createMailer(config).send('test@example.test','Test','Text'),/SMTP timeout/);
 });
-test('Contact endpoint delivers through the shared template and inline logo without falling back to disk',async()=>{
- let sent;const contact=load('anfrage.js',()=>({sendMail:async m=>{sent=m;return {accepted:['info@unfallx.com']};}}),config);
- const server=http.createServer((req,res)=>contact.handle(req,res,{}));await new Promise(r=>server.listen(0,'127.0.0.1',r));
- try{const r=await fetch('http://127.0.0.1:'+server.address().port,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Funktionstest',email:'test@example.test',kontaktweg:'email',anliegen:'kontakt',beschreibung:'Dies ist eine fiktive technische Kontaktanfrage.',datenschutz:true,t0:Date.now()-10000})});assert.equal(r.status,200,JSON.stringify(await r.clone().json()));assert.equal((await r.json()).delivery,'email');assert.equal(sent.to,'info@unfallx.com');assert.equal(sent.replyTo,'test@example.test');assert.match(sent.html,/data-unfallx-email="v2"/);assert.equal(sent.attachments[0].cid,'unfallx-logo');}
+test('Contact endpoint confirms durable acceptance; without a store it fails closed',async()=>{
+ const contact=require('../anfrage');let submission;
+ const server=http.createServer((req,res)=>contact.handle(req,res,{},async(d,m)=>{submission=d;return {ok:true,delivery:'queued',reference:'fixture'};}));await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ try{const r=await fetch('http://127.0.0.1:'+server.address().port,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Funktionstest',email:'test@example.test',kontaktweg:'email',anliegen:'kontakt',beschreibung:'Dies ist eine fiktive technische Kontaktanfrage.',datenschutz:true,t0:Date.now()-10000})});assert.equal(r.status,202);assert.equal((await r.json()).delivery,'queued');assert.equal(submission.email,'test@example.test');}
  finally{await new Promise(r=>server.close(r));}
 });
