@@ -8,7 +8,7 @@ function fixture({dirty=false,pending=false,role='admin'}={}){
   if(selector==='form[data-dirty="true"] [data-intake-fields]')return dirty?{}:null;
   if(!nodes.has(selector))nodes.set(selector,node());return nodes.get(selector);
  };
- const sandbox={Intl,Date,URL,File:class{},FormData:class{constructor(form){this.entries=Object.entries(form.data||{});}[Symbol.iterator](){return this.entries[Symbol.iterator]();}},
+ const sandbox={UnfallxSessionGuard:require('../assets/session-guard'),AbortController,AbortSignal,setInterval:()=>0,clearInterval(){},Intl,Date,URL,File:class{},FormData:class{constructor(form){this.entries=Object.entries(form.data||{});}[Symbol.iterator](){return this.entries[Symbol.iterator]();}},
   document:{querySelector:find},window:{addEventListener(){},UnfallxWorkspace:{icon:()=>''}},location:{hash:'#nachrichten'},
   UnfallxHelp:{contextual:()=> 'nachrichten'},UnfallxIntake:{errors:()=>[],fileErrors:()=>[]},
   fetch:async(url,options)=>{calls.push({url,...options});return {ok:true,json:async()=>url.endsWith('/messages')?{messages:[{caseId:'case-123',caseNumber:'UX-TEST',vehicle:'Testwagen',note:'Nachfrage <test>',actor:'Partner',at:'2026-09-12T12:00:00Z'}]}:{case:caseData}};},
