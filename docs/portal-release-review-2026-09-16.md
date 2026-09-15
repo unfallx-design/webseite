@@ -11,6 +11,9 @@ Partnerportal und internes Dashboard wurden anhand des veröffentlichten Stands 
 3. **Offene Ansicht bei einem inzwischen gesperrten Konto:** Verweigert die Identitätsprüfung den Zugang mit 403, sperrt die Oberfläche den Arbeitsbereich und bereinigt lokale Entwürfe wie bei einer abgelaufenen Sitzung. Ein vorübergehender Serverfehler (503) löst keine fälschliche Kontosperre oder Entwurfsbereinigung aus. Prüfung beim Wechsel zurück in einen sichtbaren Tab und periodisch im sichtbaren Portal; keine sofortige Fernlöschung bereits exportierter Kopien.
 4. **Veralteter Firmenstatus in der Navigation:** Bei erfolgreicher Prüfung vor einem Ansichtswechsel übernimmt die Oberfläche den aktuellen Kontodatensatz. Eine zwischenzeitliche Firmenfreigabe wird damit ohne erneutes Anmelden berücksichtigt.
 
+5. **Unvollständige Sicherheitsrichtlinie in der Live-Antwort:** In der veröffentlichten HTTP-Antwort stand nur `upgrade-insecure-requests`, obwohl der Server zusätzlich Skript-, Ressourcen- und Formularziele beschränkt. Die HTML-Seiten liefern diese Einschränkungen nun zusätzlich als frühes CSP-Metaelement aus. Erlaubte Inline-Skripte bleiben über SHA-256-Hashes freigegeben; `unsafe-inline` und `unsafe-eval` werden nicht hinzugefügt. `frame-ancestors` bleibt ausschließlich im Serverheader; der separat ausgelieferte `X-Frame-Options: SAMEORIGIN` schützt weiterhin vor fremdem Framing. Die Abweichung des Hosting-Headers ist damit für die Ressourcenrichtlinie abgesichert, nicht als beim Anbieter behoben dargestellt.
+6. **Weiterleitungsschleife für interne Quellpfade:** Private Pfade werden vor Domain-Weiterleitungen abgewiesen. Beispielsweise liefert `/portal/app.js` jetzt direkt 404. Zuvor entstand zwischen App- und Hauptdomain eine Schleife; es wurde dabei kein Quellcode ausgeliefert.
+
 ## Dateiaktionen und Schutzregeln
 
 - Einzeldatei: Fall öffnen → „PDFs & Dokumente“ bzw. „Fotos“ → „Entfernen“. Wiederherstellung unter „Entfernte Dateien“.
@@ -21,10 +24,11 @@ Partnerportal und internes Dashboard wurden anhand des veröffentlichten Stands 
 
 ## Prüfung
 
-**174 automatisierte Tests bestanden, keine Fehler oder übersprungenen Tests. 56 Syntaxprüfungen bestanden.**
+**177 automatisierte Tests bestanden, keine Fehler oder übersprungenen Tests. 56 Syntaxprüfungen bestanden.**
 
 | Bereich | Geprüft |
 |---|---|
+| HTTP-Auslieferung | CSP vor Skripten und Ressourcen, erlaubte Inline-Hashes, korrekte HTML-/HEAD-Längen, direkte Sperre interner Pfade, unveränderte Assetbytes |
 | Zugang | Registrierung, Passwort, Einladungen, Login-Link, OAuth-Validierung, MFA-Grenzen, Sitzungsende, Kontowechsel, Rechte und getrennte Arbeitsbereiche |
 | Aufnahme | Entwurf, Pflichtfelder, Einreichen, Rückfragen, Statuswechsel, Bearbeiter und Versionskonflikte |
 | Dateien | 35 Fotos und PDFs, Dateien über 6 MB, Originalbytes, Mehrfachauswahl, Teilfehler, Wiederholen, Entfernen/Wiederherstellen, ZIP, verborgene/geschützte Dateien |
@@ -44,3 +48,5 @@ Die offizielle npm-Registry lieferte bei der Bulk-Sicherheitsabfrage für die 71
 Die getesteten Funktionskorrekturen sind zur Veröffentlichung geeignet. Eine uneingeschränkte Gesamtfreigabe ist damit nicht belegt. Weiter offen sind die bereits dokumentierten Punkte in [Datenschutz-Nacharbeit](privacy-review-followup.md) und [Betrieb und Sicherungen](operations-and-backups.md), besonders interne MFA, Aufbewahrung/Endlöschung, Anbieter- und Rollenunterlagen sowie ein echter isolierter Restore aus Anbietersicherungen.
 
 Apple-Login, SMS-Verifikation und echte Zustellung in einen Empfänger-Posteingang werden mit diesem Test nicht als funktionsfähig bestätigt. Ebenso erfolgte kein neuer kostenpflichtiger autoiXpert-Livetest. Ein nativer iPhone-Login ist ein eigener Integrationsumfang und gehört nicht zu dieser Portaländerung.
+
+Technische Grundlage der zusätzlichen HTML-Richtlinie: [MDN – Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy); [frame-ancestors wird nicht als Meta-Direktive unterstützt](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors).

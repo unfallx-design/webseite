@@ -39,7 +39,7 @@ const MIME = {
 };
 
 /* Dateien, die nie ausgeliefert werden dürfen */
-const BLOCKED = /(^|[\\/])(\.git|\.env[^\\/]*|node_modules|partials|data|portal|tests|pnpm-lock\.yaml|anfrage\.js|server\.js|package(-lock)?\.json)([\\/]|$)/i;
+const BLOCKED = /(^|[\\/])(\.git|\.env[^\\/]*|node_modules|partials|data|portal|tests|docs|scripts|pnpm-lock\.yaml|anfrage\.js|server\.js|package(-lock)?\.json)([\\/]|$)/i;
 
 /**
  * Gemeinsame Bausteine aus partials/ werden in die Seiten eingesetzt.
@@ -169,7 +169,19 @@ function cacheFor(ext, versioniert) {
 }
 
 function send(res, status, headers, body, isHead) {
-  res.writeHead(status, Object.assign({}, SECURITY_HEADERS, headers));
+  const responseHeaders = Object.assign({}, SECURITY_HEADERS, headers);
+  // Some hosting proxies replace the CSP response header. Keep the resource
+  // restrictions in the document as well, before any script or resource loads.
+  // frame-ancestors is header-only; X-Frame-Options remains a separate header.
+  if (/^text\/html\b/i.test(responseHeaders['Content-Type'] || '')) {
+    const policy = SECURITY_HEADERS['Content-Security-Policy'].split(';')
+      .map(value => value.trim()).filter(value => value && !/^frame-ancestors\b/i.test(value)).join('; ');
+    const escaped = policy.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    body = Buffer.from(String(body).replace(/<head\b[^>]*>/i, match => match +
+      '<meta http-equiv="Content-Security-Policy" content="' + escaped + '">'), 'utf8');
+    responseHeaders['Content-Length'] = body.length;
+  }
+  res.writeHead(status, responseHeaders);
   if (isHead) return res.end();
   res.end(body);
 }
@@ -189,6 +201,20 @@ function sendError(res, status, isHead, urlPath) {
 
 const server = http.createServer(async (req, res) => {
   const isHead = req.method === 'HEAD';
+  let urlPath, hatVersion;
+  try {
+    const parsed = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    urlPath = decodeURIComponent(parsed.pathname);
+    hatVersion = parsed.searchParams.has('v');
+  } catch (e) {
+    return sendError(res, 400, isHead);
+  }
+  // Reject private paths before host canonicalisation, otherwise app/public
+  // redirects can bounce a source-file request between the two domains.
+  if (/(^|\/)\.[^/]|\\|[\x00-\x1f]/.test(urlPath)) return sendError(res, 404, isHead, urlPath);
+  if (urlPath.replace(/\/+$/, '') !== '/portal' && !urlPath.startsWith('/api/portal/') && BLOCKED.test(urlPath)) {
+    return sendError(res, 404, isHead, urlPath);
+  }
   let hostInfo;try{hostInfo=hosts.hostPolicy(req.headers.host,req.url);}catch{return sendError(res,400,isHead);}
   if(process.env.NODE_ENV==='test'&&process.env.PORTAL_PREVIEW_WORKSPACE&&!hostInfo.production){hostInfo={...hostInfo,isApp:true,workspace:process.env.PORTAL_PREVIEW_WORKSPACE};}
   if(hostInfo.retiredReport&&(!['GET','HEAD'].includes(req.method)||req.url.split('?')[0].startsWith('/api/')))return send(res,410,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'},JSON.stringify({error:'Diese Gutachten-Adresse ist stillgelegt. Bitte nutzen Sie unfallx.com/ueber-uns für Informationen oder Ihren geschützten Arbeitsbereich für Falldaten.'}),isHead);
@@ -217,17 +243,6 @@ const server = http.createServer(async (req, res) => {
       'Allow': 'GET, HEAD, POST'
     }, 'Methode nicht erlaubt', false);
   }
-
-  let urlPath;
-  let hatVersion = false;
-  try {
-    const parsed = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-    urlPath = decodeURIComponent(parsed.pathname);
-    hatVersion = parsed.searchParams.has('v');
-  } catch (e) {
-    return sendError(res, 400, isHead);
-  }
-
 
   /* Alte Sprachadressen behalten ihren Weg zum entsprechenden deutschen Inhalt. */
   if (/^\/ru(?:\/|$)/i.test(urlPath)) {
@@ -260,9 +275,6 @@ const server = http.createServer(async (req, res) => {
     const target = urlPath.replace(/\/+$/, '');
     return send(res, 301, { Location: target }, '', isHead);
   }
-
-  if (/(^|\/)\.[^/]|\\|[\x00-\x1f]/.test(urlPath)) return sendError(res,404,isHead,urlPath);
-  if (urlPath !== '/portal' && BLOCKED.test(urlPath)) return sendError(res, 404, isHead, urlPath);
 
   /* Startseite auf die kanonische Adresse führen. */
   if (urlPath === '/index.html' || urlPath === '/index') return send(res, 301, { Location: '/' }, '', isHead);
