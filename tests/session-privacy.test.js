@@ -40,10 +40,10 @@ test('Photo and PDF batch stops on session expiry instead of sending the remaini
 test('Cancelling a running batch prevents subsequent originals from being transmitted',async()=>{
  const batch=new Batch(),gate=deferred();batch.add([new File(['first'],'first.jpg'),new File(['second'],'second.pdf')]);let calls=0;const sending=batch.send(async()=>{calls++;await gate.promise;return {ok:true};});const rejected=assert.rejects(sending,/Einige Dateien/);batch.cancel();gate.resolve();await rejected;assert.equal(calls,1);assert.equal(batch.items[0].state,'done');assert.notEqual(batch.items[1].state,'done');
 });
-function portalBrowser(identity){
+function portalBrowser(identity,status=200){
  const elements=new Map(),events={},requests=[],cleared=[],messages=[];let replacements=0,listener;
  const make=()=>({innerHTML:'',textContent:'',value:'',dataset:{},classList:{toggle(){}},addEventListener(){},querySelectorAll:()=>[],setAttribute(){},getAttribute(){return 'false';}}),node=s=>{if(!elements.has(s))elements.set(s,make());return elements.get(s);};
- const context={Intl,Date,URL,File,AbortController,AbortSignal,UnfallxSessionGuard:require('../assets/session-guard'),UnfallxDrafts:{clearUser:async user=>cleared.push(user)},setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},matchMedia:()=>({matches:false}),location:{pathname:'/portal',hash:'#faelle'},history:{replaceState(){}},document:{title:'private',visibilityState:'visible',body:{...make(),replaceChildren(){replacements++;}},querySelector:node,querySelectorAll:()=>[],createElement:make,addEventListener:(type,fn)=>events[type]=fn},window:{UnfallxWorkspace:{},addEventListener:(type,fn)=>events[type]=fn,scrollTo(){}},BroadcastChannel:class{constructor(){listener=this;}postMessage(v){messages.push(v);}},fetch:async(url)=>{requests.push(url);return {ok:true,status:200,json:async()=>identity};}};
+ const context={Intl,Date,URL,File,AbortController,AbortSignal,UnfallxSessionGuard:require('../assets/session-guard'),UnfallxDrafts:{clearUser:async user=>cleared.push(user)},setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},matchMedia:()=>({matches:false}),location:{pathname:'/portal',hash:'#faelle'},history:{replaceState(){}},document:{title:'private',visibilityState:'visible',body:{...make(),replaceChildren(){replacements++;}},querySelector:node,querySelectorAll:()=>[],createElement:make,addEventListener:(type,fn)=>events[type]=fn},window:{UnfallxWorkspace:{},addEventListener:(type,fn)=>events[type]=fn,scrollTo(){}},BroadcastChannel:class{constructor(){listener=this;}postMessage(v){messages.push(v);}},fetch:async(url)=>{requests.push(url);return {ok:status===200,status,json:async()=>identity};}};
  const source=fs.readFileSync(require.resolve('../assets/portal.js'),'utf8').replace('});boot();','});window.privacyTest={seed(value){me=value;csrf=value.csrf;},checkSession,guard:sessionGuard};');vm.runInNewContext(source,context);context.window.privacyTest.seed({user:{id:'alice',role:'partner'},csrf:'old-session'});
  return {...context.window.privacyTest,elements,requests,cleared,events,messages,get replacements(){return replacements;},broadcast:payload=>listener.onmessage({data:payload})};
 }
@@ -54,4 +54,11 @@ test('A different account or renewed session locks the old portal without signin
 });
 test('Cross-tab logout messages apply only to the same user and session',async()=>{
  const b=portalBrowser({user:{id:'alice'},csrf:'old-session'});b.broadcast({type:'ended',user:'bob',session:'old-session'});b.broadcast({type:'ended',user:'alice',session:'new-session'});assert.equal(b.guard.locked,false);b.broadcast({type:'ended',user:'alice',session:'old-session'});await b.guard.end();assert.equal(b.replacements,1);assert.deepEqual(b.cleared,['alice']);assert.equal(b.messages.length,0);assert.deepEqual(b.requests,['/api/portal/logout']);
+});
+
+test('Revoked account access hides an open workspace and clears local drafts',async()=>{
+ const b=portalBrowser({error:'Der Firmenzugang ist gesperrt.'},403);await b.checkSession();await b.guard.end();assert.equal(b.guard.locked,true);assert.equal(b.replacements,1);assert.deepEqual(b.cleared,['alice']);
+});
+test('A temporary identity-check outage does not silently erase the current local draft',async()=>{
+ const b=portalBrowser({error:'Vorübergehend nicht verfügbar.'},503);await b.checkSession();assert.equal(b.guard.locked,false);assert.equal(b.replacements,0);assert.deepEqual(b.cleared,[]);
 });

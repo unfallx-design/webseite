@@ -8,7 +8,7 @@ class Batch{
  constructor(options={}){this.items=[];this.running=false;this.cancelled=false;this.maxFile=options.maxFile||MAX_FILE;this.pdfOnly=!!options.pdfOnly;}
  add(files,kind='auto'){for(const file of files){const type=mime(file),key=[file.name,file.size,file.lastModified||0,kind].join(':');if(this.items.some(x=>x.key===key))continue;const error=(this.pdfOnly||['report','partner_invoice'].includes(kind))&&type!=='application/pdf'?'Bitte hier ausschließlich PDF-Dateien ablegen.':!['image/jpeg','image/png','image/webp','image/heic','image/heif','application/pdf'].includes(type)?'Bitte JPG, PNG, WebP, HEIC/HEIF oder PDF auswählen.':file.size>this.maxFile?'Größer als '+(this.maxFile/1024/1024)+' MB. Bitte die Originaldatei aufteilen oder UNFALLX kontaktieren.':!file.size?'Die Datei ist leer.':null;this.items.push({file,key,type,kind:kind==='auto'?(type==='application/pdf'?'document':'photo'):kind,state:error?'invalid':'waiting',error,progress:0});}}
  cancel(){this.cancelled=true;}
- remove(key){if(this.running)return;this.items=this.items.filter(x=>x.key!==key||x.state==='done');}
+ remove(key,storedRemoved=false){if(this.running)return;this.items=this.items.filter(x=>x.key!==key||x.state==='done'&&!storedRemoved);}
  classify(item,kind){if(this.running||item.state==='done')throw new Error('Gespeicherte Unterlagen bitte in der Fallakte zuordnen.');if(!Object.hasOwn(kinds,kind)||kind==='photo'&&!item.type.startsWith('image/'))throw new Error('Bitte eine passende Dateiart auswählen.');item.kind=kind;}
  pending(){return this.items.some(x=>x.state!=='done');}
  async send(upload,changed=()=>{},existing=[]){if(this.cancelled)throw new Error('Die Upload-Auswahl wurde geschlossen.');if(this.running)throw new Error('Der Upload läuft bereits.');if(this.items.some(x=>x.state==='invalid'))throw new Error('Bitte die markierten Dateien prüfen. Gültige Originaldateien können unverändert hochgeladen werden.');this.running=true;try{let remaining=this.items.filter(x=>x.state!=='done');const overLimit=()=>existing.length+remaining.length>MAX_FILES||existing.reduce((n,f)=>n+f.size,0)+remaining.reduce((n,x)=>n+x.file.size,0)>MAX_CASE;
@@ -31,11 +31,22 @@ function bindDropZone(zone,onFiles,disabled=()=>false){
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function mount(el,kind=()=> 'auto',options={}){
  const batch=options.batch||new Batch(options),list=el.querySelector('[data-batch-list]'),summary=el.querySelector('[data-batch-summary]'),input=el.querySelector('[data-batch-files]');
- let lastSignature='',destroyed=false;const urls=new Map(),nodes=new Map(),reviewButton=el.querySelector('[data-review-all]'),addButton=el.querySelector('[data-add-more]');
+ let lastSignature='',destroyed=false,removing=false;const urls=new Map(),nodes=new Map(),reviewButton=el.querySelector('[data-review-all]'),addButton=el.querySelector('[data-add-more]');
  const imageItem=x=>x.type.startsWith('image/')&&x.state!=='invalid';
  function source(x){if(!imageItem(x))return '';if(!urls.has(x.key))urls.set(x.key,URL.createObjectURL(x.file));return urls.get(x.key);}
- function remove(key){batch.remove(key);paint();el.dispatchEvent(new Event('change',{bubbles:true}));}
- const viewer=options.pdfOnly?null:window.UnfallxPhotoReview.create({items:()=>batch.items.filter(imageItem).map(x=>({key:x.key,src:source(x),name:x.file.name,removable:x.state!=='done'})),locked:()=>batch.running,remove,add:()=>input.click()});
+ async function remove(key){
+  if(destroyed||batch.running||removing)return;
+  const item=batch.items.find(x=>x.key===key);if(!item)return;
+  if(item.state==='done'){
+   if(!options.removeStored)return;
+   removing=true;viewer?.close();paint();
+   try{if(await options.removeStored(item)!==true)return;batch.remove(key,true);}
+   catch(error){item.error=error.message||'Entfernen fehlgeschlagen. Bitte erneut versuchen.';}
+   finally{removing=false;paint();}
+  }else batch.remove(key);
+  paint();el.dispatchEvent(new Event('change',{bubbles:true}));
+ }
+ const viewer=options.pdfOnly?null:window.UnfallxPhotoReview.create({items:()=>batch.items.filter(imageItem).map(x=>({key:x.key,src:source(x),name:x.file.name,removable:x.state!=='done'||!!options.removeStored})),locked:()=>batch.running||removing,remove,add:()=>input.click()});
  function card(x){
   const li=document.createElement('li');li.className=imageItem(x)?'upload-photo-card':'upload-document-card';
   const image=imageItem(x);li.innerHTML=(image?'<button type="button" class="upload-image-open" aria-label="'+esc(x.file.name)+' ansehen"><img src="'+esc(source(x))+'" alt="'+esc(x.file.name)+'" loading="lazy" decoding="async"><span class="upload-image-fallback" hidden>HEIC / Foto · Original bleibt erhalten</span></button>':'<span class="upload-document-icon">'+(x.type==='application/pdf'?'PDF':'Datei')+'</span>')+'<button type="button" class="upload-remove" aria-label="'+esc(x.file.name)+' aus der Auswahl entfernen">×</button><strong>'+esc(x.file.name)+'</strong><small data-item-status></small><progress hidden value="0" max="100" aria-label="Upload-Fortschritt für '+esc(x.file.name)+'"></progress>';
@@ -54,15 +65,15 @@ function mount(el,kind=()=> 'auto',options={}){
   const keys=new Set(batch.items.map(x=>x.key));for(const [key,node] of nodes)if(!keys.has(key)){node.remove();nodes.delete(key);if(urls.has(key)){URL.revokeObjectURL(urls.get(key));urls.delete(key);}}
   for(const x of batch.items){let li=nodes.get(x.key);if(!li){li=card(x);nodes.set(x.key,li);list.append(li);}li.dataset.state=x.state;
    li.querySelector('[data-item-status]').textContent=x.error||({done:'Original sicher gespeichert',uploading:'Übertragung · '+Math.round(x.progress)+' %',waiting:(kinds[x.kind]||'PDF')+' · bereit'}[x.state]||'Erneut versuchen');
-   const button=li.querySelector('.upload-remove');button.hidden=x.state==='done';button.disabled=batch.running;
-   const select=li.querySelector('select');if(select){select.value=x.kind;select.disabled=batch.running||x.state==='done';}
+   const button=li.querySelector('.upload-remove');button.hidden=x.state==='done'&&!options.removeStored;button.disabled=batch.running||removing;button.setAttribute('aria-label',x.file.name+(x.state==='done'?' aus der Ablage entfernen':' aus der Auswahl entfernen'));
+   const select=li.querySelector('select');if(select){select.value=x.kind;select.disabled=batch.running||removing||x.state==='done';}
    const progress=li.querySelector('progress');progress.hidden=x.state!=='uploading';progress.value=x.progress;
   }
-  input.disabled=batch.running;addButton.disabled=batch.running;reviewButton.hidden=!photos.length;reviewButton.textContent=photos.length+(photos.length===1?' Foto ansehen':' Fotos durchsehen');viewer?.refresh();const signature=batch.items.map(x=>[x.key,x.kind,x.state,x.result?.file?.id].join(':')).join('|');if(signature!==lastSignature){lastSignature=signature;options.onChange?.();}
+  input.disabled=batch.running||removing;addButton.disabled=batch.running||removing;reviewButton.hidden=!photos.length;reviewButton.textContent=photos.length+(photos.length===1?' Foto ansehen':' Fotos durchsehen');viewer?.refresh();const signature=batch.items.map(x=>[x.key,x.kind,x.state,x.result?.file?.id].join(':')).join('|');if(signature!==lastSignature){lastSignature=signature;options.onChange?.();}
  }
- function add(files,override=kind()){if(destroyed||batch.running)return;batch.add(files,override);paint();el.dispatchEvent(new Event('change',{bubbles:true}));}
+ function add(files,override=kind()){if(destroyed||batch.running||removing)return;batch.add(files,override);paint();el.dispatchEvent(new Event('change',{bubbles:true}));}
  input.addEventListener('change',()=>{add([...input.files]);input.value='';});addButton.onclick=()=>input.click();reviewButton.onclick=()=>viewer?.open(batch.items.find(imageItem)?.key);
- bindDropZone(el.querySelector('[data-dropzone]'),add,()=>batch.running);
+ bindDropZone(el.querySelector('[data-dropzone]'),add,()=>batch.running||removing);
  return {batch,paint,add,destroy(){destroyed=true;viewer?.destroy();for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();nodes.clear();}};
 }
 return {Batch,kinds,MAX_FILE,MAX_FILES,MAX_CASE,mime,markup,mount,bindDropZone};
