@@ -16,7 +16,7 @@ const {accessEmail}=require('./email-templates');
 const passwords=require('./passwords');
 const {notice}=require('./brand-mail');
 const {publicUser}=D;
-const {createOAuth,zeroaccount,ZEROACCOUNT_END_SESSION}=require('./oauth');
+const {createOAuth,zeroaccount,ZEROACCOUNT_END_SESSION,ZEROACCOUNT_BACKCHANNEL}=require('./oauth');
 const {createReferrals}=require('./referrals');
 const {createNotifications}=require('./notifications');
 const {createSecurity}=require('./security');
@@ -142,6 +142,7 @@ function createPortal(options={}) {
  if(path.startsWith('/mobile/push/')){assert(scope().workspace==='partner'||local&&!scope().production,'Nur im Partnerbereich.',403);assert(req.method!=='POST'||req.headers.origin===requestOrigin(),'Anfrageherkunft nicht erlaubt.',403);return mobilePush.route(path,req);}
  if(path.startsWith('/mobile/')&&!path.startsWith('/mobile/chat/')){assert(scope().workspace==='partner'||local&&!scope().production,'Kundenaufnahmen nur im App-Bereich.',403);assert(!req.headers.origin||req.headers.origin===requestOrigin(),'Anfrageherkunft nicht erlaubt.',403);return mobileIntake.route(path,req);}
  if(/^\/oauth\/(google|apple)\/callback$/.test(path)&&['GET','POST'].includes(req.method))return oauth.route(path,req,res,url);
+ if(path===ZEROACCOUNT_BACKCHANNEL&&req.method==='POST')return oauth.route(path,req,res,url);
  if(req.method==='POST')assert(req.headers.origin===requestOrigin(),'Anfrageherkunft nicht erlaubt.',403);
  assert(['GET','POST'].includes(req.method),'Methode nicht erlaubt.',405);
  if(path==='/customer/handoff'){assert(scope().workspace==='partner'||local&&!scope().production,'Nur im App-Bereich.',403);return mobileIntake.customerHandoff.publicRoute(req,res);}
@@ -196,7 +197,12 @@ function createPortal(options={}) {
  if(path==='/me'&&req.method==='GET')return tx(async s=>({user:publicUser(user),csrf:session.csrf,company:user.companyId?await s.get('company',user.companyId):null,states:D.caseStates}));
  if(path==='/logout'&&req.method==='POST'){// Bei Anmeldung über 0account endet dort auch die dortige Sitzung; der
   // Browser überbringt den nötigen Nachweis (RP-Initiated Logout).
-  const idpLogout=session.idp?.provider==='0account'&&session.idp.idToken?zeroaccount(env).issuer+ZEROACCOUNT_END_SESSION+'?id_token_hint='+encodeURIComponent(session.idp.idToken):null;
+  //
+  // post_logout_redirect_uri muss mitgegeben werden: ohne sie beendet 0account
+  // die Sitzung und der Browser bleibt auf dem dortigen Endpunkt stehen, weil
+  // es kein Ziel gibt. Die Adresse muss bei der App hinterlegt sein -- als
+  // exakte Redirect-URI oder auf einer eingetragenen erlaubten Herkunft.
+  const idpLogout=session.idp?.provider==='0account'&&session.idp.idToken?zeroaccount(env).issuer+ZEROACCOUNT_END_SESSION+'?id_token_hint='+encodeURIComponent(session.idp.idToken)+'&post_logout_redirect_uri='+encodeURIComponent(requestOrigin()+'/login'):null;
   await tx(s=>s.remove('session',session.id));res.setHeader('Set-Cookie',sessionCookie('',0));return idpLogout?{ok:true,idpLogout}:{ok:true};}
  if(path==='/settings'&&req.method==='GET')return tx(async s=>({profile:{name:user.name,phone:user.phone||'',jobTitle:user.jobTitle||'',email:user.email},preferences:user.preferences||{startPage:'start',compact:false,reducedMotion:false,motion:'full',theme:'light'},activeSessions:(await s.list('session',user.id)).filter(x=>x.expires>Date.now()).length,storage:user.role==='admin'?{backend:storageConfig(env).backend,used:(await s.get('system','storage'))?.bytes||0,limit:storageConfig(env).limit}:null}));
  if(path==='/settings'&&req.method==='POST'){const data=await body(req);return tx(async s=>{const fresh=await s.get('user',user.id);const name=text(data.name,120,true),phone=text(data.phone,40),jobTitle=text(data.jobTitle,100);assert(['start','faelle'].includes(data.startPage),'Bitte eine gültige Startansicht wählen.');assert(typeof data.compact==='boolean'&&typeof data.reducedMotion==='boolean','Ungültige Anzeigeeinstellung.');assert(['light','system','dark'].includes(data.theme),'Bitte eine gültige Darstellung wählen.');assert(data.motion===undefined||['full','calm','off'].includes(data.motion),'Bitte eine gültige Animationseinstellung wählen.');await security.changePhone(s,fresh,phone);fresh.name=name;fresh.phone=phone;fresh.jobTitle=jobTitle;const motion=data.motion|| (data.reducedMotion?'off':'full');fresh.preferences={caseEmails:data.caseEmails!==false,startPage:data.startPage,compact:data.compact,reducedMotion:motion==='off',motion:internal(user)?motion:(data.reducedMotion?'off':'full'),theme:internal(user)?data.theme:'light'};await s.put('user',fresh,fresh.companyId||'internal');return {user:publicUser(fresh),message:'Deine Einstellungen wurden gespeichert.'};});}
