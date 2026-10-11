@@ -109,6 +109,10 @@ function renderPage(file, context={}) {
   if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
   html=applyPartials(html);
   if(!context.isApp&&html.includes('ux-header'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/navigation.css"><script src="/assets/navigation.js" defer></script></head>');
+  if(!context.isApp&&html.includes('ux-header')&&['index.html','ueber-uns.html','impressum.html','datenschutz.html','agb.html','404.html'].includes(path.basename(file))&&!html.includes('/assets/glass.css')){
+    html=html.replace('</head>','<script src="/assets/theme-init.js"></script><link rel="stylesheet" href="/assets/glass.css"><script src="/assets/glass.js" defer></script></head>');
+    if(!/<body[^>]*\sid=/.test(html))html=html.replace(/<body(?=[\s>])/,'<body id="ux"');
+  }
   if(context.isApp){const w=context.workspace||'partner',title=hosts.workspaces[w].title;
     const labels={partner:['Willkommen zurück.','Melde dich an, um Fälle, Fotos und Unterlagen an UNFALLX zu übermitteln.'],admin:['Das interne Dashboard.','Geschützter Zugang für die Administration und das UNFALLX-Team.']};
     const identity=w==='admin'?{tagline:'Eingänge prüfen.<br><span>Gutachten erstellen.</span>',purpose:'Dein interner Arbeitsplatz für Schadenaufnahmen, Rückfragen und die gemeinsame Bearbeitung im UNFALLX-Team.',steps:['Eingänge & Unterlagen prüfen','Gutachten & Rückfragen bearbeiten','Status & Abrechnung verwalten'],access:'Zugang nur für eingeladene Teammitglieder'}:{tagline:'Deine Aufnahme.<br><span>Unser Gutachten.</span>',purpose:'Fotos und Unterlagen übermitteln, Rückfragen klären und den Bearbeitungsstand deiner Fälle im Blick behalten.',steps:['Schaden vor Ort aufnehmen','Fotos & Unterlagen an UNFALLX senden','Gutachten durch UNFALLX erstellen lassen'],access:'Dein geschützter Partnerzugang'};
@@ -117,6 +121,10 @@ function renderPage(file, context={}) {
     if(!['partner-start.html','kundenaufnahme.html'].includes(path.basename(file))&&!html.includes('/assets/workspace.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace.css"></head>');
   }
   if(context.isApp&&path.basename(file)!=='kundenaufnahme.html'&&!html.includes('/assets/workspace-unified.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace-unified.css"></head>');
+  if(['workspace-login.html','passwort.html','registrieren.html'].includes(path.basename(file))&&!html.includes('/assets/glass.css')){
+    html=html.replace('</head>','<script src="/assets/theme-init.js"></script><link rel="stylesheet" href="/assets/glass.css"><script src="/assets/glass.js" defer></script></head>');
+    if(!/<body[^>]*\sid=/.test(html))html=html.replace(/<body(?=[\s>])/,'<body id="ux"');
+  }
   return versionAssets(html);
 }
 
