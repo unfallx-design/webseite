@@ -15,7 +15,7 @@ function createNativeAuth({env,tx,body,rate,ip,auth,issueSession,requestOrigin,p
   assert(['ios','android'].includes(data.platform)&&valid(data.challenge)&&valid(data.state),'Ungültiger App-Anmeldevorgang.');
   assert(providers().some(p=>p.id===data.provider&&p.enabled),'Diese Anmeldemethode ist noch nicht eingerichtet.',503);
   const ticket=random();
-  await tx(async s=>{await rate(s,'native-start:'+ip(req),20);let link=null;if(data.action==='link'){link=await auth(req,s);assert(link.user.role==='partner'&&Date.now()-Date.parse(link.session.createdAt)<15*60000,'Bitte für das Verknüpfen erneut anmelden (höchstens 15 Minuten).',401);}await s.put('native_auth',{id:hash(ticket),provider:data.provider,platform:data.platform,flowVersion:data.flowVersion===2?2:1,linkUserId:link?.user.id||null,linkSessionId:link?.session.id||null,challenge:data.challenge,state:data.state,origin:requestOrigin(),status:'created',expires:Date.now()+10*60000});});
+  await tx(async s=>{await rate(s,'native-start:'+ip(req),20);let link=null;if(data.action==='link'){link=await auth(req,s);assert(link.user.role==='partner'&&Date.now()-Date.parse(link.session.createdAt)<15*60000,'Bitte für das Verknüpfen erneut anmelden (höchstens 15 Minuten).',401);}await s.put('native_auth',{id:hash(ticket),provider:data.provider,platform:data.platform,flowVersion:[2,3].includes(data.flowVersion)?data.flowVersion:1,linkUserId:link?.user.id||null,linkSessionId:link?.session.id||null,challenge:data.challenge,state:data.state,origin:requestOrigin(),status:'created',expires:Date.now()+10*60000});});
   return {authorizationURL:requestOrigin()+'/api/portal/mobile/auth/browser?ticket='+ticket,expiresIn:600};
  }
  async function browser(req,res,url) {
@@ -25,7 +25,21 @@ function createNativeAuth({env,tx,body,rate,ip,auth,issueSession,requestOrigin,p
   res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');
   res.writeHead(303,{Location:next.redirect});res.end();return null;
  }
- async function complete(req,res,id,outcome) {
+ async function complete(req,res,id,outcome,json=false) {
+  if(outcome.pending){
+   const continued=await tx(async s=>{
+    const r=await s.get('native_auth',id);assert(current(r)&&r.status==='browser','App-Anmeldung abgelaufen.',401);
+    if(r.flowVersion!==3)return false;
+    const pending=await s.get('oauth_pending',hash(outcome.pending));assert(pending&&current(pending),'Registrierung abgelaufen.',401);
+    pending.nativeRequest=r.id;pending.expires=Math.min(pending.expires,r.expires);await s.put('oauth_pending',pending);return true;
+   });
+   if(continued){
+    const name=env.NODE_ENV==='test'?'ux_onboarding':'__Host-ux_onboarding';
+    res.setHeader('Set-Cookie',`${name}=${outcome.pending}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600${env.NODE_ENV==='test'?'':'; Secure'}`);
+    res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');
+    res.writeHead(303,{Location:'/konto-vervollstaendigen'});res.end();return null;
+   }
+  }
   const code=random();
   const r=await tx(async s=>{
    const r=await s.get('native_auth',id);assert(current(r)&&r.status==='browser','App-Anmeldung abgelaufen.',401);
@@ -43,6 +57,7 @@ function createNativeAuth({env,tx,body,rate,ip,auth,issueSession,requestOrigin,p
   });
   const target=callback+'?code='+encodeURIComponent(code)+'&state='+encodeURIComponent(r.state);
   res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');
+  if(json)return {redirect:target,native:true};
   res.writeHead(303,{Location:target});res.end();return null;
  }
  async function exchange(req,res) {
@@ -64,7 +79,7 @@ function createNativeAuth({env,tx,body,rate,ip,auth,issueSession,requestOrigin,p
    // issueSession rechecks suspension and creates pending MFA when required.
    return issueSession(s,user);
   });
-  if(outcome.failure){const messages={link_required:'Bitte zuerst mit E-Mail anmelden und Google oder Apple in den Portal-Einstellungen mit deinem bestehenden Konto verbinden.',registration_required:'Bitte zuerst deinen Partnerbetrieb registrieren. UNFALLX prüft und aktiviert deinen Zugang.',partner_required:'Bitte verwende deinen Partnerzugang. Interne Zugänge gehören zum Admin-Dashboard.',provider_failed:'Anmeldung abgebrochen oder vom Anbieter nicht bestätigt.'};if(outcome.flowVersion===2)return {ok:false,nextAction:outcome.failure==='link_required'?'link':outcome.failure==='registration_required'?'register':'retry',message:messages[outcome.failure]||messages.provider_failed};throw new Problem(401,messages[outcome.failure]||messages.provider_failed);}
+  if(outcome.failure){const messages={link_required:'Bitte zuerst mit E-Mail anmelden und Google oder Apple in den Portal-Einstellungen mit deinem bestehenden Konto verbinden.',registration_required:'Bitte zuerst deinen Partnerbetrieb registrieren. UNFALLX prüft und aktiviert deinen Zugang.',partner_required:'Bitte verwende deinen Partnerzugang. Interne Zugänge gehören zum Admin-Dashboard.',provider_failed:'Anmeldung abgebrochen oder vom Anbieter nicht bestätigt.'};if(outcome.flowVersion>=2)return {ok:false,nextAction:outcome.failure==='link_required'?'link':outcome.failure==='registration_required'?'register':'retry',message:messages[outcome.failure]||messages.provider_failed};throw new Problem(401,messages[outcome.failure]||messages.provider_failed);}
   if(outcome.linked)return {ok:true,linked:true};
   assert(outcome.cookie,'Anmeldung konnte nicht bestätigt werden.',401);
   res.setHeader('Set-Cookie',outcome.cookie);return {ok:true,mfaRequired:!!outcome.mfaRequired};
@@ -72,7 +87,7 @@ function createNativeAuth({env,tx,body,rate,ip,auth,issueSession,requestOrigin,p
  async function route(path,req,res,url) {
   assert(!req.headers.origin||req.headers.origin===requestOrigin(),'Anfrageherkunft nicht erlaubt.',403);
   if(req.method==='POST')assert(req.headers.origin===requestOrigin(),'Anfrageherkunft nicht erlaubt.',403);
-  if(path==='/mobile/auth/config'&&req.method==='GET')return {version:1,capabilities:{nativeLinking:true,guidedRecovery:true},providers:providers()};
+  if(path==='/mobile/auth/config'&&req.method==='GET')return {version:1,capabilities:{nativeLinking:true,guidedRecovery:true,nativeRegistration:true,companyProfile:true},providers:providers()};
   if(path==='/mobile/auth/start'&&req.method==='POST')return start(req);
   if(path==='/mobile/auth/browser'&&req.method==='GET')return browser(req,res,url);
   if(path==='/mobile/auth/exchange'&&req.method==='POST')return exchange(req,res);

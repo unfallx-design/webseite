@@ -76,7 +76,7 @@ async function boot(){
   // abwählbar: abgeschickt wird nur, was hier bestätigt ist.
   const check=(name,value)=>{const field=onboarding.querySelector('[name='+name+']');if(field&&value)field.checked=true;};
   check('terms',company.terms);check('privacy',company.privacy);
-  bind('#oauth-complete',async d=>{const r=await api('/oauth/complete',d);await enterPortal();});}
+  bind('#oauth-complete',async d=>{const r=await api('/oauth/complete',d);if(r.native===true&&/^unfallxpartner:\/\/oauth\/callback\?/.test(r.redirect)){location.assign(r.redirect);return;}await enterPortal();});}
 }
 window.addEventListener('hashchange',()=>{const p=new URLSearchParams(location.hash.slice(1));if(/^[a-f0-9]{64}$/.test(p.get('token')||p.get('unsubscribe')||''))location.reload();});
 boot().catch(e=>message(e.message,true)).finally(passwordControls);
