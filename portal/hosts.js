@@ -26,6 +26,9 @@ function hostPolicy(host,url){
  }
  const isApp=!!workspace,isReport=false,isPublic=['unfallx.com','www.unfallx.com'].includes(name),production=isApp||isReport||isPublic;
  const p=clean(u.pathname),own=workspaces[workspace]?.origin;
+ // The internal workspace has exactly one public sign-in address. Keeping the
+ // old root as a redirect also prevents stale browser/CDN copies of its login.
+ if(workspace==='admin'&&p==='')return {redirect:ADMIN_ORIGIN+'/login'+u.search};
  if(p==='/workspace-login')return {redirect:(production?(own||APP_ORIGIN):'')+'/login'+u.search};
  if(['/mobile','/mobile-app'].includes(p))return {redirect:(production?APP_ORIGIN:'')+'/portal'+u.search};
  if(p==='/app-demo')return {redirect:production?PUBLIC_ORIGIN+'/#app':'/#app'};

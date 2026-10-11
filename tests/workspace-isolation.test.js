@@ -3,13 +3,14 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),http=requ
 const D=require('../portal/domain'),P=require('../portal/passwords'),H=require('../portal/hosts'),{createPortal}=require('../portal/app'),{createStore}=require('../portal/store');
 test('Two dedicated workspace hosts keep routes and navigation inside the correct area',()=>{
  for(const [w,c] of Object.entries(H.workspaces)){
-  const host=new URL(c.origin).host;assert.equal(H.hostPolicy(host,'/').workspace,w);assert.equal(H.hostPolicy(host,'/api/portal/me').workspace,w);
+  const host=new URL(c.origin).host;if(w==='admin')assert.equal(H.hostPolicy(host,'/').redirect,H.ADMIN_ORIGIN+'/login');else assert.equal(H.hostPolicy(host,'/').workspace,w);assert.equal(H.hostPolicy(host,'/api/portal/me').workspace,w);
   const html=H.links('<a href="/">Home</a><a href="/login">Login</a><a href="/portal">Cases</a>',true,true,false,w);assert(!html.includes('https://unfallx.com/'));assert(html.includes(c.origin+'/login'));
  }
  assert.equal(H.hostPolicy('app.unfallx.com','/gutachter-portal').redirect,H.ADMIN_ORIGIN+'/gutachter-portal');
  assert.equal(H.hostPolicy('unfallx.com','/gutachter-portal').redirect,H.ADMIN_ORIGIN+'/gutachter-portal');
  assert.equal(H.hostPolicy('app.unfallx.com','/login?bereich=team').redirect,H.ADMIN_ORIGIN+'/login');
  assert.equal(H.hostPolicy('admin.unfallx.com','/registrieren').redirect,H.ADMIN_ORIGIN+'/login');
+ assert.equal(H.hostPolicy('admin.unfallx.com','/?next=%2Fgutachter-portal').redirect,H.ADMIN_ORIGIN+'/login?next=%2Fgutachter-portal');
  assert.equal(H.hostPolicy('app.unfallx.com','/mobile').redirect,H.APP_ORIGIN+'/portal');
  assert.equal(H.workspaceForHost('admin.unfallx.com.evil.example'),null);
 });

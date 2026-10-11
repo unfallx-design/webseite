@@ -103,7 +103,13 @@ function versionAssets(html) {
 
 function renderPage(file, context={}) {
   let html=fs.readFileSync(file,'utf8');
-  if(path.basename(file)==='app-hilfe.html'){const role=context.workspace==='admin'?'admin':'partner';html=html.replace('{{helpContent}}',help.render(role)).replace('{{helpTitle}}','Hilfe · '+hosts.workspaces[role].title);}
+  if(path.basename(file)==='app-hilfe.html'){
+    const role=context.workspace==='admin'?'admin':'partner';
+    const guide=role==='admin'
+      ? '<aside class="help-visual-start"><div><span>INTERNES DASHBOARD</span><h2>Vom Eingang zur Bearbeitung</h2><p>Öffne die Pipeline, prüfe die Originaldateien in der Fallakte und dokumentiere den Status. Die autoiXpert-Übergabe startet nur nach deiner bewussten Freigabe.</p><a href="#status-aendern">Status verwalten →</a><a href="#dokumente">Dateien prüfen →</a></div><img src="/assets/unfallx-admin-pipeline-20261011.jpg" width="1440" height="900" alt="Aktuelle interne Fall-Pipeline mit fiktiven Beispieldaten" loading="lazy"></aside>'
+      : '<aside class="help-visual-start"><div><span>PARTNERPORTAL</span><h2>Deinen ersten Schaden übermitteln</h2><p>Erfasse die Falldaten, füge Fotos und PDFs hinzu, prüfe die Dateien und sende den Fall ab. Erst die bestätigte Übertragung ist ein Eingang bei UNFALLX.</p><a href="#erster-fall">Schritt-für-Schritt-Anleitung →</a><a href="#dateien-entfernen">Dateien korrigieren →</a></div><img src="/assets/unfallx-partner-dashboard-20261011.jpg" width="1440" height="1000" alt="Aktuelle Partnerübersicht mit fiktiven Beispieldaten" loading="lazy"></aside>';
+    html=html.replace('{{helpIntro}}',guide).replace('{{helpContent}}',help.render(role)).replace('{{helpTitle}}','Hilfe · '+hosts.workspaces[role].title);
+  }
   if(context.isApp&&path.basename(file)!=='kundenaufnahme.html')html=html.replace(/<!--#include:(?:(?:app|home)-)?header-->/g,'<!--#include:workspace-header-->').replace(/<!--#include:(?:(?:app|home)-)?footer-->/g,'<!--#include:workspace-footer-->').replace(/<body(?![^>]*class=)/,'<body class="connect-public"');
   if(context.isApp&&!['kundenaufnahme.html','workspace-login.html','passwort.html','registrieren.html','app-hilfe.html','partner-start.html'].includes(path.basename(file))&&!html.includes('/assets/app-shell.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/portal.css"><link rel="stylesheet" href="/assets/app-shell.css"></head>');
   if(context.isApp)html=html.replace('<meta name="theme-color" content="#11151c">','<meta name="theme-color" content="#ffffff">');
@@ -117,7 +123,7 @@ function renderPage(file, context={}) {
     const labels={partner:['Willkommen zurück.','Melde dich an, um Fälle, Fotos und Unterlagen an UNFALLX zu übermitteln.'],admin:['Das interne Dashboard.','Geschützter Zugang für die Administration und das UNFALLX-Team.']};
     const identity=w==='admin'?{tagline:'Eingänge prüfen.<br><span>Gutachten erstellen.</span>',purpose:'Dein interner Arbeitsplatz für Schadenaufnahmen, Rückfragen und die gemeinsame Bearbeitung im UNFALLX-Team.',steps:['Eingänge & Unterlagen prüfen','Gutachten & Rückfragen bearbeiten','Status & Abrechnung verwalten'],access:'Zugang nur für eingeladene Teammitglieder'}:{tagline:'Deine Aufnahme.<br><span>Unser Gutachten.</span>',purpose:'Fotos und Unterlagen übermitteln, Rückfragen klären und den Bearbeitungsstand deiner Fälle im Blick behalten.',steps:['Schaden vor Ort aufnehmen','Fotos & Unterlagen an UNFALLX senden','Gutachten durch UNFALLX erstellen lassen'],access:'Dein geschützter Partnerzugang'};
     html=html.replaceAll('{{workspaceTagline}}',identity.tagline).replaceAll('{{workspacePurpose}}',identity.purpose).replaceAll('{{workspaceAccess}}',identity.access).replaceAll('{{workspaceSteps}}',identity.steps.map((text,index)=>'<li><span>0'+(index+1)+'</span>'+text+'</li>').join(''));
-    html=html.replace('<body','<body data-workspace="'+w+'"').replaceAll('{{workspaceTitle}}',title).replaceAll('{{workspaceHeading}}',labels[w][0]).replaceAll('{{workspaceCopy}}',labels[w][1]).replaceAll('{{workspaceEnrollment}}',w==='admin'?'<p class="workspace-enrollment">Interne Zugänge werden durch UNFALLX eingeladen.</p>':'<p class="workspace-enrollment">Noch kein Partnerkonto?<a href="/registrieren">Als Partner registrieren →</a></p>');
+    html=html.replace('<body','<body data-workspace="'+w+'"').replaceAll('{{workspaceTitle}}',title).replaceAll('{{workspaceHome}}',w==='admin'?'/login':'/').replaceAll('{{workspaceHeading}}',labels[w][0]).replaceAll('{{workspaceCopy}}',labels[w][1]).replaceAll('{{workspaceEnrollment}}',w==='admin'?'<p class="workspace-enrollment">Interne Zugänge werden durch UNFALLX eingeladen.</p>':'<p class="workspace-enrollment">Noch kein Partnerkonto?<a href="/registrieren">Als Partner registrieren →</a></p>');
     if(!['partner-start.html','kundenaufnahme.html'].includes(path.basename(file))&&!html.includes('/assets/workspace.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace.css"></head>');
   }
   if(context.isApp&&path.basename(file)!=='kundenaufnahme.html'&&!html.includes('/assets/workspace-unified.css'))html=html.replace('</head>','<link rel="stylesheet" href="/assets/workspace-unified.css"></head>');
@@ -305,7 +311,7 @@ async function handleRequest(req, res) {
   if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
   if(hostInfo.isApp&&['/app.webmanifest','/site.webmanifest'].includes(urlPath)){
     const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'app.webmanifest'),'utf8')),w=hostInfo.workspace||'partner';
-    Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='admin'?'UX Team':'UX Partner',start_url:w==='partner'?'/portal':'/',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
+    Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='admin'?'UX Team':'UX Partner',start_url:w==='partner'?'/portal':'/login',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
     return send(res,200,{'Content-Type':MIME['.webmanifest'],'Cache-Control':'no-cache'},JSON.stringify(manifest),isHead);
   }
   // Liveness does not imply provider readiness. No credentials or tenant data are public.
