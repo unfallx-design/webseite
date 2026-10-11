@@ -311,7 +311,8 @@ async function handleRequest(req, res) {
   if(hostInfo.isApp&&urlPath==='/robots.txt')return send(res,200,{'Content-Type':'text/plain','Cache-Control':'no-store'},'User-agent: *\nDisallow: /\n',isHead);
   if(hostInfo.isApp&&['/app.webmanifest','/site.webmanifest'].includes(urlPath)){
     const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'app.webmanifest'),'utf8')),w=hostInfo.workspace||'partner';
-    Object.assign(manifest,{id:'/',name:'UNFALLX '+hosts.workspaces[w].title,short_name:w==='admin'?'UX Team':'UX Partner',start_url:w==='partner'?'/portal':'/login',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
+    const workspaceTitle=hosts.workspaces[w].title;
+    Object.assign(manifest,{id:'/',name:workspaceTitle.startsWith('UNFALLX')?workspaceTitle:'UNFALLX '+workspaceTitle,short_name:w==='admin'?'UX Team':'UX Partner',start_url:w==='partner'?'/portal':'/login',scope:'/',description:'Dein geschützter UNFALLX Arbeitsbereich.'});
     return send(res,200,{'Content-Type':MIME['.webmanifest'],'Cache-Control':'no-cache'},JSON.stringify(manifest),isHead);
   }
   // Liveness does not imply provider readiness. No credentials or tenant data are public.
