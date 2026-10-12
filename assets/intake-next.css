@@ -1,0 +1,75 @@
+/* UNFALLX Schadenübermittlung in drei Schritten – Fotos, Kennzeichen, Senden. Nur Darstellung. */
+html body.portal-body.design-workspace form.intake-quick .intake-intro{display:none}
+
+/* Schritt-Leiste: drei große, selbsterklärende Karten */
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px;margin:0 0 22px;position:relative}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button{position:relative;display:flex;align-items:center;gap:14px;min-height:84px;padding:14px 16px;border-radius:22px;border:1.5px solid var(--x-chip-bd);background:var(--x-chip);color:var(--x-ink);text-align:left;font-family:var(--x-font);cursor:pointer;transition:transform .35s cubic-bezier(.16,1,.3,1),border-color .25s,background .25s,box-shadow .3s}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button:hover{transform:translateY(-2px);border-color:var(--x-ink)}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button[aria-current=step]{background:var(--x-bg);border-color:var(--x-red);box-shadow:0 0 0 4px rgba(255,0,0,.1),0 18px 34px -22px rgba(255,0,0,.55)}
+html body.portal-body.design-workspace .intake-quick-icon{position:relative;display:grid;place-items:center;width:50px;height:50px;flex:none;border-radius:16px;background:var(--x-bg);border:1px solid var(--x-line);color:var(--x-steel);box-shadow:0 10px 20px -16px rgba(0,0,0,.5)}
+html body.portal-body.design-workspace .intake-quick-icon svg{width:24px;height:24px}
+html body.portal-body.design-workspace .intake-quick-icon b{position:absolute;top:-7px;left:-7px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--x-ink);color:var(--x-bg);font:700 11px/1 var(--x-font)}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button[aria-current=step] .intake-quick-icon{background:var(--x-red);border-color:var(--x-red);color:#fff;box-shadow:0 12px 24px -12px rgba(255,0,0,.8)}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button[aria-current=step] .intake-quick-icon b{background:#fff;color:var(--x-red)}
+html body.portal-body.design-workspace .intake-quick-label{display:flex;flex-direction:column;min-width:0}
+html body.portal-body.design-workspace .intake-quick-label strong{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+html body.portal-body.design-workspace .intake-quick-label small{font-size:12.5px;color:var(--x-steel);font-weight:500}
+html body.portal-body.design-workspace .intake-quick-check{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--x-chip-bd);color:transparent;transition:background .3s,color .3s,transform .45s cubic-bezier(.34,1.32,.64,1);transform:scale(.7)}
+html body.portal-body.design-workspace .intake-quick-check svg{width:14px;height:14px}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button[data-done=true] .intake-quick-check{background:#1f9d55;color:#fff;transform:none}
+html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button[data-done=true]:not([aria-current]) .intake-quick-icon{color:#1f9d55}
+
+/* Kopf je Schritt */
+html body.portal-body.design-workspace .intake-quick-head{margin:0 0 18px;animation:x-quick-in .45s cubic-bezier(.16,1,.3,1) both}
+html body.portal-body.design-workspace .intake-quick-head span{display:inline-block;margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--x-redt)}
+html body.portal-body.design-workspace .intake-quick-head h2{margin:0 0 6px!important;font-size:clamp(22px,2.4vw,30px)!important;font-weight:700!important;letter-spacing:-.04em!important;color:var(--x-ink)}
+html body.portal-body.design-workspace .intake-quick-head p{margin:0;max-width:70ch;font-size:15px;line-height:1.6;color:var(--x-steel)}
+@keyframes x-quick-in{from{opacity:0;transform:translateY(8px)}}
+
+/* Schritt 1: Fotos – große Ablagefläche */
+html body.portal-body.design-workspace form.intake-quick [data-wizard-files]{animation:x-quick-in .45s cubic-bezier(.16,1,.3,1) both}
+html body.portal-body.design-workspace form.intake-quick [data-wizard-files] [data-upload-section]{display:none}
+html body.portal-body.design-workspace form.intake-quick [data-wizard-files] .upload-dropzone{min-height:190px;border:2px dashed rgba(255,0,0,.45)!important;border-radius:24px!important;background:rgba(255,0,0,.035)!important;transition:background .25s,border-color .25s,transform .35s cubic-bezier(.16,1,.3,1)}
+html body.portal-body.design-workspace form.intake-quick [data-wizard-files] .upload-dropzone:hover,html body.portal-body.design-workspace form.intake-quick [data-wizard-files] .upload-dropzone[data-dragging=true]{background:rgba(255,0,0,.07)!important;border-color:var(--x-red)!important;transform:translateY(-2px)}
+html body.portal-body.design-workspace form.intake-quick [data-wizard-files] .upload-dropzone svg{width:48px;height:48px;color:var(--x-red)}
+html body.portal-body.design-workspace form.intake-quick [data-wizard-files] .workflow-photo-guide{border-radius:18px}
+
+/* Schritt 2: Kennzeichen – ein großes Feld, Rest aufklappbar */
+html body.portal-body.design-workspace .intake-quick-box{padding:clamp(18px,2.4vw,26px);border-radius:24px;background:var(--x-chip);border:1px solid var(--x-line);margin:0 0 18px;animation:x-quick-in .45s cubic-bezier(.16,1,.3,1) both}
+html body.portal-body.design-workspace .intake-quick-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:end}
+html body.portal-body.design-workspace .intake-quick-fields .intake-field{margin:0}
+html body.portal-body.design-workspace .intake-quick-fields label{font-size:14px;font-weight:700;color:var(--x-ink)}
+html body.portal-body.design-workspace .intake-quick-plate [data-intake-field=plate] input{min-height:64px!important;font-size:26px!important;font-weight:700!important;letter-spacing:.06em;text-transform:uppercase}
+html body.portal-body.design-workspace .intake-quick-plate [data-intake-field=plate] .ws-license-plate{border-width:2.5px!important}
+html body.portal-body.design-workspace .intake-quick-plate [data-intake-field=vehicle] input{min-height:64px!important;font-size:17px!important}
+html body.portal-body.design-workspace .intake-more{margin-top:18px;border-radius:18px;border:1px dashed var(--x-chip-bd);background:var(--x-bg)}
+html body.portal-body.design-workspace .intake-more>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:16px 18px;cursor:pointer;list-style:none;font-weight:700;color:var(--x-ink)}
+html body.portal-body.design-workspace .intake-more>summary::-webkit-details-marker{display:none}
+html body.portal-body.design-workspace .intake-more>summary::before{content:"+";display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--x-ink);color:var(--x-bg);font-weight:700;transition:transform .35s cubic-bezier(.34,1.32,.64,1)}
+html body.portal-body.design-workspace .intake-more[open]>summary::before{transform:rotate(45deg)}
+html body.portal-body.design-workspace .intake-more>summary small{font-weight:500;font-size:12.5px;color:var(--x-steel)}
+html body.portal-body.design-workspace .intake-more-body{padding:0 14px 14px}
+html body.portal-body.design-workspace .intake-more-body .intake-section{margin-top:10px}
+
+/* Schritt 3: Bestätigen & senden */
+html body.portal-body.design-workspace .intake-quick-confirm .portal-check{display:flex;align-items:flex-start;gap:14px;padding:18px;border-radius:18px;background:var(--x-bg);border:1.5px solid var(--x-chip-bd);font-size:15px;line-height:1.5;color:var(--x-ink);cursor:pointer;transition:border-color .25s,box-shadow .3s}
+html body.portal-body.design-workspace .intake-quick-confirm .portal-check:has(input:checked){border-color:#1f9d55;box-shadow:0 0 0 4px rgba(31,157,85,.12)}
+html body.portal-body.design-workspace #portal-root .intake-quick-confirm input[type=checkbox]{width:24px;height:24px;flex:none;margin-top:1px;accent-color:#1f9d55}
+html body.portal-body.design-workspace form.intake-quick [data-wizard-review] .ws-review-ready{font-weight:600}
+
+/* Aktionsleiste: Senden deutlich */
+html body.portal-body.design-workspace form.intake-quick .ws-wizard-actions [value=send]{min-height:52px;padding:0 26px!important;font-size:16px!important}
+
+@media(max-width:760px){
+  html body.portal-body.design-workspace form.intake-quick .intake-quick-nav{gap:8px}
+  html body.portal-body.design-workspace form.intake-quick .intake-quick-nav button{flex-direction:column;align-items:center;text-align:center;gap:8px;min-height:0;padding:12px 6px 10px}
+  html body.portal-body.design-workspace .intake-quick-icon{width:44px;height:44px;border-radius:14px}
+  html body.portal-body.design-workspace .intake-quick-label strong{font-size:14px}
+  html body.portal-body.design-workspace .intake-quick-label small{display:none}
+  html body.portal-body.design-workspace .intake-quick-check{top:6px;right:6px;width:20px;height:20px}
+  html body.portal-body.design-workspace .intake-quick-fields{grid-template-columns:1fr}
+  html body.portal-body.design-workspace form.intake-quick [data-wizard-files] .upload-dropzone{min-height:150px}
+}
+@media(prefers-reduced-motion:reduce){html body.portal-body.design-workspace :is(.intake-quick-head,.intake-quick-box,form.intake-quick [data-wizard-files]){animation:none}}
+/* Fehler stehen bereits gesammelt im Schritt "Senden" – kein doppelter Hinweis oben */
+html body.portal-body.design-workspace form.intake-quick [data-intake-errors]{display:none!important}

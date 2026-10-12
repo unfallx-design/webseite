@@ -24,26 +24,55 @@ function mount(form){if(!form?.querySelector('[data-intake-fields]'))return;form
  }
  form.querySelectorAll('[data-intake-step]').forEach(b=>b.onclick=()=>{if(b.dataset.intakeStep==='documents'){(form.querySelector('[data-upload-section]')||document.querySelector('#detail-upload'))?.scrollIntoView({block:'start',behavior:'smooth'});return;}const s=form.querySelector('[data-intake-section="'+b.dataset.intakeStep+'"]');form.querySelectorAll('[data-intake-section]').forEach(el=>el.open=el===s);s.open=true;s.scrollIntoView({block:'start',behavior:'smooth'});});form.addEventListener('change',update);form.addEventListener('input',update);update();}
 function summary(data){const d=I.normalize(data);return `<div class="intake-summary">${!data.schemaVersion?'<p class="intake-legacy">Bestehende Fallakte: Die neuen Angaben können über „Falldaten bearbeiten“ ergänzt werden.</p>':''}${d.lawyerChoice==='unfallx'&&d.lawyerName?`<p class="intake-legacy"><strong>Zugeordnete Kanzlei: ${esc(d.lawyerName)}</strong><br>${esc([d.lawyerEmail,d.lawyerPhone].filter(Boolean).join(' · '))}</p>`:''}${I.groups.map(g=>`<details ${['owner','vehicle'].includes(g.id)?'open':''}><summary>${esc(g.title)}</summary><dl class="portal-meta">${I.fields.filter(f=>f.group===g.id&&I.visible(f,d)&&(!f.optionalSection||d[f.name])).map(f=>`<div><dt>${esc(f.label)}</dt><dd>${['plate','opponentPlate'].includes(f.name)&&window.UnfallxWorkspace?window.UnfallxWorkspace.plate(d[f.name],true):esc(I.display(f,d))}</dd></div>`).join('')}</dl></details>`).join('')}</div>`;}
-// The four-step intake keeps every original field and validation rule in the form.
-const wizardSteps=[{title:'Kunde & Kontakt',groups:['owner','lawyer']},{title:'Fahrzeug & Unfall',groups:['vehicle','accident','inspection']},{title:'Dateien',groups:[]},{title:'Prüfen & senden',groups:[]}];
-function wizardStepFor(name){const group=I.fields.find(f=>f.name===name)?.group;return group?wizardSteps.findIndex(s=>s.groups.includes(group)):2;}
+// Schnelle Übermittlung in drei Schritten: Fotos → Kennzeichen → Bestätigen & senden.
+// Alle übrigen Felder bleiben im Formular (aufklappbar, optional). Interne Schrittnummern bleiben
+// kompatibel: 2 = Dateien, 3 = Prüfen & senden, 1 = Angaben.
+const quickSteps=[
+ {index:2,title:'Fotos',hint:'Schaden fotografieren',icon:'M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8',kicker:'Schritt 1 von 3',head:'Fotos vom Schaden hochladen',text:'Fotos einfach hier hineinziehen oder auswählen – direkt vom Handy oder Computer. Am besten: alle vier Ecken, den Schaden von nah und fern und das Kennzeichen. Fahrzeugschein und Auftrag kannst du gleich mit hochladen (optional).'},
+ {index:1,title:'Kennzeichen',hint:'Ein Feld – fertig',icon:'M3 7h18v10H3zM7 7v10M10 12h7',kicker:'Schritt 2 von 3',head:'Kennzeichen eintragen',text:'Mehr braucht UNFALLX nicht, um zu starten. Alles Weitere ist optional – je mehr du einträgst, desto weniger Rückfragen.'},
+ {index:3,title:'Senden',hint:'Bestätigen & übermitteln',icon:'M4 12l16-8-6 16-3-7zM11 13l9-9',kicker:'Schritt 3 von 3',head:'Bestätigen und senden',text:'Kurz bestätigen, dass du den Fall übermitteln darfst – dann geht alles an UNFALLX. Den Stand des Gutachtens siehst du danach jederzeit in deiner Fallakte.'}
+];
+const ORDER=quickSteps.map(s=>s.index);
+function wizardStepFor(name){if(name==='authority')return 3;return I.fields.some(f=>f.name===name)?1:2;}
 function wizard(form,files){
- const sections=[...form.querySelectorAll('[data-intake-section]')],upload=form.querySelector('[data-wizard-files]'),review=form.querySelector('[data-wizard-review]'),send=form.querySelector('[value=send]'),next=form.querySelector('[data-wizard-next]'),prev=form.querySelector('[data-wizard-prev]');
- const nav=document.createElement('nav');nav.className='ws-intake-wizard';nav.setAttribute('aria-label','Schritte der Schadensübermittlung');nav.innerHTML=wizardSteps.map((s,n)=>`<button type="button" data-wizard-step="${n}"><b>${n+1}</b><span>${s.title}</span></button>`).join('');form.prepend(nav);
+ const box=form.querySelector('[data-intake-fields]'),sections=[...form.querySelectorAll('[data-intake-section]')],upload=form.querySelector('[data-wizard-files]'),review=form.querySelector('[data-wizard-review]'),send=form.querySelector('[value=send]'),next=form.querySelector('[data-wizard-next]'),prev=form.querySelector('[data-wizard-prev]');
+ const svg=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+ form.classList.add('intake-quick');
+ const lead=document.querySelector('#portal-root > .ws-page-heading p');if(lead)lead.textContent='In drei Schritten zum Gutachten: Fotos hochladen, Kennzeichen eintragen, senden.';
+ const nav=document.createElement('nav');nav.className='ws-intake-wizard intake-quick-nav';nav.setAttribute('aria-label','So übermittelst du einen Schaden');
+ nav.innerHTML=quickSteps.map((s,n)=>`<button type="button" data-wizard-step="${s.index}"><span class="intake-quick-icon">${svg(s.icon)}<b>${n+1}</b></span><span class="intake-quick-label"><strong>${s.title}</strong><small>${s.hint}</small></span><i class="intake-quick-check" aria-hidden="true">${svg('M5 12l5 5 9-10')}</i></button>`).join('');
+ form.prepend(nav);
+ const head=document.createElement('div');head.className='intake-quick-head';head.setAttribute('aria-live','polite');nav.after(head);
+ const plateBox=document.createElement('section');plateBox.className='intake-quick-box intake-quick-plate';
+ plateBox.innerHTML='<div class="intake-quick-fields"></div><details class="intake-more"><summary><span>Weitere Angaben hinzufügen</span><small>optional · Kunde, Fahrzeug, Unfall, Besichtigung, Kanzlei</small></summary><div class="intake-more-body"></div></details>';
+ for(const name of ['plate','vehicle']){const f=form.querySelector('[data-intake-field="'+name+'"]');if(f)plateBox.querySelector('.intake-quick-fields').appendChild(f);}
+ const moreBody=plateBox.querySelector('.intake-more-body');sections.forEach(s=>{s.open=false;moreBody.appendChild(s);});
+ const banner=box.querySelector('[data-intake-errors]');(banner||box.lastChild).after(plateBox);
+ const confirmBox=document.createElement('section');confirmBox.className='intake-quick-box intake-quick-confirm';
+ const authority=form.querySelector('[data-intake-field="authority"]');if(authority)confirmBox.appendChild(authority);
+ review.before(confirmBox);
+ function done(){const d=read(form),items=files().filter(f=>f.state!=='invalid');return {2:items.some(f=>f.kind==='photo'||/^image\//.test(f.file?.type||'')),1:!!d.plate,3:!!d.authority};}
+ function paintChecks(){const ok=done();nav.querySelectorAll('[data-wizard-step]').forEach(b=>{b.dataset.done=String(!!ok[b.dataset.wizardStep]);});}
  function reviewHtml(){
   const data=read(form),items=files(),valid=items.filter(f=>f.state!=='invalid'),errors=[...I.errors(data),...I.fileErrors(valid)],invalid=items.filter(f=>f.state==='invalid');
-  review.innerHTML=`<h2>Aufnahme prüfen & übermitteln</h2><p>Prüfe die Angaben und die ausgewählten Originaldateien. Erst die bestätigte Übermittlung reicht den Fall bei UNFALLX ein.</p><div class="ws-review-cards"><div><small>Auftraggeber</small><strong>${esc([data.ownerFirstName,data.ownerLastName].filter(Boolean).join(' ')||'Noch offen')}</strong><span>${esc(data.ownerCompany||data.ownerCity)}</span></div><div><small>Fahrzeug</small><strong>${esc(data.plate||'Kennzeichen fehlt')}</strong><span>${esc(data.vehicle)}</span></div><div><small>Originaldateien</small><strong>${valid.length} ausgewählt</strong><span>${valid.filter(f=>f.kind==='photo').length} Fotos · ${valid.filter(f=>f.kind!=='photo').length} Dokumente</span></div></div>${errors.length||invalid.length?`<div class="ws-review-errors" role="status"><strong>Noch ${errors.length+invalid.length} Punkte offen</strong><p>Du kannst die Angaben jetzt ergänzen oder die Aufnahme als Entwurf speichern.</p><ul>${errors.map(e=>`<li><button type="button" data-review-field="${esc(e.name)}">${esc(e.label)}: ${esc(e.message)}</button></li>`).join('')}${invalid.map(f=>`<li><button type="button" data-review-field="documents">${esc(f.file.name)}: ${esc(f.error)}</button></li>`).join('')}</ul></div>`:'<p class="ws-review-ready">✓ Pflichtangaben und erforderliche Dateiarten sind vorhanden. Bitte Inhalt und Lesbarkeit selbst prüfen.</p>'}<details><summary>Alle Angaben gegenlesen</summary>${summary(data)}</details>`;
+  review.innerHTML=`<div class="ws-review-cards"><div><small>Fahrzeug</small><strong>${esc(data.plate||'Kennzeichen fehlt')}</strong><span>${esc(data.vehicle||'Modell optional')}</span></div><div><small>Fotos & Unterlagen</small><strong>${valid.length} ausgewählt</strong><span>${valid.filter(f=>f.kind==='photo').length} Fotos · ${valid.filter(f=>f.kind!=='photo').length} Dokumente</span></div><div><small>Auftraggeber</small><strong>${esc([data.ownerFirstName,data.ownerLastName].filter(Boolean).join(' ')||'Optional')}</strong><span>${esc(data.ownerCompany||data.ownerCity||'Kann UNFALLX später erfragen')}</span></div></div>${errors.length||invalid.length?`<div class="ws-review-errors" role="status"><strong>Noch ${errors.length+invalid.length} ${errors.length+invalid.length===1?'Punkt':'Punkte'} offen</strong><p>Tippe auf einen Punkt, um ihn direkt zu ergänzen.</p><ul>${errors.map(e=>`<li><button type="button" data-review-field="${esc(e.name)}">${esc(e.label)}: ${esc(e.message)}</button></li>`).join('')}${invalid.map(f=>`<li><button type="button" data-review-field="documents">${esc(f.file.name)}: ${esc(f.error)}</button></li>`).join('')}</ul></div>`:'<p class="ws-review-ready">✓ Alles bereit. Mit „An UNFALLX übermitteln“ geht der Fall mit allen Fotos an UNFALLX.</p>'}<details><summary>Alle Angaben gegenlesen</summary>${summary(data)}</details>`;
   review.querySelectorAll('[data-review-field]').forEach(b=>b.onclick=()=>focus(form,b.dataset.reviewField));
  }
  function go(index,scroll=true){
-  const step=Math.max(0,Math.min(3,Number(index)||0));form.dataset.wizardStep=String(step);
-  sections.forEach(s=>{s.hidden=!wizardSteps[step].groups.includes(s.dataset.intakeSection);if(!s.hidden)s.open=true;});upload.hidden=step!==2;review.hidden=step!==3;send.hidden=step!==3;next.hidden=step===3;prev.hidden=step===0;next.textContent=step===2?'Aufnahme prüfen':'Weiter';
+  let step=Number(index);if(!ORDER.includes(step))step=step===0?1:2;
+  const pos=ORDER.indexOf(step),s=quickSteps[pos];form.dataset.wizardStep=String(step);
+  sections.forEach(x=>{x.hidden=false;});plateBox.hidden=step!==1;upload.hidden=step!==2;confirmBox.hidden=step!==3;review.hidden=step!==3;send.hidden=step!==3;next.hidden=step===3;prev.hidden=pos===0;
+  next.textContent=pos<ORDER.length-1?'Weiter: '+quickSteps[pos+1].title+' →':'Weiter';
+  head.innerHTML=`<span>${s.kicker}</span><h2>${s.head}</h2><p>${s.text}</p>`;
   nav.querySelectorAll('[data-wizard-step]').forEach(b=>{const active=Number(b.dataset.wizardStep)===step;if(active)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
-  form.querySelector('[data-intake-errors]').hidden=true;if(step===3)reviewHtml();if(scroll)nav.scrollIntoView({block:'start',behavior:'instant'});
+  form.querySelector('[data-intake-errors]').hidden=true;if(step===3)reviewHtml();paintChecks();if(scroll)nav.scrollIntoView({block:'start',behavior:'instant'});
+  if(scroll&&step===1){const input=form.querySelector('[name="plate"]');if(input&&!input.value)setTimeout(()=>input.focus({preventScroll:true}),60);}
  }
- form.intakeWizard={go,refresh(){if(form.dataset.wizardStep==='3')reviewHtml();}};
- nav.querySelectorAll('[data-wizard-step]').forEach(b=>b.onclick=()=>go(b.dataset.wizardStep));prev.onclick=()=>go(Number(form.dataset.wizardStep)-1);next.onclick=()=>go(Number(form.dataset.wizardStep)+1);
- form.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&event.target.tagName==='INPUT'&&!['file','checkbox','submit','button'].includes(event.target.type)){event.preventDefault();go(Math.min(3,Number(form.dataset.wizardStep)+1));}});form.addEventListener('change',()=>form.intakeWizard.refresh());go(0,false);return form.intakeWizard;
+ const current=()=>Number(form.dataset.wizardStep);
+ const step=delta=>{const pos=ORDER.indexOf(current());go(ORDER[Math.max(0,Math.min(ORDER.length-1,pos+delta))]);};
+ form.intakeWizard={go,refresh(){paintChecks();if(form.dataset.wizardStep==='3')reviewHtml();}};
+ nav.querySelectorAll('[data-wizard-step]').forEach(b=>b.onclick=()=>go(b.dataset.wizardStep));prev.onclick=()=>step(-1);next.onclick=()=>step(1);
+ form.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&event.target.tagName==='INPUT'&&!['file','checkbox','submit','button'].includes(event.target.type)){event.preventDefault();step(1);}});form.addEventListener('change',()=>form.intakeWizard.refresh());form.addEventListener('input',paintChecks);go(ORDER[0],false);return form.intakeWizard;
 }
 
 window.UnfallxIntakeUI={form,read,mount,validate,showErrors,focus,summary,wizard,wizardStepFor};

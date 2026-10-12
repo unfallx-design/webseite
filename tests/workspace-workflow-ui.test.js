@@ -35,7 +35,7 @@ test('internal and partner queues respect their distinct responsibilities',()=>{
  assert.equal(W.tasks(rows,'partner').length,0);const tasks=W.tasks(rows,'admin');assert(tasks.some(t=>t.key==='case-a:inbox'));assert(tasks.some(t=>t.title==='Intern geheim'));assert(tasks.some(t=>t.title==='Ergänzung prüfen: Foto'));
  assert.equal(W.tasks([record('report_sent',{finance})],'appraiser').length,0);
 });
-test('every required intake field maps to a visible wizard data step',()=>{
+test('every intake field maps to a visible step of the three-step quick submission',()=>{
  const I=require('../assets/case-intake'),scope={window:{UnfallxIntake:I}};vm.runInNewContext(fs.readFileSync(require.resolve('../assets/case-intake-ui'),'utf8'),scope);
- const UI=scope.window.UnfallxIntakeUI;for(const f of I.fields)assert([0,1].includes(UI.wizardStepFor(f.name)),f.name);assert.equal(UI.wizardStepFor('photo'),2);assert.equal(UI.wizardStepFor('ownerFirstName'),0);assert.equal(UI.wizardStepFor('lawyerChoice'),0);assert.equal(UI.wizardStepFor('inspectionDate'),1);
+ const UI=scope.window.UnfallxIntakeUI;for(const f of I.fields)assert([1,3].includes(UI.wizardStepFor(f.name)),f.name);assert.equal(UI.wizardStepFor('photo'),2);assert.equal(UI.wizardStepFor('plate'),1);assert.equal(UI.wizardStepFor('ownerFirstName'),1);assert.equal(UI.wizardStepFor('lawyerChoice'),1);assert.equal(UI.wizardStepFor('inspectionDate'),1);assert.equal(UI.wizardStepFor('authority'),3);
 });
