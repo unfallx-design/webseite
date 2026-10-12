@@ -2,6 +2,19 @@
    Ändert keine Daten und keine Abläufe. Respektiert reduzierte Bewegung. */
 (function () {
   'use strict';
+  /* Ältere Browser (z. B. iOS-Safari vor 15.4) kennen crypto.randomUUID nicht –
+     ohne diese Ergänzung bricht dort die Schadenaufnahme mit einer Fehlermeldung ab. */
+  try {
+    if (window.crypto && typeof crypto.getRandomValues === 'function' && typeof crypto.randomUUID !== 'function') {
+      crypto.randomUUID = function () {
+        var b = crypto.getRandomValues(new Uint8Array(16));
+        b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+        var h = [];
+        for (var i = 0; i < 16; i++) h.push((b[i] + 256).toString(16).slice(1));
+        return h.slice(0, 4).join('') + '-' + h.slice(4, 6).join('') + '-' + h.slice(6, 8).join('') + '-' + h.slice(8, 10).join('') + '-' + h.slice(10).join('');
+      };
+    }
+  } catch (e) { /* nichts zu tun */ }
   var root = document.getElementById('portal-root');
   if (!root || !document.body) return;
   var reduce = function () {
@@ -20,6 +33,25 @@
     span.className = 'x-accent';
     span.textContent = m[2];
     h.appendChild(span);
+  }
+
+  /* Überschrift passt sich an, wenn ein langes Wort nicht in die Zeile passt */
+  function fitTitle() {
+    var h = root.querySelector(':scope > .ws-page-heading h1');
+    if (!h || !h.clientWidth || h.dataset.xFit === String(h.clientWidth)) return;
+    h.style.removeProperty('font-size');
+    var cs = getComputedStyle(h), size = parseFloat(cs.fontSize);
+    var ctx = (fitTitle.c || (fitTitle.c = document.createElement('canvas'))).getContext('2d');
+    var words = h.textContent.split(/\s+/).filter(Boolean), avail = h.clientWidth - 2;
+    var widest = function (px) {
+      ctx.font = cs.fontWeight + ' ' + px + 'px ' + cs.fontFamily;
+      var spacing = parseFloat(cs.letterSpacing) || 0;
+      return Math.max.apply(null, words.map(function (w) { return ctx.measureText(w).width + spacing * (px / size) * w.length; }));
+    };
+    var target = size;
+    while (target > 22 && widest(target) > avail) target -= 1;
+    if (target < size) h.style.setProperty('font-size', target + 'px', 'important');
+    h.dataset.xFit = String(h.clientWidth);
   }
 
   /* Werte aus style="--x:…" anwenden. Die Sicherheitsregeln der Seite blockieren
@@ -217,7 +249,7 @@
   }
 
   /* ---------- 3D: Karten neigen sich zum Zeiger, Seitenkopf mit Tiefe ---------- */
-  var TILT = '.uz-metric, .uz-pipeline > a, .ws-hub-link, .uz-settings-map a, .ws-task, .x-area-tabs a';
+  var TILT = '.uz-metric, .uz-pipeline > a, .ws-hub-link, .uz-settings-map a, .ws-task, .x-area-tabs a, .ws-board-card, .uz-board a, .ws-review-cards > *';
   var canTilt = function () { return window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches && !reduce() && document.body.dataset.motion === 'full'; };
   function bindTilt(el) {
     if (el.dataset.xTilt) return;
@@ -249,6 +281,59 @@
     hero.addEventListener('pointerleave', function () { hero.style.setProperty('--x-px', '0'); hero.style.setProperty('--x-py', '0'); });
   }
 
+
+  /* ---------- Dunkelmodus: helle Altflächen automatisch angleichen ----------
+     Einige ältere Bausteine (Chat, Upload, Hilfe, Fallakte) bringen feste helle
+     Hintergründe mit. Im Dunkelmodus werden sie hier passend abgedunkelt und
+     schlecht lesbare Texte aufgehellt. Nur Darstellung, keine Logik. */
+  var KEEP = '.ws-license-plate, .ws-license-plate *, .ws-status, .portal-badge, .ws-count, .ws-nav-counter, img, video, canvas, svg, svg *, .btn, .x-mix *, [type=checkbox], [type=radio], progress';
+  function rgb(c) { var m = String(c).match(/[\d.]+/g); if (!m) return null; return { r: +m[0], g: +m[1], b: +m[2], a: m[3] == null ? 1 : +m[3] }; }
+  function light(c) { return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255; }
+  function isDark() { return isAdmin() && document.body.dataset.portalTheme === 'dark'; }
+  function scope() { return [root].concat([].slice.call(document.querySelectorAll('dialog[open], [role=dialog]:not([hidden])'))); }
+  function darkPass() {
+    var dark = isDark();
+    scope().forEach(function (base) {
+      if (!dark) {
+        base.querySelectorAll('.x-dk-surface, .x-dk-field, .x-dk-text').forEach(function (el) { el.classList.remove('x-dk-surface', 'x-dk-field', 'x-dk-text'); });
+        return;
+      }
+      var all = base.querySelectorAll('*');
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (el.classList.contains('x-dk-surface') || el.classList.contains('x-dk-field') || el.matches(KEEP)) continue;
+        var cs = getComputedStyle(el), bg = rgb(cs.backgroundColor);
+        var lit = bg && bg.a >= 0.6 && light(bg) >= 0.82;
+        if (!lit && cs.backgroundImage.indexOf('gradient') > -1 && cs.backgroundImage.indexOf('url(') < 0) {
+          var first = rgb(cs.backgroundImage.slice(cs.backgroundImage.indexOf('rgb')));
+          lit = first && first.a >= 0.6 && light(first) >= 0.85;
+        }
+        if (!lit) continue;
+        el.classList.add(/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) ? 'x-dk-field' : 'x-dk-surface');
+      }
+      for (var j = 0; j < all.length; j++) {
+        var t = all[j];
+        if (t.classList.contains('x-dk-text') || t.matches(KEEP)) continue;
+        var own = false;
+        for (var k = 0; k < t.childNodes.length; k++) if (t.childNodes[k].nodeType === 3 && t.childNodes[k].textContent.trim()) { own = true; break; }
+        if (!own) continue;
+        var fg = rgb(getComputedStyle(t).color);
+        if (!fg || light(fg) > 0.45) continue;
+        var p = t, under = null;
+        while (p && p !== document.documentElement) {
+          if (p.classList.contains('x-dk-surface')) { under = 0.1; break; }
+          var c = rgb(getComputedStyle(p).backgroundColor);
+          if (c && c.a > 0.6) { under = light(c); break; }
+          p = p.parentElement;
+        }
+        if (under === null) under = 0;
+        if (under < 0.3 && Math.abs(light(fg) - under) < 0.45) t.classList.add('x-dk-text');
+      }
+    });
+  }
+  var darkTimer = 0;
+  function queueDark() { clearTimeout(darkTimer); darkTimer = setTimeout(function () { try { darkPass(); } catch (e) {} }, 140); }
+
   var queued = false;
   function enhance() {
     queued = false;
@@ -257,6 +342,7 @@
       mergeArea();
       mergeHubLinks();
       accentTitle();
+      fitTitle();
       bindHero();
       root.querySelectorAll(TILT).forEach(bindTilt);
       applyInlineVars();
@@ -266,11 +352,17 @@
       root.querySelectorAll('.uz-metric > strong, .uz-pipeline a > strong').forEach(countUp);
     } catch (e) { /* rein optisch – Fehler nie an die Oberfläche geben */ }
   }
-  function queue() { if (!queued) { queued = true; requestAnimationFrame(enhance); } }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(enhance); } queueDark(); }
 
   new MutationObserver(queue).observe(root, { childList: true, subtree: true });
   var nav = document.getElementById('portal-nav');
   if (nav) new MutationObserver(queue).observe(nav, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-current'] });
   window.addEventListener('hashchange', queue);
+  var resizeTimer = 0;
+  window.addEventListener('resize', function () { clearTimeout(resizeTimer); resizeTimer = setTimeout(function () { var h = root.querySelector(':scope > .ws-page-heading h1'); if (h) delete h.dataset.xFit; fitTitle(); }, 150); });
+  new MutationObserver(queueDark).observe(document.body, { attributes: true, attributeFilter: ['data-portal-theme'] });
+  new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) if (list[i].target === document.body) { queueDark(); return; }
+  }).observe(document.body, { childList: true });
   queue();
 })();
