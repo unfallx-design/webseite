@@ -40,8 +40,8 @@ for(const provider of ['database','s3'])test(provider+': HTTP file trash, restor
  });
  await t.test('Readiness and submissions cannot count files in trash; submitted partner records are protected',async()=>{
   await act(p,{action:'partner_status',status:'recording'});await act(p,{action:'partner_status',status:'ready_to_submit'});
-  await act(p,{action:'file_delete',fileId:bundle.id,confirmed:true});assert.equal((await read()).json.case.status,'recording');await act(p,{action:'submit'},400);
-  await act(p,{action:'file_restore',fileId:bundle.id,confirmed:true});await act(p,{action:'submit'});
+  await act(p,{action:'file_delete',fileId:photo.id,confirmed:true});assert.equal((await read()).json.case.status,'recording');await act(p,{action:'submit'},400);
+  await act(p,{action:'file_restore',fileId:photo.id,confirmed:true});await act(p,{action:'submit'});
   await act(p,{action:'file_delete',fileId:photo.id,confirmed:true},403);
   await act(admin,{action:'request_create',kind:'photo',note:'Test: Aufnahme korrigieren'});await act(p,{action:'file_delete',fileId:photo.id,confirmed:true});
   const request=(await read()).json.case.requests[0];await act(p,{action:'request_reply',requestId:request.id,fileIds:[photo.id]},404);
