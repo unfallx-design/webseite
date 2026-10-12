@@ -1,59 +1,35 @@
-/* UNFALLX Login „Next“ – Anmeldung, Registrierung und Passwort im unext.de-Stil. Nur Darstellung. */
-html body#ux.auth-page{
-  --ax-font:"Archivo X",Archivo,Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --ax-red:#ed001b;--ax-red-ink:#d10017;--ax-grad:linear-gradient(96deg,#ff3347 0%,#ff5a2e 48%,#ff8a3d 100%);
-  --ax-btn:linear-gradient(135deg,#ff2a3d 0%,#ed001b 55%,#d10017 100%);
-  --ax-ease:cubic-bezier(.2,.8,.2,1);--ax-spring:cubic-bezier(.2,1.1,.32,1);
-  --ax-card:#0f1113;--ax-ink:#f3f3f4;--ax-muted:rgba(255,255,255,.62);--ax-line:rgba(255,255,255,.1);--ax-field:#16181b;
-  font-family:var(--ax-font);-webkit-font-smoothing:antialiased;background:#070809}
-html.gx-light body#ux.auth-page{--ax-card:#fff;--ax-ink:#0b0d0e;--ax-muted:#5b6168;--ax-line:#e6e7e9;--ax-field:#f3f3f4;background:#f4f4f5}
-html body#ux.auth-page :is(h1,h2,p,a,span,label,input,button,summary,small,li,strong){font-family:var(--ax-font)}
+/* UNFALLX Login – Anmeldung, Registrierung und Passwort im Stil von unfallx.com. Nur Darstellung. */
+html body#ux.auth-page{--ax-red:#ff0000;--ax-ease:cubic-bezier(.16,1,.3,1);--ax-spring:cubic-bezier(.34,1.32,.64,1)}
 
-/* Linke Seite: dunkle Hero-Karte */
+/* Linke Seite: schwarze Bühne mit Raster und rotem Horizont */
 @media(min-width:861px){
   html body#ux.auth-page .auth-frame{padding:16px;gap:16px}
-  html body#ux.auth-page .auth-context{border-radius:32px;overflow:hidden;isolation:isolate;padding:clamp(34px,4vw,60px)!important;color:#fff;border:1px solid rgba(255,255,255,.06);
-    background:radial-gradient(70% 90% at 100% 0%,rgba(255,106,0,.24),transparent 55%),radial-gradient(70% 80% at 0% 100%,rgba(237,0,27,.32),transparent 60%),linear-gradient(140deg,#0d0f11,#070809 70%)!important;box-shadow:0 40px 90px -50px rgba(7,8,9,.9)}
-  html body#ux.auth-page .auth-context::before{content:"";position:absolute;z-index:-1;right:-22%;top:-18%;width:min(760px,95%);aspect-ratio:1;border-radius:50%;
-    background:conic-gradient(from 200deg,transparent 0 56%,rgba(255,51,71,.6) 65%,rgba(255,138,61,.5) 72%,transparent 80% 100%);
-    -webkit-mask:radial-gradient(closest-side,transparent 70%,#000 71%,#000 72.3%,transparent 73.5%);mask:radial-gradient(closest-side,transparent 70%,#000 71%,#000 72.3%,transparent 73.5%);animation:ax-orbit 22s linear infinite}
+  html body#ux.auth-page .auth-context{position:relative;border-radius:28px;overflow:hidden;isolation:isolate;padding:clamp(34px,4vw,60px)!important;color:#f5f5f7;background:#000!important;border:1px solid rgba(255,255,255,.07)}
+  html body#ux.auth-page .auth-context::before,html body#ux.auth-page .auth-context::after{content:"";display:block;position:absolute;inset:0;z-index:-1;width:auto;height:auto;margin:0;border:0;border-radius:0;box-shadow:none;transform:none;filter:none;opacity:1;pointer-events:none}
+  html body#ux.auth-page .auth-context::before{background:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/56px 56px;
+    -webkit-mask:radial-gradient(80% 60% at 60% 25%,#000,transparent 75%);mask:radial-gradient(80% 60% at 60% 25%,#000,transparent 75%);animation:none}
+  html body#ux.auth-page .auth-context::after{background:radial-gradient(95% 34% at 50% 108%,#000 62%,rgba(255,80,70,.95) 63%,rgba(255,0,0,.32) 66%,rgba(255,0,0,.08) 78%,transparent 90%);animation:ax-horizon 7s ease-in-out infinite}
   html body#ux.auth-page .auth-context .auth-brand img[src*=wordmark]{filter:brightness(0) invert(1)}
-  html body#ux.auth-page .auth-context::after{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;opacity:.6;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:48px 48px;-webkit-mask:radial-gradient(90% 80% at 80% 10%,#000,transparent 70%);mask:radial-gradient(90% 80% at 80% 10%,#000,transparent 70%)}
 }
-html body#ux.auth-page .auth-context .auth-overline{color:#fff!important;letter-spacing:.2em;font-weight:800;text-transform:uppercase;font-size:11px}
-html body#ux.auth-page .auth-context h2{color:#fff!important;font-weight:900!important;letter-spacing:-.05em!important;line-height:.98!important;font-size:clamp(44px,5.4vw,84px)!important;animation:ax-title 1s var(--ax-ease) both}
-html body#ux.auth-page .auth-context h2 span{background:var(--ax-grad);-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent}
-html body#ux.auth-page .auth-context-copy>p{color:rgba(255,255,255,.74)!important;font-size:16px;line-height:1.6}
-html body#ux.auth-page .auth-context ol li{color:#fff!important;font-weight:650}
-html body#ux.auth-page .auth-context ol li span{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.16)!important;color:#fff!important;border-radius:999px!important;font-weight:800}
-html body#ux.auth-page .auth-context ol li:first-child span{background:var(--ax-btn)!important;border-color:transparent!important;box-shadow:0 10px 24px -10px rgba(237,0,27,.7)}
-html body#ux.auth-page .auth-context-foot{color:rgba(255,255,255,.62)!important;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:10px 16px;width:max-content;max-width:100%}
+html body#ux.auth-page .auth-context .auth-overline{color:#a1a1a6!important;letter-spacing:.18em;font-weight:600;text-transform:uppercase;font-size:11px}
+html body#ux.auth-page .auth-context h2{color:#f5f5f7!important;font-weight:700!important;letter-spacing:-.045em!important;line-height:1.02!important;animation:ax-title 1s var(--ax-ease) both}
+html body#ux.auth-page .auth-context h2 span{color:var(--ax-red)!important}
+html body#ux.auth-page .auth-context-copy>p{color:#a1a1a6!important}
+html body#ux.auth-page .auth-context ol li{color:#f5f5f7!important}
+html body#ux.auth-page .auth-context ol li span{border-radius:999px!important;color:#a1a1a6!important;background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.16)!important}
+html body#ux.auth-page .auth-context-foot{color:#a1a1a6!important;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:9px 15px;width:max-content;max-width:100%}
 
-/* Rechte Seite: Formular-Karte */
-html body#ux.auth-page .auth-entry-inner,html body#ux.auth-page .auth-simple-main{background:var(--ax-card)!important;color:var(--ax-ink);border:1px solid var(--ax-line)!important;border-radius:32px!important;box-shadow:0 1px 2px rgba(11,13,14,.04),0 40px 80px -46px rgba(11,13,14,.55)!important;backdrop-filter:none!important}
-html body#ux.auth-page :is(.auth-entry-inner,.auth-simple-main)::after{display:none!important}
-html body#ux.auth-page .auth-entry h1,html body#ux.auth-page .auth-simple-main h1{color:var(--ax-ink)!important;font-weight:900!important;letter-spacing:-.05em!important;line-height:1!important}
-html body#ux.auth-page :is(.workspace-intro,.auth-entry p){color:var(--ax-muted)}
-html body#ux.auth-page .workspace-label{color:var(--ax-red-ink)!important;letter-spacing:.18em;font-weight:800;text-transform:uppercase}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) label{color:var(--ax-ink);font-weight:700}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(input:not([type=checkbox]):not([type=radio]),select,textarea){border-radius:14px!important;background:var(--ax-field)!important;border:1px solid transparent!important;color:var(--ax-ink)!important;transition:border-color .2s,box-shadow .2s,background .2s}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(input,select,textarea):focus{outline:none!important;background:var(--ax-card)!important;border-color:rgba(237,0,27,.5)!important;box-shadow:0 0 0 4px rgba(237,0,27,.12)!important}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]:not(.portal-button)){border-radius:999px!important;background:var(--ax-btn)!important;color:#fff!important;border:0!important;font-weight:800!important;box-shadow:0 14px 30px -12px rgba(237,0,27,.7),inset 0 1px 0 rgba(255,255,255,.25)!important;transition:transform .3s var(--ax-spring),box-shadow .3s!important}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]:not(.portal-button)):hover{transform:translateY(-2px);box-shadow:0 20px 38px -14px rgba(237,0,27,.8),inset 0 1px 0 rgba(255,255,255,.25)!important}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]) svg{transition:transform .3s var(--ax-spring)}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]):hover svg{transform:translateX(4px)}
-html body#ux.auth-page :is(.auth-entry,.auth-simple-main) .portal-button{border-radius:999px!important;font-weight:750}
-html body#ux.auth-page .auth-alternative summary{border-radius:999px!important;font-weight:750}
-html body#ux.auth-page :is(.oauth-buttons) :is(a,button){border-radius:999px!important}
-html body#ux.auth-page .workspace-reset a,html body#ux.auth-page .workspace-legal a{transition:color .2s}
-html body#ux.auth-page .workspace-reset a:hover,html body#ux.auth-page .workspace-legal a:hover{color:var(--ax-red-ink)!important}
-
-/* Mobil: kompakte dunkle Kopfzeile über der Karte */
-@media(max-width:860px){
-  html body#ux.auth-page .auth-entry-inner,html body#ux.auth-page .auth-simple-main{border-radius:28px!important}
-}
+/* Formular */
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(input:not([type=checkbox]):not([type=radio]),select,textarea){border-radius:14px!important}
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(input,select,textarea):focus{outline:none!important;border-color:rgba(255,0,0,.55)!important;box-shadow:0 0 0 4px rgba(255,0,0,.12)!important}
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]:not(.portal-button)){border-radius:999px!important;background:var(--ax-red)!important;color:#fff!important;border:0!important;font-weight:600!important;box-shadow:0 12px 30px -12px rgba(255,0,0,.7)!important;transition:transform .4s var(--ax-spring),background .2s!important}
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]:not(.portal-button)):hover{transform:translateY(-1px);background:#e60000!important}
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]) svg{transition:transform .3s var(--ax-ease)}
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.btn,button[type=submit]):hover svg{transform:translateX(3px)}
+html body#ux.auth-page :is(.auth-entry,.auth-simple-main) :is(.portal-button,.auth-alternative summary,.oauth-buttons a,.oauth-buttons button){border-radius:999px!important}
 html body#ux.auth-page .auth-entry-inner{animation:ax-rise .8s var(--ax-ease) .08s both}
-@keyframes ax-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-@keyframes ax-title{from{opacity:0;transform:translateY(26px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
-@keyframes ax-orbit{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){html body#ux.auth-page *,html body#ux.auth-page *::before{animation:none!important;transition:none!important}}
+
+@keyframes ax-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes ax-title{from{opacity:0;transform:translateY(20px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes ax-horizon{0%,100%{opacity:.85}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){html body#ux.auth-page *,html body#ux.auth-page *::after{animation:none!important;transition:none!important}}
