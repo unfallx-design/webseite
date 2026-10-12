@@ -1,0 +1,192 @@
+/* UNFALLX Prozess-Ebene – Prozess-Strecke, Gutachten-Werkbank, Fallweg. Nur Darstellung. */
+html body.portal-body.design-workspace{--x-ok:#1f9d55;--x-warn:#ff9f0a;--x-node:#fff;--x-node-bd:rgba(0,0,0,.1)}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark]{--x-ok:#30d158;--x-node:#141416;--x-node-bd:rgba(255,255,255,.12)}
+
+/* ---------- gemeinsame Teile ---------- */
+html body.portal-body.design-workspace :is(.x-flow,.x-bench,.x-case-flow){margin:0 0 20px;padding:clamp(20px,2.4vw,30px)!important;overflow:hidden}
+html body.portal-body.design-workspace .x-flow-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}
+html body.portal-body.design-workspace .x-flow-head h2{margin:4px 0 6px!important;font-size:clamp(20px,2vw,28px)!important;letter-spacing:-.04em!important;line-height:1.1}
+html body.portal-body.design-workspace .x-flow-head p{margin:0;max-width:64ch;font-size:14px;line-height:1.55;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-kicker{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--x-redt)}
+html body.portal-body.design-workspace .x-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:9px 15px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);color:var(--x-ink)!important;font:600 13px/1.1 var(--x-font);text-decoration:none!important;cursor:pointer;white-space:nowrap;transition:transform .35s var(--x-spring),border-color .2s,background .2s,box-shadow .3s}
+html body.portal-body.design-workspace .x-btn svg{width:16px;height:16px;flex:none}
+html body.portal-body.design-workspace .x-btn:hover{border-color:var(--x-ink);transform:translateY(-1px)}
+html body.portal-body.design-workspace .x-btn-primary{background:var(--x-red);border-color:var(--x-red);color:#fff!important;box-shadow:0 10px 24px -12px rgba(255,0,0,.75)}
+html body.portal-body.design-workspace .x-btn-primary:hover{background:#e60000;border-color:#e60000}
+html body.portal-body.design-workspace .x-btn:focus-visible{outline:2px solid var(--x-red);outline-offset:2px}
+html body.portal-body.design-workspace .x-plate{display:inline-flex;align-items:stretch;height:24px;border:1.5px solid #1d1d1f;border-radius:5px;overflow:hidden;background:#fff;color:#1d1d1f;font:700 13px/21px var(--x-font);letter-spacing:.04em;padding-right:7px;margin-bottom:5px;white-space:nowrap}
+html body.portal-body.design-workspace .x-plate i{display:grid;place-items:end center;width:15px;margin-right:6px;background:#0a3fa8;color:#fff;font:700 8px/1 var(--x-font);font-style:normal;padding-bottom:3px}
+
+/* Ring */
+html body.portal-body.design-workspace .x-ring{position:relative;display:inline-grid;place-items:center;flex:none}
+html body.portal-body.design-workspace .x-ring svg{transform:rotate(-90deg);display:block}
+html body.portal-body.design-workspace .x-ring circle{fill:none;stroke-width:4.5}
+html body.portal-body.design-workspace .x-ring .x-ring-bg{stroke:var(--x-chip-bd)}
+html body.portal-body.design-workspace .x-ring .x-ring-fg{stroke:var(--x-warn);stroke-linecap:round;animation:x-ring 1.1s var(--x-ease) both}
+html body.portal-body.design-workspace .x-ring[data-full=true] .x-ring-fg{stroke:var(--x-ok)}
+html body.portal-body.design-workspace .x-ring[data-pct="0"] .x-ring-fg{stroke:transparent}
+html body.portal-body.design-workspace .x-ring b{position:absolute;font:700 13px/1 var(--x-font);letter-spacing:-.03em;color:var(--x-ink);font-variant-numeric:tabular-nums}
+html body.portal-body.design-workspace .x-ring b small{font-size:.65em;color:var(--x-steel);margin-left:1px}
+@keyframes x-ring{from{stroke-dasharray:0 100}}
+
+/* ---------- 1) Prozess-Strecke ---------- */
+html body.portal-body.design-workspace .x-flow{position:relative;isolation:isolate}
+html body.portal-body.design-workspace .x-flow::after{content:"";position:absolute;z-index:-1;left:-20%;right:-20%;bottom:-2px;height:58%;pointer-events:none;transform-origin:50% 100%;transform:perspective(520px) rotateX(64deg);
+  background:linear-gradient(var(--x-grid) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,var(--x-grid) 1px,transparent 1px) 0 0/44px 44px;
+  -webkit-mask:linear-gradient(to top,#000,transparent 85%);mask:linear-gradient(to top,#000,transparent 85%)}
+html body.portal-body.design-workspace .x-flow-total{display:flex;flex-direction:column;align-items:flex-end;flex:none}
+html body.portal-body.design-workspace .x-flow-total b{font:700 clamp(34px,3.4vw,48px)/1 var(--x-font);letter-spacing:-.05em;color:var(--x-ink);font-variant-numeric:tabular-nums}
+html body.portal-body.design-workspace .x-flow-total small{font-size:12px;color:var(--x-steel);margin-top:4px}
+html body.portal-body.design-workspace .x-flow-stage{position:relative;perspective:1200px}
+html body.portal-body.design-workspace .x-lanes,html body.portal-body.design-workspace .x-stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+html body.portal-body.design-workspace .x-lanes{margin-bottom:12px}
+html body.portal-body.design-workspace .x-lane{display:flex;align-items:center;justify-content:center;gap:8px;height:28px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--x-steel);background:var(--x-chip);border:1px dashed var(--x-chip-bd)}
+html body.portal-body.design-workspace .x-lane-3{color:var(--x-redt);border-style:solid;border-color:rgba(255,0,0,.22);background:rgba(255,0,0,.05)}
+html body.portal-body.design-workspace .x-track{position:absolute;left:10%;right:10%;top:77px;height:6px;z-index:0;pointer-events:none}
+html body.portal-body.design-workspace .x-track-line{position:absolute;inset:0;border-radius:999px;background:linear-gradient(90deg,var(--x-chip-bd),rgba(255,0,0,.45) 25%,rgba(255,0,0,.45) 75%,var(--x-chip-bd));box-shadow:0 8px 18px -6px rgba(255,0,0,.25)}
+html body.portal-body.design-workspace .x-track i{position:absolute;top:50%;left:0;width:22px;height:6px;margin-top:-3px;border-radius:999px;background:linear-gradient(90deg,transparent,#ff3b30,#fff);box-shadow:0 0 12px 2px rgba(255,40,30,.65);opacity:0;animation:x-packet 4.8s linear infinite}
+html body.portal-body.design-workspace .x-track i:nth-child(3){animation-delay:1.2s}
+html body.portal-body.design-workspace .x-track i:nth-child(4){animation-delay:2.4s}
+html body.portal-body.design-workspace .x-track i:nth-child(5){animation-delay:3.6s}
+@keyframes x-packet{0%{left:0;opacity:0}8%{opacity:1}92%{opacity:1}100%{left:calc(100% - 22px);opacity:0}}
+html body.portal-body.design-workspace .x-stages{position:relative;z-index:1}
+html body.portal-body.design-workspace .x-stage{--x-rx:0deg;--x-ry:0deg;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:6px 8px 16px;border-radius:20px;color:var(--x-ink)!important;text-decoration:none!important;transform-style:preserve-3d;transform:rotateX(var(--x-rx)) rotateY(var(--x-ry));transition:transform .6s var(--x-ease),background .25s}
+html body.portal-body.design-workspace .x-stage.x-lift{transition:transform .1s linear,background .25s;background:var(--x-chip)}
+html body.portal-body.design-workspace .x-stage:hover .x-node{transform:translateZ(26px) translateY(-4px)}
+html body.portal-body.design-workspace .x-node{position:relative;display:grid;place-items:center;width:68px;height:68px;margin-bottom:10px;transform-style:preserve-3d;transition:transform .5s var(--x-spring)}
+html body.portal-body.design-workspace .x-node::after{content:"";position:absolute;left:6px;right:6px;bottom:-12px;height:14px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.28),transparent);transform:translateZ(-20px);transition:opacity .3s}
+html body.portal-body.design-workspace .x-node-core{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:radial-gradient(120% 120% at 30% 20%,var(--x-node),var(--x-node) 45%,var(--x-chip-bd));border:1px solid var(--x-node-bd);color:var(--x-steel);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -6px 12px rgba(0,0,0,.06),0 14px 26px -16px rgba(0,0,0,.45)}
+html body.portal-body.design-workspace .x-node svg{width:26px;height:26px}
+html body.portal-body.design-workspace .x-node em{position:absolute;top:-4px;right:-4px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--x-bg);border:1px solid var(--x-chip-bd);font:700 11px/1 var(--x-font);font-style:normal;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-stage.is-filled .x-node-core{background:radial-gradient(120% 120% at 30% 20%,#2c2c2e,#000 70%);border-color:rgba(255,255,255,.12);color:#fff;box-shadow:inset 0 2px 0 rgba(255,255,255,.14),0 18px 30px -16px rgba(0,0,0,.65)}
+html body.portal-body.design-workspace .x-stage.is-filled .x-node svg{color:#ff4d4d}
+html body.portal-body.design-workspace .x-stage.is-hot .x-node-core{background:radial-gradient(120% 120% at 30% 20%,#ff5a50,#ff0000 55%,#c40000);border-color:rgba(255,255,255,.2)}
+html body.portal-body.design-workspace .x-stage.is-hot .x-node svg{color:#fff}
+html body.portal-body.design-workspace .x-stage.is-hot .x-node::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,0,0,.45);animation:x-ping 2.2s var(--x-ease) infinite}
+@keyframes x-ping{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+html body.portal-body.design-workspace .x-stage>strong{font:700 clamp(28px,2.6vw,38px)/1 var(--x-font);letter-spacing:-.05em;font-variant-numeric:tabular-nums;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-stage:not(.is-filled)>strong{color:var(--x-dim)}
+html body.portal-body.design-workspace .x-stage-label{font-weight:700;font-size:14px;letter-spacing:-.01em}
+html body.portal-body.design-workspace .x-stage small{font-size:12px;color:var(--x-steel);line-height:1.35}
+html body.portal-body.design-workspace .x-stage-badge{margin-top:6px;padding:4px 10px;border-radius:999px;background:rgba(255,159,10,.14);color:#b25f00;font-size:11.5px;font-weight:700}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .x-stage-badge{color:#ffb340}
+html body.portal-body.design-workspace .x-stage.is-hot .x-stage-badge{background:rgba(255,0,0,.1);color:var(--x-redt)}
+
+/* ---------- 2) Gutachten-Werkbank ---------- */
+html body.portal-body.design-workspace .x-bench-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;perspective:1400px}
+html body.portal-body.design-workspace .x-bench-card{--x-rx:0deg;--x-ry:0deg;position:relative;display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:20px;background:var(--x-bg);border:1px solid var(--x-line);box-shadow:0 1px 1px rgba(0,0,0,.03),0 20px 40px -32px rgba(0,0,0,.5);transform:rotateX(var(--x-rx)) rotateY(var(--x-ry));transform-style:preserve-3d;transition:transform .6s var(--x-ease),box-shadow .3s,border-color .25s}
+html body.portal-body.design-workspace .x-bench-card.x-lift{transition:transform .1s linear,box-shadow .3s,border-color .25s;box-shadow:0 30px 50px -30px rgba(0,0,0,.55);border-color:rgba(255,0,0,.3)}
+html body.portal-body.design-workspace .x-bench-card[data-state=submitted]::before{content:"Neu";position:absolute;top:-1px;left:18px;padding:3px 9px;border-radius:0 0 9px 9px;background:var(--x-red);color:#fff;font:700 10px/1.2 var(--x-font);letter-spacing:.1em;text-transform:uppercase}
+html body.portal-body.design-workspace .x-bench-card.x-in{animation:x-rise .5s var(--x-ease) backwards}
+html body.portal-body.design-workspace .x-bench-top{display:flex;align-items:center;gap:12px}
+html body.portal-body.design-workspace .x-bench-top>div{flex:1;min-width:0;display:flex;flex-direction:column}
+html body.portal-body.design-workspace .x-bench-top strong{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.portal-body.design-workspace .x-bench-top small{font-size:12px;color:var(--x-steel);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.portal-body.design-workspace .x-bench-thumb{display:grid;place-items:center;width:58px;height:58px;flex:none;border-radius:14px;overflow:hidden;background:var(--x-chip);border:1px solid var(--x-line);color:var(--x-steel);transform:translateZ(18px)}
+html body.portal-body.design-workspace .x-bench-thumb img{width:100%;height:100%;object-fit:cover}
+html body.portal-body.design-workspace .x-bench-thumb svg{width:26px;height:26px}
+html body.portal-body.design-workspace .x-bench-status{align-self:flex-start;padding:5px 11px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);font-size:12px;font-weight:600;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-bench-card[data-state=submitted] .x-bench-status{background:rgba(255,0,0,.08);border-color:rgba(255,0,0,.22);color:var(--x-redt)}
+html body.portal-body.design-workspace .x-bench-card[data-state=needs_info] .x-bench-status{background:rgba(255,159,10,.12);border-color:rgba(255,159,10,.3)}
+html body.portal-body.design-workspace .x-checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+html body.portal-body.design-workspace .x-checks li{display:flex;align-items:center;gap:9px;font-size:13px;min-height:22px}
+html body.portal-body.design-workspace .x-checks li svg{width:18px;height:18px;flex:none;padding:3px;border-radius:50%;box-sizing:border-box;color:#fff;background:var(--x-ok)}
+html body.portal-body.design-workspace .x-checks li[data-ok=false] svg{background:var(--x-warn)}
+html body.portal-body.design-workspace .x-checks li span{flex:1;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-checks li b{font-weight:600;color:var(--x-steel);font-size:12px}
+html body.portal-body.design-workspace .x-checks li[data-ok=false] b{color:#b25f00}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .x-checks li[data-ok=false] b{color:#ffb340}
+html body.portal-body.design-workspace .x-skeleton{height:18px;border-radius:8px;background:linear-gradient(90deg,var(--x-chip),var(--x-chip-bd),var(--x-chip));background-size:200% 100%;animation:x-shimmer 1.2s linear infinite}
+html body.portal-body.design-workspace .x-skeleton-ring{width:50px;height:50px;border-radius:50%;border:4.5px solid var(--x-chip-bd)}
+@keyframes x-shimmer{to{background-position:-200% 0}}
+html body.portal-body.design-workspace .x-bench-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+html body.portal-body.design-workspace .x-bench-actions .x-btn-primary{flex:1;justify-content:center}
+html body.portal-body.design-workspace .x-bench-empty{display:flex;align-items:center;gap:12px;padding:18px;border-radius:18px;background:var(--x-chip);color:var(--x-steel)}
+html body.portal-body.design-workspace .x-bench-empty svg{width:34px;height:34px;padding:7px;border-radius:50%;background:var(--x-ok);color:#fff;flex:none;box-sizing:border-box}
+html body.portal-body.design-workspace .x-bench-empty p{margin:0}
+
+/* ---------- 3) Fallweg in der Fallakte ---------- */
+html body.portal-body.design-workspace .x-case-flow{margin-top:16px}
+html body.portal-body.design-workspace .x-case-flow .x-flow-head{margin-bottom:22px}
+html body.portal-body.design-workspace .x-steps{--x-fill:0;position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;list-style:none;margin:0 0 24px;padding:0;perspective:900px}
+html body.portal-body.design-workspace .x-steps::before,html body.portal-body.design-workspace .x-steps-fill{content:"";position:absolute;top:21px;left:calc(100% / 12);right:calc(100% / 12);height:4px;border-radius:999px;background:var(--x-chip-bd)}
+html body.portal-body.design-workspace .x-steps-fill{background:linear-gradient(90deg,var(--x-red),#ff6a5f);transform-origin:left;transform:scaleX(var(--x-fill));box-shadow:0 0 14px rgba(255,0,0,.35);animation:x-fill-x 1.2s var(--x-ease) .15s backwards;z-index:0}
+@keyframes x-fill-x{from{transform:scaleX(0)}}
+@keyframes x-fill-y{from{transform:scaleY(0)}}
+html body.portal-body.design-workspace .x-steps li{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;min-width:0}
+html body.portal-body.design-workspace .x-dot{display:grid;place-items:center;width:46px;height:46px;margin-bottom:8px;border-radius:50%;background:var(--x-bg);border:1.5px solid var(--x-chip-bd);color:var(--x-dim);box-shadow:0 10px 20px -14px rgba(0,0,0,.4);transition:transform .4s var(--x-spring)}
+html body.portal-body.design-workspace .x-dot svg{width:20px;height:20px}
+html body.portal-body.design-workspace .x-steps li strong{font-size:13px;font-weight:700;color:var(--x-ink);line-height:1.2}
+html body.portal-body.design-workspace .x-steps li small{font-size:11.5px;color:var(--x-steel);line-height:1.3}
+html body.portal-body.design-workspace .x-steps li[data-state=next] strong{color:var(--x-dim);font-weight:600}
+html body.portal-body.design-workspace .x-steps li[data-state=done] .x-dot{background:var(--x-ink);border-color:var(--x-ink);color:var(--x-bg)}
+html body.portal-body.design-workspace .x-steps li[data-state=current] .x-dot{background:radial-gradient(120% 120% at 30% 20%,#ff5a50,#ff0000 55%,#c40000);border-color:transparent;color:#fff;transform:translateY(-3px) scale(1.12);box-shadow:0 16px 28px -12px rgba(255,0,0,.7)}
+html body.portal-body.design-workspace .x-steps li[data-state=current] .x-dot::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,0,0,.4);animation:x-ping 2.2s var(--x-ease) infinite}
+html body.portal-body.design-workspace .x-steps li[data-state=current] .x-dot{position:relative}
+html body.portal-body.design-workspace .x-steps li[data-alert=true] .x-dot{background:radial-gradient(120% 120% at 30% 20%,#ffc15a,#ff9f0a 60%,#d97f00)}
+html body.portal-body.design-workspace .x-steps li[data-alert=true] small{color:#b25f00;font-weight:700}
+html body.portal-body.design-workspace .x-pack{padding:18px;border-radius:20px;background:var(--x-chip);border:1px solid var(--x-line)}
+html body.portal-body.design-workspace .x-pack-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+html body.portal-body.design-workspace .x-pack-head .x-ring b{font-size:16px}
+html body.portal-body.design-workspace .x-pack-head strong{display:block;font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-pack-head small{font-size:12.5px;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-tiles{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;perspective:900px}
+html body.portal-body.design-workspace .x-tiles li{position:relative;display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;background:var(--x-bg);border:1px solid var(--x-line);box-shadow:0 12px 24px -22px rgba(0,0,0,.6);animation:x-rise .55s var(--x-ease) backwards;transition:transform .4s var(--x-ease)}
+html body.portal-body.design-workspace .x-tiles li:hover{transform:translateY(-2px) rotateX(4deg)}
+html body.portal-body.design-workspace .x-tiles li:nth-child(2){animation-delay:.05s}
+html body.portal-body.design-workspace .x-tiles li:nth-child(3){animation-delay:.1s}
+html body.portal-body.design-workspace .x-tiles li:nth-child(4){animation-delay:.15s}
+html body.portal-body.design-workspace .x-tiles li:nth-child(5){animation-delay:.2s}
+html body.portal-body.design-workspace .x-tile-icon{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:12px;background:rgba(31,157,85,.1);color:var(--x-ok)}
+html body.portal-body.design-workspace .x-tile-icon svg{width:19px;height:19px}
+html body.portal-body.design-workspace .x-tiles li[data-ok=false] .x-tile-icon{background:rgba(255,159,10,.14);color:#c46a00}
+html body.portal-body.design-workspace .x-tiles li[data-result=true][data-ok=false] .x-tile-icon{background:var(--x-chip);color:var(--x-steel)}
+html body.portal-body.design-workspace .x-tiles li>div{flex:1;min-width:0;display:flex;flex-direction:column}
+html body.portal-body.design-workspace .x-tiles li>div span{font-size:11.5px;color:var(--x-steel);font-weight:600}
+html body.portal-body.design-workspace .x-tiles li>div b{font-size:14px;font-weight:700;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-tiles li>i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--x-ok);color:#fff}
+html body.portal-body.design-workspace .x-tiles li>i svg{width:12px;height:12px}
+html body.portal-body.design-workspace .x-tiles li[data-ok=false]>i{background:var(--x-warn)}
+html body.portal-body.design-workspace .x-tiles li[data-result=true][data-ok=false]>i{background:var(--x-chip-bd);color:var(--x-steel)}
+html body.portal-body.design-workspace .x-actions{display:flex;flex-wrap:wrap;gap:8px}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .x-tiles li[data-ok=false]:not([data-result]) .x-tile-icon{color:#ffb340}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .x-steps li[data-alert=true] small{color:#ffb340}
+
+/* ---------- Mobil ---------- */
+@media(max-width:860px){
+  html body.portal-body.design-workspace .x-flow-head{flex-direction:column}
+  html body.portal-body.design-workspace .x-flow-total{flex-direction:row;align-items:baseline;gap:8px}
+  html body.portal-body.design-workspace .x-lanes,html body.portal-body.design-workspace .x-track{display:none}
+  html body.portal-body.design-workspace .x-stages{grid-template-columns:1fr;gap:0;position:relative}
+  html body.portal-body.design-workspace .x-stages::before{content:"";position:absolute;left:33px;top:30px;bottom:30px;width:4px;border-radius:999px;background:linear-gradient(var(--x-chip-bd),rgba(255,0,0,.45) 30%,rgba(255,0,0,.45) 70%,var(--x-chip-bd))}
+  html body.portal-body.design-workspace .x-stage{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"node label count" "node hint count" "node badge badge";align-items:center;text-align:left;column-gap:14px;row-gap:0;padding:10px 6px;transform:none!important}
+  html body.portal-body.design-workspace .x-node{grid-area:node;width:56px;height:56px;margin:0}
+  html body.portal-body.design-workspace .x-node::after{display:none}
+  html body.portal-body.design-workspace .x-stage>strong{grid-area:count;font-size:28px}
+  html body.portal-body.design-workspace .x-stage-label{grid-area:label}
+  html body.portal-body.design-workspace .x-stage small{grid-area:hint}
+  html body.portal-body.design-workspace .x-stage-badge{grid-area:badge;justify-self:start;margin-top:4px}
+  html body.portal-body.design-workspace .x-steps{grid-template-columns:1fr;gap:0}
+  html body.portal-body.design-workspace .x-steps::before,html body.portal-body.design-workspace .x-steps-fill{left:21px;right:auto;top:23px;bottom:23px;width:4px;height:auto}
+  html body.portal-body.design-workspace .x-steps-fill{transform-origin:top;transform:scaleY(var(--x-fill));animation:x-fill-y 1.2s var(--x-ease) .15s backwards}
+  html body.portal-body.design-workspace .x-steps li{display:grid;grid-template-columns:46px 1fr;grid-template-areas:"dot title" "dot sub";column-gap:12px;text-align:left;align-items:center;padding:5px 0}
+  html body.portal-body.design-workspace .x-dot{grid-area:dot;margin:0}
+  html body.portal-body.design-workspace .x-steps li strong{grid-area:title}
+  html body.portal-body.design-workspace .x-steps li small{grid-area:sub}
+  html body.portal-body.design-workspace .x-bench-grid{grid-template-columns:1fr}
+  html body.portal-body.design-workspace .x-actions .x-btn{flex:1 1 calc(50% - 8px);justify-content:center;white-space:normal;text-align:center}
+}
+
+/* ---------- Bewegung ---------- */
+html body.portal-body.design-workspace:not([data-motion=full]) :is(.x-track i,.x-stage.is-hot .x-node::before,.x-steps li[data-state=current] .x-dot::after){animation:none;display:none}
+@media(prefers-reduced-motion:reduce){html body.portal-body.design-workspace :is(.x-flow,.x-bench,.x-case-flow) *{animation:none!important;transition:none!important}}
+
+/* ---------- Feinschliff ---------- */
+html body.portal-body.design-workspace .x-bench-top>div>.x-plate{align-self:flex-start}
+html body.portal-body.design-workspace .x-bench-top .x-ring svg{width:52px!important;height:52px!important}
+html body.portal-body.design-workspace .x-pack-head .x-ring svg{width:68px!important;height:68px!important}
+html body.portal-body.design-workspace .x-bench-actions{flex-wrap:nowrap}
+html body.portal-body.design-workspace .x-btn-icon{width:40px;padding:0;justify-content:center;flex:none}
+html body.portal-body.design-workspace .x-btn-icon svg{width:18px;height:18px}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .x-steps li[data-state=done] .x-dot{background:#2c2c2e;border-color:rgba(255,255,255,.22);color:#fff}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] :is(.x-plate.x-dk-surface,.x-plate.x-dk-text){background:#fff!important;color:#1d1d1f!important;border-color:#1d1d1f!important}
