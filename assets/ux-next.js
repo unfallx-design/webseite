@@ -87,13 +87,23 @@
 
   /* ---------- 2) Dunkelmodus mit animiertem Wechsel ---------- */
   var THEME_KEY = 'unfallx-partner-theme';
-  function storedTheme() { try { return localStorage.getItem(THEME_KEY) || 'light'; } catch (e) { return 'light'; } }
+  var darkQuery = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  function storedTheme() { try { var v = localStorage.getItem(THEME_KEY); return v === 'dark' || v === 'system' ? v : 'light'; } catch (e) { return 'light'; } }
+  function effectiveTheme(t) { return t === 'system' ? (darkQuery && darkQuery.matches ? 'dark' : 'light') : t; }
   function partnerDark() { return isPartner() && body.dataset.xTheme === 'dark'; }
-  function setPartnerTheme(theme) {
-    if (theme === 'dark') body.dataset.xTheme = 'dark'; else delete body.dataset.xTheme;
-    try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* privat */ }
+  function applyPartnerTheme() {
+    if (!isPartner()) return;
+    if (effectiveTheme(storedTheme()) === 'dark') body.dataset.xTheme = 'dark'; else delete body.dataset.xTheme;
     paintToggle();
     queueDark();
+  }
+  function setPartnerTheme(theme) {
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* privat */ }
+    applyPartnerTheme();
+  }
+  if (darkQuery) {
+    var follow = function () { if (isPartner() && storedTheme() === 'system') reveal(null, applyPartnerTheme); };
+    if (darkQuery.addEventListener) darkQuery.addEventListener('change', follow); else if (darkQuery.addListener) darkQuery.addListener(follow);
   }
   function reveal(origin, update) {
     if (motionOff() || !document.startViewTransition) { fadeTheme(); return update(); }
@@ -126,7 +136,7 @@
   }
   function ensurePartnerToggle() {
     if (!isPartner()) { if (toggle) { toggle.remove(); toggle = null; } if (body.dataset.xTheme) delete body.dataset.xTheme; return; }
-    if (storedTheme() === 'dark' && body.dataset.xTheme !== 'dark') { body.dataset.xTheme = 'dark'; queueDark(); }
+    if ((effectiveTheme(storedTheme()) === 'dark') !== (body.dataset.xTheme === 'dark')) applyPartnerTheme();
     if (toggle && toggle.isConnected) return;
     var actions = document.querySelector('.portal-top .portal-top-actions');
     if (!actions) return;
@@ -142,6 +152,13 @@
     actions.insertBefore(toggle, anchor || actions.firstChild);
     paintToggle();
   }
+  /* Schnittstelle für die Einstellungen (live-next.js) */
+  window.UnfallxUX = {
+    theme: function () { return storedTheme(); },
+    setTheme: function (theme, origin) { if (['light', 'dark', 'system'].indexOf(theme) < 0) return; reveal(origin || toggle, function () { setPartnerTheme(theme); }); },
+    toast: function (text, tone, action) { toast(text, tone, action); },
+    reveal: reveal
+  };
   /* Zentrale: Umschalter speichert vollständige Einstellungen (behebt den Fehler „gültige Startansicht“
      bei Konten ohne gespeicherte Einstellungen) und wechselt mit Kreis-Übergang. */
   var themeBusy = false;
@@ -179,7 +196,7 @@
   new MutationObserver(function () { if (!document.documentElement.classList.contains('x-vt')) fadeTheme(); }).observe(body, { attributes: true, attributeFilter: ['data-portal-theme', 'data-x-theme'] });
 
   /* Partner-Dunkelmodus: helle Altflächen angleichen (wie in der Zentrale) */
-  var KEEP = '.ws-license-plate, .ws-license-plate *, .x-plate, .x-plate *, .ws-status, .portal-badge, .ws-count, .ws-nav-counter, img, video, canvas, svg, svg *, .btn, .x-btn-primary, .x-mix *, [type=checkbox], [type=radio], progress';
+  var KEEP = '.ws-license-plate, .ws-license-plate *, .x-plate, .x-plate *, .x-msg-plate, .ws-status, .portal-badge, .ws-count, .ws-nav-counter, img, video, canvas, svg, svg *, .btn, .x-btn-primary, .x-mix *, [type=checkbox], [type=radio], progress';
   function rgb(c) { var m = String(c).match(/[\d.]+/g); if (!m) return null; return { r: +m[0], g: +m[1], b: +m[2], a: m[3] == null ? 1 : +m[3] }; }
   function light(c) { return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255; }
   function darkPass() {
