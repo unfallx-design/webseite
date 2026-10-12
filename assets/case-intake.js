@@ -4,7 +4,7 @@
 const groups=[
  {id:'owner',title:'Geschädigte Person & Kontaktdaten',short:'Auftraggeber',intro:'Angaben zur geschädigten Person oder Firma. Der einreichende Partnerbetrieb wird dem Fall automatisch zugeordnet.'},
  {id:'vehicle',title:'Fahrzeug & Eigentumsverhältnis',short:'Fahrzeug',intro:'FIN aus Feld E des Fahrzeugscheins übernehmen. Fahrzeugschein und bekannte Vorschäden bitte mit dokumentieren.'},
- {id:'accident',title:'Unfall & Unfallgegner',short:'Unfall',intro:'Das Gegnerkennzeichen ist erforderlich. Die Ausnahme gilt nur, wenn stattdessen eine Polizei-Aktennummer bekannt ist.'},
+ {id:'accident',title:'Unfall & Unfallgegner',short:'Unfall',intro:'Alle Angaben sind optional. Das Gegnerkennzeichen oder eine Polizei-Aktennummer hilft UNFALLX bei der Regulierung.'},
  {id:'inspection',title:'Besichtigung & Aufnahme',short:'Besichtigung',intro:'Wo, wann und unter welchen Bedingungen wurde das Fahrzeug besichtigt? Trage auch die besichtigende Person und alle Anwesenden ein.'},
  {id:'lawyer',title:'Kanzlei & Freigaben',short:'Kanzlei',intro:'Gib die bestehende Kanzlei an oder wähle die Vermittlung durch UNFALLX. Die interne Zuordnung und der Versand werden gesondert geprüft.'}
 ];
@@ -34,12 +34,12 @@ const fields=[
  F('ownerPhone','Telefonnummer','owner',{required:true,type:'tel',max:50,autocomplete:'tel'}),
  F('customerEmail','E-Mail-Adresse','owner',{required:true,type:'email',max:254,autocomplete:'email'}),
  F('ownerIban','IBAN für die Schadenregulierung','owner',{required:true,max:42,hint:'Bankverbindung des Anspruchstellers. Hierdurch wird keine Zahlung ausgelöst.'}),
+ F('plate','Kennzeichen des geschädigten Fahrzeugs','vehicle',{required:true,max:20}),
  F('vehicle','Fahrzeug / Modell','vehicle',{required:true,max:120}),
  F('vehicleMake','Hersteller · D.1','vehicle',{max:60}),
  F('firstRegistration','Erstzulassung · B','vehicle',{type:'date',max:10}),
  F('hsn','Herstellerschlüssel · 2.1','vehicle',{max:4}),
  F('tsn','Typschlüssel · 2.2','vehicle',{max:10}),
- F('plate','Kennzeichen des geschädigten Fahrzeugs','vehicle',{required:true,max:20}),
  F('vin','Fahrgestellnummer / FIN','vehicle',{required:true,max:17,hint:'Im Fahrzeugschein unter E. Meist 17 Zeichen.'}),
  F('mileage','Kilometerstand','vehicle',{required:true,max:10,inputmode:'numeric',hint:'Kilometer als ganze Zahl, z. B. 123456.'}),
  F('huDue','Nächste Hauptuntersuchung (TÜV)','vehicle',{required:true,type:'month',max:7}),
@@ -53,7 +53,7 @@ const fields=[
  F('location','Unfallort / Straße / genaue Stelle','accident',{required:true,wide:true,max:300}),
  F('policeInvolved','Wurde der Unfall polizeilich aufgenommen?','accident',{required:true,type:'select'}),
  F('policeAuthority','Polizeibehörde / Dienststelle','accident',{show:d=>d.policeInvolved==='yes'||d.opponentPlateUnknown,required:d=>d.policeInvolved==='yes'||d.opponentPlateUnknown}),
- F('policeFileNumber','Polizei-Aktennummer','accident',{max:120,show:d=>d.policeInvolved==='yes'||d.opponentPlateUnknown,required:d=>d.opponentPlateUnknown,hint:'Bei unbekanntem Gegnerkennzeichen zwingend erforderlich.'}),
+ F('policeFileNumber','Polizei-Aktennummer','accident',{max:120,show:d=>d.policeInvolved==='yes'||d.opponentPlateUnknown,required:d=>d.opponentPlateUnknown,hint:'Hilfreich, wenn das Gegnerkennzeichen nicht bekannt ist.'}),
  F('opponentPlateUnknown','Gegnerkennzeichen nicht bekannt, aber Polizei-Aktennummer ist bekannt','accident',{type:'checkbox',wide:true}),
  F('opponentPlate','Kennzeichen des Unfallgegners','accident',{max:20,show:d=>!d.opponentPlateUnknown,required:d=>!d.opponentPlateUnknown}),
  F('description','Unfallhergang & sichtbare Schäden','accident',{required:true,type:'textarea',max:8000,wide:true}),
@@ -96,7 +96,10 @@ const fields=[
  F('authority','Ich bin zur Übermittlung der Angaben und Unterlagen berechtigt. Die betroffenen Personen sind informiert; ein entsprechender Auftrag liegt vor.','lawyer',{type:'checkbox',wide:true,required:true})
 ];
 function visible(f,d){return !f.show||f.show(d);}
-function required(f,d){return visible(f,d)&&(typeof f.required==='function'?f.required(d):!!f.required);}
+/* Schnelle Aufnahme: Pflicht sind nur Kennzeichen, mindestens ein Schadenfoto und die Berechtigung.
+   Alle weiteren Angaben sind optional; Fehlendes fordert UNFALLX bei Bedarf per Rückfrage nach. */
+const minimum=['plate','authority'];
+function required(f,d){return visible(f,d)&&minimum.includes(f.name);}
 function normalize(body={}){
  const d={schemaVersion:2};
  for(const f of fields){const v=body[f.name];d[f.name]=f.type==='checkbox'?v===true:f.type==='multiselect'?(Array.isArray(v)?[...new Set(v)]:[]):typeof v==='string'?v.trim():'';}
@@ -128,7 +131,7 @@ function errors(body){const d=normalize(body),out=[];const add=(f,message)=>out.
  return out;
 }
 const documentKinds={registration:'Fahrzeugschein',authorization:'Unterschriebener Auftrag',case_bundle:'Fahrzeugschein & Auftrag'};
-function fileErrors(files=[]){const out=[];const add=(name,label)=>out.push({name,group:'documents',label,message:'Bitte hochladen und entsprechend zuordnen.'});if(!files.some(f=>f.kind==='photo'))add('photo','Mindestens ein Schadenfoto');if(!files.some(f=>['registration','case_bundle'].includes(f.kind)))add('registration','Fahrzeugschein');if(!files.some(f=>['authorization','case_bundle'].includes(f.kind)))add('authorization','Unterschriebener Auftrag');return out;}
+function fileErrors(files=[]){const out=[];const add=(name,label)=>out.push({name,group:'documents',label,message:'Bitte hochladen und entsprechend zuordnen.'});if(!files.some(f=>f.kind==='photo'))add('photo','Mindestens ein Schadenfoto');return out;}
 function display(f,d){const v=d[f.name];if(f.name==='opponentPlate'&&d.opponentPlateUnknown)return 'Nicht bekannt – Polizei-Aktennummer hinterlegt';if(f.type==='checkbox')return v?'Ja':'Nein';if(Array.isArray(v))return v.map(x=>options[f.name]?.[x]||x).join(', ');return options[f.name]?.[v]||v||'—';}
 return {groups,fields,options,normalize,visible,required,errors,fileErrors,documentKinds,display,validIban,validDate};
 });
