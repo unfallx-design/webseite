@@ -219,10 +219,51 @@ html body.portal-body.design-workspace:not([data-motion=full]) #portal-root>.ws-
 html body.portal-body.design-workspace[data-motion=off] *{animation:none!important}
 @media(prefers-reduced-motion:reduce){html body.portal-body.design-workspace *,html body.portal-body.design-workspace *::after{animation:none!important;transition:none!important}}
 
-@keyframes x-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes x-rise{from{opacity:0;transform:perspective(900px) translateY(16px) rotateX(9deg)}to{opacity:1;transform:none}}
 @keyframes x-title{from{opacity:0;transform:translateY(18px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @keyframes x-horizon{0%,100%{opacity:.85}50%{opacity:1}}
 @keyframes x-pulse{0%{box-shadow:0 0 0 0 rgba(48,209,88,.5)}70%{box-shadow:0 0 0 7px rgba(48,209,88,0)}100%{box-shadow:0 0 0 0 rgba(48,209,88,0)}}
 @keyframes x-pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
 @keyframes x-grow-x{from{transform:scaleX(0)}to{transform:none}}
 @keyframes x-grow-y{from{transform:scaleY(0)}to{transform:none}}
+
+/* ---------- Zentrale: Verwaltung & Einstellungen als ein Bereich ---------- */
+html body.portal-body.design-workspace #portal-nav a.x-merged,html body.portal-body.design-workspace .portal-card.x-merged,html body.portal-body.design-workspace a.ws-hub-link.x-merged{display:none!important}
+html body.portal-body.design-workspace .x-area-tabs{display:inline-flex;gap:4px;margin:0 0 20px;padding:5px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);perspective:800px}
+html body.portal-body.design-workspace .x-area-tabs a{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;color:var(--x-steel);font-weight:600;font-size:14px;text-decoration:none;transition:background .25s,color .2s}
+html body.portal-body.design-workspace .x-area-tabs a svg{width:18px;height:18px}
+html body.portal-body.design-workspace .x-area-tabs a:hover{color:var(--x-ink)}
+html body.portal-body.design-workspace .x-area-tabs a[aria-current=page]{background:var(--x-ink);color:var(--x-bg);box-shadow:0 10px 24px -14px rgba(0,0,0,.6)}
+html body.portal-body.design-workspace .ws-hub-link{min-height:96px!important;font-weight:600}
+html body.portal-body.design-workspace .ws-hub-link>svg:first-child{color:var(--x-red);background:rgba(255,0,0,.08);border-radius:50%;padding:9px;width:42px!important;height:42px!important;box-sizing:border-box}
+html body.portal-body.design-workspace .ws-hub-link>svg:last-child{color:var(--x-dim);transition:transform .3s var(--x-ease),color .2s}
+html body.portal-body.design-workspace .ws-hub-link:hover>svg:last-child{color:var(--x-red);transform:translateX(3px)}
+html body.portal-body.design-workspace .ws-hub-link:hover{background:var(--x-card) padding-box,linear-gradient(150deg,rgba(255,0,0,.5),rgba(255,0,0,.12)) border-box!important}
+
+/* ---------- 3D: Neigung zum Zeiger (rotate wirkt zusätzlich zu Bewegungen) ---------- */
+html body.portal-body.design-workspace :is(.uz-metrics,.uz-pipeline,.ws-hub-grid,.uz-settings-map,.ws-task-list){perspective:1100px}
+html body.portal-body.design-workspace .x-tilt{rotate:var(--x-rot,0deg);transform-style:preserve-3d;transition:rotate .6s var(--x-ease),transform .45s var(--x-ease),background .25s,border-color .25s,box-shadow .35s!important}
+html body.portal-body.design-workspace .x-tilt.x-tilting{transition:rotate .09s linear,transform .45s var(--x-ease),background .25s,border-color .25s,box-shadow .35s!important;box-shadow:var(--x-shadow),0 34px 50px -34px rgba(0,0,0,.4)!important;z-index:2}
+html body.portal-body.design-workspace .uz-metric strong{text-shadow:0 1px 0 rgba(255,255,255,.6),0 10px 24px rgba(0,0,0,.08)}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .uz-metric strong{text-shadow:0 10px 30px rgba(255,0,0,.18)}
+
+/* ---------- 3D: Seitenkopf mit Rasterboden und Tiefe ---------- */
+html body.portal-body.design-workspace #portal-root>.ws-page-heading::before{inset:auto -40% 16% -40%!important;height:110%;transform-origin:50% 100%;
+  transform:perspective(380px) rotateX(60deg) translateX(calc(var(--x-px,0) * -36px));
+  background:linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px) 0 0/48px 48px;
+  -webkit-mask:linear-gradient(to top,#000 5%,rgba(0,0,0,.5) 35%,transparent 75%);mask:linear-gradient(to top,#000 5%,rgba(0,0,0,.5) 35%,transparent 75%);
+  animation:x-floor 5s linear infinite}
+html body.portal-body.design-workspace #portal-root>.ws-page-heading::after{translate:calc(var(--x-px,0) * 18px) 0}
+html body.portal-body.design-workspace #portal-root>.ws-page-heading>div{transform:translate3d(calc(var(--x-px,0) * -8px),calc(var(--x-py,0) * -6px),0);transition:transform .5s var(--x-ease)}
+html body.portal-body.design-workspace:not([data-motion=full]) #portal-root>.ws-page-heading::before{animation:none}
+@keyframes x-floor{from{background-position:0 0,0 0}to{background-position:0 48px,0 0}}
+
+/* ---------- Optimierungen ---------- */
+html body.portal-body.design-workspace #portal-chat-launcher{background:#000!important;color:#fff!important;border:1px solid rgba(255,255,255,.14)!important;min-height:48px;padding:12px 18px;box-shadow:0 18px 40px -16px rgba(0,0,0,.55)!important;transition:transform .4s var(--x-spring)}
+html body.portal-body.design-workspace #portal-chat-launcher:hover{transform:translateY(-2px);background:var(--x-red)!important}
+html body.portal-body.design-workspace .ws-case-vehicle>div>.ws-license-plate{display:flex!important;width:max-content;margin:0 0 6px!important}
+html body.portal-body.design-workspace .ws-case-vehicle>div>strong{display:block;font-weight:600}
+html body.portal-body.design-workspace .ws-status{display:inline-flex!important;align-items:center;gap:6px;border-radius:999px!important;font-weight:600}
+html body.portal-body.design-workspace .ws-status::after{content:"";order:-1;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8}
+html body.portal-body.design-workspace .x-mix-bar{box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
+html body.portal-body.design-workspace .x-mix-bar button{background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 60%)}

@@ -6,8 +6,9 @@ html body#ux.auth-page{--ax-red:#ff0000;--ax-ease:cubic-bezier(.16,1,.3,1);--ax-
   html body#ux.auth-page .auth-frame{padding:16px;gap:16px}
   html body#ux.auth-page .auth-context{position:relative;border-radius:28px;overflow:hidden;isolation:isolate;padding:clamp(34px,4vw,60px)!important;color:#f5f5f7;background:#000!important;border:1px solid rgba(255,255,255,.07)}
   html body#ux.auth-page .auth-context::before,html body#ux.auth-page .auth-context::after{content:"";display:block;position:absolute;inset:0;z-index:-1;width:auto;height:auto;margin:0;border:0;border-radius:0;box-shadow:none;transform:none;filter:none;opacity:1;pointer-events:none}
-  html body#ux.auth-page .auth-context::before{background:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/56px 56px;
-    -webkit-mask:radial-gradient(80% 60% at 60% 25%,#000,transparent 75%);mask:radial-gradient(80% 60% at 60% 25%,#000,transparent 75%);animation:none}
+  html body#ux.auth-page .auth-context::before{inset:auto -40% 12% -40%;height:95%;transform-origin:50% 100%;transform:perspective(420px) rotateX(62deg);
+    background:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px) 0 0/52px 52px,linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px) 0 0/52px 52px;
+    -webkit-mask:linear-gradient(to top,#000 5%,rgba(0,0,0,.45) 40%,transparent 80%);mask:linear-gradient(to top,#000 5%,rgba(0,0,0,.45) 40%,transparent 80%);animation:ax-floor 5s linear infinite}
   html body#ux.auth-page .auth-context::after{background:radial-gradient(95% 34% at 50% 108%,#000 62%,rgba(255,80,70,.95) 63%,rgba(255,0,0,.32) 66%,rgba(255,0,0,.08) 78%,transparent 90%);animation:ax-horizon 7s ease-in-out infinite}
   html body#ux.auth-page .auth-context .auth-brand img[src*=wordmark]{filter:brightness(0) invert(1)}
 }
@@ -31,5 +32,6 @@ html body#ux.auth-page .auth-entry-inner{animation:ax-rise .8s var(--ax-ease) .0
 
 @keyframes ax-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes ax-title{from{opacity:0;transform:translateY(20px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes ax-floor{from{background-position:0 0,0 0}to{background-position:0 52px,0 0}}
 @keyframes ax-horizon{0%,100%{opacity:.85}50%{opacity:1}}
-@media(prefers-reduced-motion:reduce){html body#ux.auth-page *,html body#ux.auth-page *::after{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){html body#ux.auth-page *,html body#ux.auth-page *::before,html body#ux.auth-page *::after{animation:none!important;transition:none!important}}
