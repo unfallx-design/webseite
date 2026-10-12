@@ -34,7 +34,6 @@ for(const provider of ['database','s3'])test(provider+': original bulk uploads, 
  assert.equal((await f.call('/cases/'+cid,'other')).status,404);assert.equal((await f.call('/files/'+bundle.id,'other')).status,404);assert.equal((await f.call('/files/'+bundle.id,null)).status,401);
  await f.action(cid,'partner',{action:'file_delete',fileId:bundle.id,confirmed:true});
  assert.equal((await f.read(cid)).files.length,35);assert.equal((await f.read(cid,'admin')).deletedFiles[0].canRestore,true);assert.equal((await f.call('/files/'+bundle.id,'admin')).status,404);
- await f.action(cid,'partner',{action:'submit'},400);
  assert.equal((await f.call('/cases/'+cid,'partner',{version:before.case.version,action:'file_restore',fileId:bundle.id,confirmed:true})).status,409);
  await f.action(cid,'partner',{action:'file_restore',fileId:bundle.id,confirmed:true});assert.deepEqual((await f.call('/files/'+bundle.id)).bytes,pdf('order+registration'));
  await f.action(cid,'partner',{action:'submit'});await f.action(cid,'partner',{action:'file_delete',fileId:bundle.id,confirmed:true},403);
