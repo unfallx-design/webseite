@@ -291,3 +291,137 @@ html body.portal-body.design-workspace .ws-case-row[data-state=submitted]{box-sh
 html body.portal-body.design-workspace .ws-breadcrumb{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:6px 13px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);color:var(--x-steel)!important;font-size:12px;font-weight:600;text-decoration:none;transition:border-color .2s,color .2s}
 html body.portal-body.design-workspace .ws-breadcrumb:hover{color:var(--x-ink)!important;border-color:var(--x-ink)}
 html body.portal-body.design-workspace :is(.ws-breadcrumb span,strong>i){color:var(--x-dim)!important}
+
+/* ======================================================================
+   CHAT – professioneller Messenger im unfallx.com-Stil
+   ====================================================================== */
+html body.portal-body.design-workspace{--x-chat-bg:#f5f5f7;--x-bubble:#fff;--x-bubble-ink:#1d1d1f;--x-own:#1d1d1f;--x-own-ink:#fff}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark]{--x-chat-bg:#050506;--x-bubble:#1c1c1f;--x-bubble-ink:#f5f5f7;--x-own:#ff0000;--x-own-ink:#fff}
+html body.portal-body.design-workspace .ws-messenger{border:1px solid transparent!important;border-radius:26px!important;background:var(--x-card) padding-box,var(--x-edge) border-box!important;box-shadow:var(--x-shadow)!important;animation:x-rise .7s var(--x-ease) both}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .ws-messenger{background:linear-gradient(#0b0b0c,#0b0b0c) padding-box,var(--x-edge) border-box!important}
+/* Liste */
+html body.portal-body.design-workspace .ws-messenger-inbox{background:transparent!important;border-right:1px solid var(--x-line)!important}
+html body.portal-body.design-workspace .ws-messenger-list-header h1{font-size:26px!important;font-weight:700!important;letter-spacing:-.04em;color:var(--x-ink)!important}
+html body.portal-body.design-workspace #chat-total-unread{background:var(--x-red)!important;color:#fff!important;border-radius:999px;font-weight:700}
+html body.portal-body.design-workspace .ws-chat-search{border-radius:999px!important;background:var(--x-chip)!important;border:1px solid var(--x-chip-bd)!important}
+html body.portal-body.design-workspace .ws-chat-search:focus-within{border-color:rgba(255,0,0,.45)!important;box-shadow:0 0 0 4px rgba(255,0,0,.08)}
+html body.portal-body.design-workspace .ws-chat-search input{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--x-ink)!important}
+html body.portal-body.design-workspace .ws-chat-filters button{border-radius:999px!important;font-weight:600;color:var(--x-steel)!important;background:transparent!important;border:1px solid var(--x-chip-bd)!important}
+html body.portal-body.design-workspace .ws-chat-filters button:is([aria-pressed=true],.is-active,[aria-current]){background:var(--x-ink)!important;color:var(--x-bg)!important;border-color:var(--x-ink)!important}
+html body.portal-body.design-workspace .ws-chat-row{position:relative;border-radius:18px!important;margin:2px 8px!important;background:transparent!important;border:1px solid transparent!important;transition:background .2s,transform .35s var(--x-ease),border-color .2s!important}
+html body.portal-body.design-workspace .ws-chat-row:hover{background:var(--x-chip)!important;transform:translateX(2px)}
+html body.portal-body.design-workspace .ws-chat-row:is([aria-current],.is-active,.is-selected){background:var(--x-chip)!important;border-color:var(--x-chip-bd)!important}
+html body.portal-body.design-workspace .ws-chat-row:is([aria-current],.is-active,.is-selected)::before{content:"";position:absolute;left:-8px;top:18px;bottom:18px;width:3px;border-radius:3px;background:var(--x-red)}
+html body.portal-body.design-workspace .ws-chat-row.is-unread .ws-chat-preview{color:var(--x-ink)!important;font-weight:600}
+html body.portal-body.design-workspace .ws-chat-row strong{color:var(--x-ink)!important;font-weight:600}
+html body.portal-body.design-workspace .ws-chat-row :is(time,small,.ws-chat-preview){color:var(--x-steel)!important}
+html body.portal-body.design-workspace .ws-chat-unread{background:var(--x-red)!important;color:#fff!important;border-radius:999px!important;font-weight:700;box-shadow:0 6px 14px -6px rgba(255,0,0,.8);animation:x-pop .5s var(--x-spring) both}
+html body.portal-body.design-workspace .ws-chat-avatar{position:relative;background:#000!important;color:#fff!important;border-radius:50%!important;box-shadow:0 8px 18px -10px rgba(0,0,0,.6)}
+html body.portal-body.design-workspace .ws-chat-avatar svg{color:#ff4d4d!important}
+html body.portal-body.design-workspace .ws-chat-avatar.is-team::after{content:"";position:absolute;right:0;bottom:0;width:10px;height:10px;border-radius:50%;background:#30d158;border:2px solid var(--x-bg)}
+html body.portal-body.design-workspace .ws-chat-privacy{color:var(--x-dim)!important;border-top:1px solid var(--x-line)!important}
+/* Gesprächskopf */
+html body.portal-body.design-workspace .ws-messenger-conversation{background:transparent!important}
+html body.portal-body.design-workspace .ws-chat-thread-header{background:transparent!important;border-bottom:1px solid var(--x-line)!important;backdrop-filter:blur(18px)}
+html body.portal-body.design-workspace .ws-chat-contact h2{font-size:17px!important;font-weight:700!important;letter-spacing:-.02em;color:var(--x-ink)!important}
+html body.portal-body.design-workspace #chat-sync{font-size:12px;color:var(--x-steel)!important}
+html body.portal-body.design-workspace #chat-sync.is-warning{color:#ff9f0a!important}
+html body.portal-body.design-workspace .ws-chat-open-case,html body.portal-body.design-workspace .ws-chat-icon-button{border-radius:999px!important;background:var(--x-chip)!important;border:1px solid var(--x-chip-bd)!important;color:var(--x-ink)!important;transition:background .2s,border-color .2s}
+html body.portal-body.design-workspace :is(.ws-chat-open-case,.ws-chat-icon-button):hover{border-color:var(--x-ink)!important}
+html body.portal-body.design-workspace .ws-chat-case-context{background:transparent!important;border-bottom:1px solid var(--x-line)!important;color:var(--x-steel)!important}
+html body.portal-body.design-workspace .ws-chat-info summary{border-radius:999px;color:var(--x-steel)!important}
+html body.portal-body.design-workspace .ws-chat-info-panel{border-radius:18px!important;background:var(--x-bg)!important;border:1px solid var(--x-line)!important;box-shadow:0 24px 50px -24px rgba(0,0,0,.4)!important;animation:x-pop .35s var(--x-spring) both}
+/* Verlauf */
+html body.portal-body.design-workspace .ws-chat-history{background-color:var(--x-chat-bg)!important;background-image:radial-gradient(var(--x-chip-bd) 1px,transparent 1px)!important;background-size:22px 22px!important;perspective:900px;scroll-behavior:smooth}
+html body.portal-body.design-workspace .ws-chat-day span{background:var(--x-bg)!important;border:1px solid var(--x-line)!important;color:var(--x-steel)!important;border-radius:999px!important;font-size:11px;font-weight:600;letter-spacing:.04em;box-shadow:0 6px 16px -10px rgba(0,0,0,.3)}
+html body.portal-body.design-workspace .ws-chat-bubble{background:var(--x-bubble)!important;border:1px solid var(--x-line)!important;border-radius:20px 20px 20px 6px!important;padding:10px 14px 7px!important;box-shadow:0 1px 1px rgba(0,0,0,.04),0 10px 24px -18px rgba(0,0,0,.45)!important;transform-origin:left bottom;transition:transform .3s var(--x-ease)}
+html body.portal-body.design-workspace .ws-chat-bubble p{color:var(--x-bubble-ink)!important;font-size:15px!important;line-height:1.5!important}
+html body.portal-body.design-workspace .ws-chat-bubble.is-own{background:var(--x-own)!important;border-color:transparent!important;border-radius:20px 20px 6px 20px!important;transform-origin:right bottom;box-shadow:0 12px 26px -16px rgba(0,0,0,.6)!important}
+html body.portal-body.design-workspace .ws-chat-bubble.is-own p{color:var(--x-own-ink)!important}
+html body.portal-body.design-workspace .ws-chat-bubble.is-own footer{color:rgba(255,255,255,.6)!important}
+html body.portal-body.design-workspace .ws-chat-bubble.is-own footer svg{color:#ff4d4d!important}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .ws-chat-bubble.is-own footer svg{color:#fff!important}
+html body.portal-body.design-workspace .ws-chat-bubble footer{color:var(--x-dim)!important}
+html body.portal-body.design-workspace .ws-chat-author{color:var(--x-redt)!important;font-size:11px!important;font-weight:700;letter-spacing:.02em}
+html body.portal-body.design-workspace .ws-chat-bubble.x-follow{margin-top:-4px!important}
+html body.portal-body.design-workspace .ws-chat-bubble.x-follow .ws-chat-author{display:none}
+html body.portal-body.design-workspace .ws-chat-bubble:not(.is-own).x-follow{border-top-left-radius:8px!important}
+html body.portal-body.design-workspace .ws-chat-bubble.is-own.x-follow{border-top-right-radius:8px!important}
+html body.portal-body.design-workspace .ws-chat-bubble.x-emoji-only{background:transparent!important;border-color:transparent!important;box-shadow:none!important;padding:0 4px!important}
+html body.portal-body.design-workspace .ws-chat-bubble.x-emoji-only p{font-size:40px!important;line-height:1.15!important;color:inherit!important}
+html body.portal-body.design-workspace .ws-chat-bubble.x-emoji-only footer{color:var(--x-dim)!important}
+html body.portal-body.design-workspace .ws-chat-bubble.x-new{animation:x-bubble-in .5s var(--x-spring) both}
+html body.portal-body.design-workspace .ws-chat-bubble.is-own.x-new{animation-name:x-bubble-own}
+html body.portal-body.design-workspace .ws-chat-new{border-radius:999px!important;background:#000!important;color:#fff!important;border:0!important;box-shadow:0 14px 30px -14px rgba(0,0,0,.7)!important;animation:x-pop .4s var(--x-spring) both}
+@keyframes x-bubble-in{from{opacity:0;transform:perspective(700px) translate3d(-18px,14px,-40px) rotateY(14deg) scale(.92)}to{opacity:1;transform:none}}
+@keyframes x-bubble-own{from{opacity:0;transform:perspective(700px) translate3d(18px,14px,-40px) rotateY(-14deg) scale(.92)}to{opacity:1;transform:none}}
+/* Eingabe */
+html body.portal-body.design-workspace .ws-chat-composer{background:transparent!important;border-top:1px solid var(--x-line)!important;position:relative}
+html body.portal-body.design-workspace .ws-chat-input-row{align-items:flex-end;gap:8px}
+html body.portal-body.design-workspace .ws-chat-note textarea{border-radius:22px!important;background:var(--x-chip)!important;border:1px solid var(--x-chip-bd)!important;color:var(--x-ink)!important;font-size:15px!important;padding:12px 16px!important;transition:border-color .2s,box-shadow .2s,background .2s;max-height:160px}
+html body.portal-body.design-workspace .ws-chat-note textarea:focus{background:var(--x-bg)!important;border-color:rgba(255,0,0,.45)!important;box-shadow:0 0 0 4px rgba(255,0,0,.08)!important;outline:none}
+html body.portal-body.design-workspace :is(.ws-chat-add,.x-emoji-toggle){display:inline-grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%!important;background:var(--x-chip)!important;border:1px solid var(--x-chip-bd)!important;color:var(--x-ink)!important;cursor:pointer;transition:transform .35s var(--x-spring),background .2s,border-color .2s}
+html body.portal-body.design-workspace :is(.ws-chat-add,.x-emoji-toggle):hover{transform:translateY(-2px) rotate(-6deg);border-color:var(--x-ink)!important}
+html body.portal-body.design-workspace .x-emoji-toggle{font-size:20px;line-height:1;padding:0}
+html body.portal-body.design-workspace .x-emoji-toggle[aria-expanded=true]{background:var(--x-ink)!important;color:var(--x-bg)!important}
+html body.portal-body.design-workspace .ws-chat-send{width:46px!important;height:46px!important;flex:none;border-radius:50%!important;background:var(--x-chip)!important;color:var(--x-dim)!important;border:0!important;transition:transform .4s var(--x-spring),background .25s,color .25s,box-shadow .3s!important}
+html body.portal-body.design-workspace .ws-chat-composer.x-ready .ws-chat-send{background:var(--x-red)!important;color:#fff!important;box-shadow:0 12px 26px -10px rgba(255,0,0,.75)!important;transform:scale(1.04)}
+html body.portal-body.design-workspace .ws-chat-composer.x-ready .ws-chat-send:hover{transform:scale(1.1) rotate(-12deg)}
+html body.portal-body.design-workspace .ws-chat-send svg{color:currentColor!important}
+html body.portal-body.design-workspace .ws-chat-compose-hint{color:var(--x-dim)!important}
+/* Emoji- und Schnellantwort-Panel */
+html body.portal-body.design-workspace .x-emoji-panel{position:absolute;left:14px;bottom:calc(100% + 10px);z-index:30;width:min(372px,calc(100% - 28px));padding:14px;border-radius:22px;background:var(--x-bg);border:1px solid var(--x-line);box-shadow:0 30px 60px -24px rgba(0,0,0,.45);transform-origin:left bottom;animation:x-panel .35s var(--x-spring) both}
+html body.portal-body.design-workspace .x-emoji-panel[hidden]{display:none}
+html body.portal-body.design-workspace .x-emoji-panel h4{margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--x-dim)}
+html body.portal-body.design-workspace .x-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+html body.portal-body.design-workspace .x-quick button{all:unset;cursor:pointer;padding:7px 11px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);font-size:13px;font-weight:500;color:var(--x-ink);transition:border-color .2s,transform .3s var(--x-spring)}
+html body.portal-body.design-workspace .x-quick button:hover{border-color:var(--x-red);transform:translateY(-1px)}
+html body.portal-body.design-workspace .x-emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+html body.portal-body.design-workspace .x-emoji-grid button{all:unset;cursor:pointer;display:grid;place-items:center;height:38px;border-radius:12px;font-size:22px;transition:transform .25s var(--x-spring),background .15s}
+html body.portal-body.design-workspace .x-emoji-grid button:hover{background:var(--x-chip);transform:scale(1.25) translateY(-2px)}
+html body.portal-body.design-workspace :is(.x-quick button,.x-emoji-grid button):focus-visible{outline:2px solid var(--x-red);outline-offset:1px}
+@keyframes x-panel{from{opacity:0;transform:perspective(800px) translateY(10px) rotateX(-12deg) scale(.95)}to{opacity:1;transform:none}}
+html body.portal-body.design-workspace.x-route-chat #portal-chat-launcher{display:none!important}
+@media(max-width:760px){
+  html body.portal-body.design-workspace .ws-messenger{border-radius:22px!important}
+  html body.portal-body.design-workspace .ws-chat-bubble{max-width:86%!important}
+  html body.portal-body.design-workspace .x-emoji-grid{grid-template-columns:repeat(7,1fr)}
+  html body.portal-body.design-workspace :is(.ws-chat-add,.x-emoji-toggle){width:40px;height:40px}
+}
+
+/* ======================================================================
+   FÄLLE – einfacher, übersichtlicher, mit Tiefe
+   ====================================================================== */
+html body.portal-body.design-workspace .ws-filing-nav{display:inline-flex!important;gap:4px;padding:5px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);margin-bottom:8px}
+html body.portal-body.design-workspace .ws-filing-nav a{border-radius:999px!important;border:0!important;background:transparent!important;color:var(--x-steel)!important;font-weight:600;box-shadow:none!important;padding:8px 14px!important}
+html body.portal-body.design-workspace .ws-filing-nav a[aria-current]{background:var(--x-ink)!important;color:var(--x-bg)!important}
+html body.portal-body.design-workspace .ws-filing-nav a b{border-radius:999px;background:var(--x-chip)!important;color:inherit!important}
+html body.portal-body.design-workspace .ws-filing-help{font-size:12px!important;color:var(--x-dim)!important;margin:0 0 14px!important}
+html body.portal-body.design-workspace .ws-filing-help a{color:var(--x-redt)!important}
+@media(min-width:900px){
+  html body.portal-body.design-workspace .ws-cases-panel .portal-toolbar{display:grid!important;grid-template-columns:minmax(0,2fr) repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:center}
+  html body.portal-body.design-workspace .ws-cases-panel .portal-toolbar>*{margin:0!important}
+}
+html body.portal-body.design-workspace .portal-toolbar .portal-filter{border-radius:999px!important;background:var(--x-chip)!important;border:1px solid var(--x-chip-bd)!important;color:var(--x-ink)!important;min-height:44px}
+html body.portal-body.design-workspace #case-search{padding-left:18px!important}
+html body.portal-body.design-workspace .ws-case-list{perspective:1400px}
+html body.portal-body.design-workspace .ws-case-list>div:not(.ws-case-columns){display:flex;flex-direction:column;gap:8px}
+html body.portal-body.design-workspace .ws-case-row{border:1px solid var(--x-line)!important;background:var(--x-bg)!important;box-shadow:0 1px 1px rgba(0,0,0,.03)!important}
+html body.portal-body.design-workspace .ws-case-row:hover{background:var(--x-bg)!important;border-color:rgba(255,0,0,.3)!important;box-shadow:0 22px 40px -28px rgba(0,0,0,.45)!important;transform:translateY(-2px)}
+html body.portal-body.design-workspace .ws-case-columns{border:0!important;background:transparent!important;padding-bottom:6px!important}
+html body.portal-body.design-workspace .ws-case-placeholder{border-radius:14px!important;background:linear-gradient(145deg,var(--x-chip),transparent)!important;border:1px solid var(--x-line)!important}
+html body.portal-body.design-workspace .ws-pagination{border-top:1px solid var(--x-line)!important;color:var(--x-steel)}
+html body.portal-body.design-workspace .ws-pagination .portal-button{width:40px;height:40px;padding:0!important;display:inline-grid;place-items:center}
+html body.portal-body.design-workspace[data-motion=full] .ws-case-list>div:not(.ws-case-columns)>.ws-case-row{animation:x-rise .55s var(--x-ease) both}
+html body.portal-body.design-workspace[data-motion=full] .ws-case-list>div>.ws-case-row:nth-child(2){animation-delay:.04s}
+html body.portal-body.design-workspace[data-motion=full] .ws-case-list>div>.ws-case-row:nth-child(3){animation-delay:.08s}
+html body.portal-body.design-workspace[data-motion=full] .ws-case-list>div>.ws-case-row:nth-child(4){animation-delay:.12s}
+html body.portal-body.design-workspace[data-motion=full] .ws-case-list>div>.ws-case-row:nth-child(5){animation-delay:.16s}
+html body.portal-body.design-workspace[data-motion=full] .ws-case-list>div>.ws-case-row:nth-child(n+6){animation-delay:.2s}
+html body.portal-body.design-workspace.admin-zentrale[data-portal-theme=dark] .ws-case-row{background:#0f0f11!important}
+html body.portal-body.design-workspace .ws-case-row[data-state=submitted]{box-shadow:inset 3px 0 0 var(--x-red),0 1px 1px rgba(0,0,0,.03)!important}
+@media(max-width:640px){
+  html body.portal-body.design-workspace .ws-filing-nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;flex-wrap:nowrap!important}
+  html body.portal-body.design-workspace .ws-filing-nav a{justify-content:center;padding:9px 6px!important;font-size:13px;white-space:nowrap;min-width:0;gap:5px}
+  html body.portal-body.design-workspace .ws-filing-nav a svg{width:15px;height:15px;flex:none}
+}
