@@ -74,7 +74,7 @@ html body.portal-body.design-workspace.admin-zentrale #portal-nav a :is(svg,.por
 html body.portal-body.design-workspace.admin-zentrale .portal-sidebar .uz-nav-label{color:#8e8e93!important}
 
 /* ---------- Schadenaufnahme: optionale Felder ---------- */
-html body.portal-body.design-workspace .intake-optional{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--x-steel);vertical-align:1px;line-height:1.4}
+html body.portal-body.design-workspace span.intake-optional{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--x-steel);vertical-align:1px;line-height:1.4}
 html body.portal-body.design-workspace .intake-required{color:var(--x-red)!important;font-weight:700}
 html body.portal-body.design-workspace .x-drop-tip{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 12px;border-radius:999px;border:1px dashed rgba(255,255,255,.28);color:#d2d2d7;font-size:12px;font-weight:500}
 html body.portal-body.design-workspace .x-drop-tip svg{width:15px;height:15px;color:#ff4d4d}
