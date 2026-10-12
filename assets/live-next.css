@@ -1,0 +1,229 @@
+/* UNFALLX Live-Ebene: Nachrichten-Hinweis oben, Einstellungen, Firmenprofil mit Nachweisen. Nur Darstellung. */
+
+/* ---------- Kopfleiste: gleich große, runde Symbolknöpfe (behebt Rahmen am Tag-/Nacht-Schalter) ---------- */
+html body.portal-body.design-workspace .portal-top .portal-top-actions>.ws-icon-button{position:relative;width:40px;height:40px;min-width:40px;padding:0!important;border:0!important;border-radius:999px!important;place-items:center;justify-content:center;align-items:center;box-sizing:border-box}
+html body.portal-body.design-workspace .portal-top .portal-top-actions>.ws-icon-button svg{width:20px;height:20px}
+@media(max-width:760px){html body.portal-body.design-workspace .portal-top .portal-top-actions>.ws-icon-button{width:38px;height:38px;min-width:38px}
+  /* Menü auf dem Handy: Zähler gehört in die jeweilige Zeile, nicht an den oberen Rand */
+  html body.portal-body.design-workspace #portal-nav a{position:relative}
+  html body.portal-body.design-workspace #portal-nav .ws-nav-counter{position:static;top:auto;right:auto;margin-left:auto;min-width:22px;height:22px;padding:0 6px;font-size:12px;line-height:22px;text-align:center}}
+html body.portal-body.design-workspace [data-nav-count][hidden]{display:none!important}
+
+/* ---------- Chat-Knopf mit Zähler ---------- */
+html body.portal-body.design-workspace .x-msg-btn{overflow:visible}
+html body.portal-body.design-workspace .x-msg-badge{position:absolute;top:1px;right:-2px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--x-red);color:#fff;font:700 10.5px/18px var(--x-font);text-align:center;letter-spacing:0;box-shadow:0 0 0 2px #fff,0 6px 12px -4px rgba(255,0,0,.6);pointer-events:none;animation:x-badge-in .45s var(--x-spring) both}
+html body.portal-body.design-workspace:is(.admin-zentrale[data-portal-theme=dark],[data-x-theme=dark]) .x-msg-badge{box-shadow:0 0 0 2px #0b0b0c,0 6px 12px -4px rgba(255,0,0,.6)}
+html body.portal-body.design-workspace .x-msg-btn[aria-expanded=true]{background:rgba(255,0,0,.1)!important;color:var(--x-redt)!important}
+html body.portal-body.design-workspace .x-msg-btn[aria-expanded=true] svg{color:var(--x-redt)!important}
+html body.portal-body.design-workspace .x-msg-btn.x-ring svg{animation:x-wiggle .9s cubic-bezier(.36,.07,.19,.97) both;transform-origin:50% 10%}
+html body.portal-body.design-workspace .x-msg-btn.x-ring::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid rgba(255,0,0,.55);animation:x-halo 1.1s ease-out both;pointer-events:none}
+html body.portal-body.design-workspace .x-msg-btn.x-ring .x-msg-badge{animation:x-badge-bump .6s var(--x-spring) both}
+@keyframes x-badge-in{from{transform:scale(.4);opacity:0}}
+@keyframes x-badge-bump{40%{transform:scale(1.35)}}
+@keyframes x-wiggle{15%{transform:rotate(-14deg)}30%{transform:rotate(12deg)}45%{transform:rotate(-9deg)}60%{transform:rotate(6deg)}75%{transform:rotate(-3deg)}}
+@keyframes x-halo{from{transform:scale(.8);opacity:1}to{transform:scale(1.7);opacity:0}}
+
+/* ---------- Nachrichten-Fenster ---------- */
+html body.portal-body.design-workspace .x-msg-pop{position:fixed;z-index:10004;width:min(400px,calc(100vw - 20px));max-height:min(560px,calc(100vh - 110px));display:flex;flex-direction:column;border-radius:22px;background:var(--x-bg);color:var(--x-ink);border:1px solid var(--x-line);box-shadow:0 30px 70px -24px rgba(0,0,0,.42),0 0 0 1px rgba(0,0,0,.02);overflow:hidden;font-family:var(--x-font);opacity:0;transform:translateY(-8px) scale(.97);transform-origin:calc(100% - 26px) 0;transition:opacity .2s,transform .32s var(--x-spring)}
+html body.portal-body.design-workspace .x-msg-pop.is-on{opacity:1;transform:none}
+html body.portal-body.design-workspace .x-msg-pop header{display:flex;align-items:center;gap:12px;padding:16px 16px 12px;border-bottom:1px solid var(--x-line)}
+html body.portal-body.design-workspace .x-msg-pop-icon{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:13px;background:var(--x-red);color:#fff;box-shadow:0 10px 20px -10px rgba(255,0,0,.8)}
+html body.portal-body.design-workspace .x-msg-pop-icon svg{width:20px;height:20px}
+html body.portal-body.design-workspace .x-msg-pop header div{display:flex;flex-direction:column;min-width:0;flex:1}
+html body.portal-body.design-workspace .x-msg-pop header strong{font-size:16px;font-weight:700;letter-spacing:-.02em}
+html body.portal-body.design-workspace .x-msg-pop header small{font-size:12.5px;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-msg-all{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);color:var(--x-ink)!important;font-size:12.5px;font-weight:600;text-decoration:none!important;white-space:nowrap}
+html body.portal-body.design-workspace .x-msg-all svg{width:14px;height:14px}
+html body.portal-body.design-workspace .x-msg-all:hover{border-color:var(--x-red);color:var(--x-redt)!important}
+html body.portal-body.design-workspace .x-msg-pop ul{list-style:none;margin:0;padding:6px;overflow:auto;overscroll-behavior:contain}
+html body.portal-body.design-workspace .x-msg-pop li a{position:relative;display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;color:var(--x-ink)!important;text-decoration:none!important;transition:background .2s}
+html body.portal-body.design-workspace .x-msg-pop li a:hover{background:var(--x-chip)}
+html body.portal-body.design-workspace .x-msg-pop li a.is-unread{background:rgba(255,0,0,.045)}
+html body.portal-body.design-workspace .x-msg-pop li a.is-unread::before{content:"";position:absolute;left:2px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--x-red)}
+html body.portal-body.design-workspace :is(.x-msg-thumb,.x-msg-alert-img){display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:14px;overflow:hidden;background:var(--x-chip);border:1px solid var(--x-chip-bd);color:var(--x-steel)}
+html body.portal-body.design-workspace :is(.x-msg-thumb,.x-msg-alert-img) img{width:100%;height:100%;object-fit:cover;display:block}
+html body.portal-body.design-workspace :is(.x-msg-thumb,.x-msg-alert-img) svg{width:22px;height:22px}
+html body.portal-body.design-workspace .x-msg-body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+html body.portal-body.design-workspace .x-msg-top{display:flex;align-items:center;gap:7px;min-width:0}
+html body.portal-body.design-workspace .x-msg-plate{flex:none;padding:1px 7px;border:1.5px solid #1d1d1f;border-radius:5px;background:#fff;color:#1d1d1f;font:700 11.5px/1.5 var(--x-font);letter-spacing:.04em;white-space:nowrap}
+html body.portal-body.design-workspace .x-msg-top em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--x-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+html body.portal-body.design-workspace .x-msg-top time{margin-left:auto;flex:none;font-size:11.5px;color:var(--x-dim)}
+html body.portal-body.design-workspace .x-msg-text{font-size:13px;line-height:1.4;color:var(--x-steel);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.portal-body.design-workspace .x-msg-text b{color:var(--x-ink);font-weight:600}
+html body.portal-body.design-workspace .is-unread .x-msg-text{color:var(--x-ink);font-weight:500}
+html body.portal-body.design-workspace .x-msg-count{flex:none;display:grid;place-items:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:999px;background:var(--x-red);color:#fff;font:700 11.5px/1 var(--x-font);font-style:normal}
+html body.portal-body.design-workspace .x-msg-empty{display:flex;align-items:center;gap:12px;margin:0;padding:22px 18px;color:var(--x-steel);font-size:13.5px;line-height:1.5}
+html body.portal-body.design-workspace .x-msg-empty svg{width:34px;height:34px;flex:none;padding:7px;border-radius:12px;background:rgba(255,0,0,.08);color:var(--x-red);box-sizing:border-box}
+html body.portal-body.design-workspace .x-msg-pop footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px 12px;border-top:1px solid var(--x-line);font-size:12.5px}
+html body.portal-body.design-workspace .x-msg-settings{display:inline-flex;align-items:center;gap:6px;color:var(--x-steel)!important;text-decoration:none!important;font-weight:600}
+html body.portal-body.design-workspace .x-msg-settings svg{width:15px;height:15px}
+html body.portal-body.design-workspace .x-msg-settings:hover{color:var(--x-redt)!important}
+html body.portal-body.design-workspace .x-live-dot{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-live-dot i{position:relative;width:8px;height:8px;border-radius:50%;background:#30d158}
+html body.portal-body.design-workspace .x-live-dot i::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(48,209,88,.5);animation:x-live 2s ease-out infinite}
+@keyframes x-live{from{transform:scale(.6);opacity:1}to{transform:scale(1.8);opacity:0}}
+
+/* ---------- Live-Hinweis bei neuer Nachricht ---------- */
+html body.portal-body.design-workspace .x-msg-alert{position:fixed;z-index:10005;display:flex;align-items:flex-start;gap:12px;width:min(390px,calc(100vw - 20px));box-sizing:border-box;padding:14px 44px 14px 14px;border-radius:22px;background:var(--x-bg);color:var(--x-ink);border:1px solid var(--x-line);box-shadow:0 0 0 4px rgba(255,0,0,.06),0 30px 60px -24px rgba(0,0,0,.45);font-family:var(--x-font);opacity:0;transform:translateY(-14px) scale(.95);transform-origin:calc(100% - 26px) 0;transition:opacity .22s,transform .45s var(--x-spring);pointer-events:none}
+html body.portal-body.design-workspace .x-msg-alert.is-on{opacity:1;transform:none;pointer-events:auto}
+html body.portal-body.design-workspace .x-msg-alert::before{content:"";position:absolute;top:-7px;right:24px;width:12px;height:12px;background:var(--x-bg);border-left:1px solid var(--x-line);border-top:1px solid var(--x-line);transform:rotate(45deg)}
+@media(max-width:559px){html body.portal-body.design-workspace .x-msg-alert::before{display:none}html body.portal-body.design-workspace .x-msg-alert{width:auto}}
+html body.portal-body.design-workspace .x-msg-alert-img{width:52px;height:52px;border-radius:16px}
+html body.portal-body.design-workspace .x-msg-alert-body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+html body.portal-body.design-workspace .x-msg-alert-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--x-redt)}
+html body.portal-body.design-workspace .x-msg-alert-eyebrow b{letter-spacing:.04em;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-msg-alert-eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--x-red);box-shadow:0 0 0 3px rgba(255,0,0,.18);animation:x-red-pulse 1.6s infinite}
+@keyframes x-red-pulse{0%{box-shadow:0 0 0 0 rgba(255,0,0,.5)}70%{box-shadow:0 0 0 7px rgba(255,0,0,0)}100%{box-shadow:0 0 0 0 rgba(255,0,0,0)}}
+html body.portal-body.design-workspace .x-msg-alert strong{font-size:15px;font-weight:700;letter-spacing:-.015em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.portal-body.design-workspace .x-msg-alert p{margin:0;font-size:13.5px;line-height:1.45;color:var(--x-steel);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html body.portal-body.design-workspace .x-msg-alert-actions{display:flex;align-items:center;gap:10px;margin-top:8px}
+html body.portal-body.design-workspace .x-msg-reply{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:var(--x-red);color:#fff!important;font-size:13px;font-weight:700;text-decoration:none!important;box-shadow:0 10px 20px -10px rgba(255,0,0,.8);transition:transform .3s var(--x-spring)}
+html body.portal-body.design-workspace .x-msg-reply:hover{transform:translateY(-1px)}
+html body.portal-body.design-workspace .x-msg-reply svg{width:15px;height:15px}
+html body.portal-body.design-workspace .x-msg-more{font-size:12.5px;font-weight:600;color:var(--x-steel)!important;text-decoration:none!important}
+html body.portal-body.design-workspace .x-msg-alert-close{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:var(--x-chip);color:var(--x-steel);cursor:pointer}
+html body.portal-body.design-workspace .x-msg-alert-close svg{width:14px;height:14px}
+html body.portal-body.design-workspace .x-msg-alert-close:hover{background:var(--x-chip-bd);color:var(--x-ink)}
+
+/* ---------- Einstellungen: Ansicht & Benachrichtigungen ---------- */
+html body.portal-body.design-workspace .x-prefs{margin-bottom:20px}
+html body.portal-body.design-workspace .x-prefs-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+html body.portal-body.design-workspace .x-prefs-head h2{margin:0 0 4px!important}
+html body.portal-body.design-workspace .x-prefs-head p{margin:0;max-width:70ch;font-size:14.5px;line-height:1.55}
+html body.portal-body.design-workspace .x-prefs-icon{display:grid;place-items:center;width:46px;height:46px;flex:none;border-radius:15px;background:var(--x-red);color:#fff;box-shadow:0 12px 24px -12px rgba(255,0,0,.8)}
+html body.portal-body.design-workspace .x-prefs-icon svg{width:22px;height:22px}
+html body.portal-body.design-workspace .x-prefs-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+html body.portal-body.design-workspace .x-prefs-grid.is-single{grid-template-columns:minmax(0,760px)}
+html body.portal-body.design-workspace .x-prefs-group{display:flex;flex-direction:column;gap:6px;padding:18px;border-radius:20px;background:var(--x-chip);border:1px solid var(--x-line)}
+html body.portal-body.design-workspace .x-prefs-group h3{margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-pref{display:flex;flex-direction:column;gap:8px;padding:8px 0 10px}
+html body.portal-body.design-workspace .x-pref+.x-pref{border-top:1px solid var(--x-line);padding-top:14px}
+html body.portal-body.design-workspace .x-pref-label{font-size:14px;font-weight:600;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-seg{display:inline-flex;flex-wrap:wrap;align-self:flex-start;gap:3px;padding:4px;border-radius:16px;background:var(--x-chip);border:1px solid var(--x-chip-bd)}
+html body.portal-body.design-workspace .x-seg button{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:7px 14px;border:0;border-radius:12px;background:transparent;color:var(--x-steel);font:600 13.5px/1.2 var(--x-font);cursor:pointer;transition:background .25s,color .2s,box-shadow .3s,transform .35s var(--x-spring)}
+html body.portal-body.design-workspace .x-seg button svg{width:16px;height:16px}
+html body.portal-body.design-workspace .x-seg button:hover{color:var(--x-ink)}
+html body.portal-body.design-workspace .x-seg button[aria-checked=true]{background:#fff;color:var(--x-ink);box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 18px -10px rgba(0,0,0,.35)}
+html body.portal-body.design-workspace .x-seg button[aria-checked=true] svg{color:var(--x-red)}
+html body.portal-body.design-workspace .x-seg button:active{transform:scale(.96)}
+html body.portal-body.design-workspace .x-seg button:focus-visible{outline:2px solid var(--x-red);outline-offset:2px}
+html body.portal-body.design-workspace:is(.admin-zentrale[data-portal-theme=dark],[data-x-theme=dark]) .x-seg button[aria-checked=true]{background:#2c2c2e;color:#fff}
+html body.portal-body.design-workspace .x-switch{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;padding:11px 0;cursor:pointer}
+html body.portal-body.design-workspace .x-switch+.x-switch{border-top:1px solid var(--x-line)}
+html body.portal-body.design-workspace #portal-root .x-switch input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+html body.portal-body.design-workspace .x-switch-ui{position:relative;width:48px;height:28px;border-radius:999px;background:var(--x-chip-bd);box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);transition:background .25s}
+html body.portal-body.design-workspace .x-switch-ui::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .4s var(--x-spring)}
+html body.portal-body.design-workspace .x-switch input:checked+.x-switch-ui{background:var(--x-red)}
+html body.portal-body.design-workspace .x-switch input:checked+.x-switch-ui::after{transform:translateX(20px)}
+html body.portal-body.design-workspace .x-switch input:focus-visible+.x-switch-ui{outline:2px solid var(--x-red);outline-offset:3px}
+html body.portal-body.design-workspace .x-switch-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body.portal-body.design-workspace .x-switch-text strong{font-size:14.5px;font-weight:600;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-switch-text small{font-size:12.5px;line-height:1.45;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-prefs-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding-top:12px;border-top:1px solid var(--x-line)}
+html body.portal-body.design-workspace .x-prefs-actions .x-btn svg{width:16px;height:16px}
+
+/* ---------- Firmenprofil: Nachweise ---------- */
+html body.portal-body.design-workspace .x-firm-docs{margin-bottom:20px}
+html body.portal-body.design-workspace .x-firm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px}
+html body.portal-body.design-workspace .x-firm-head h2{margin:0 0 6px!important}
+html body.portal-body.design-workspace .x-firm-head p{margin:0;max-width:72ch;font-size:14.5px;line-height:1.6}
+html body.portal-body.design-workspace .x-firm-eyebrow{display:block;margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--x-redt)}
+html body.portal-body.design-workspace .x-firm-ring{position:relative;display:grid;place-items:center;width:84px;height:84px;flex:none}
+html body.portal-body.design-workspace .x-firm-ring svg{position:absolute;inset:0;width:84px;height:84px;transform:rotate(-90deg)}
+html body.portal-body.design-workspace .x-firm-ring circle{fill:none;stroke:var(--x-chip-bd);stroke-width:4}
+html body.portal-body.design-workspace .x-firm-ring .x-firm-ring-fill{stroke:var(--x-red);stroke-linecap:round;stroke-dasharray:119.4;stroke-dashoffset:calc(119.4 * (1 - var(--x-p,0)));transition:stroke-dashoffset .9s var(--x-ease),stroke .3s}
+html body.portal-body.design-workspace .x-firm-ring.is-done .x-firm-ring-fill{stroke:#1f9d55}
+html body.portal-body.design-workspace .x-firm-ring span{position:relative;margin-top:-8px;font:700 20px/1 var(--x-font);letter-spacing:-.03em;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-firm-ring span b{font-weight:700}
+html body.portal-body.design-workspace .x-firm-ring small{position:absolute;bottom:21px;font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-firm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+html body.portal-body.design-workspace .x-slot{position:relative;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:20px;background:var(--x-bg);border:1px solid var(--x-line);box-shadow:0 14px 30px -26px rgba(0,0,0,.45);transition:border-color .25s,box-shadow .3s,transform .4s var(--x-spring),background .25s}
+html body.portal-body.design-workspace .x-slot:hover{transform:translateY(-2px);box-shadow:0 22px 40px -28px rgba(0,0,0,.5)}
+html body.portal-body.design-workspace .x-slot[data-state=done]{border-color:rgba(31,157,85,.35)}
+html body.portal-body.design-workspace .x-slot.is-over{border:1.5px dashed var(--x-red);background:rgba(255,0,0,.04);transform:scale(1.02)}
+html body.portal-body.design-workspace .x-slot.x-saved{animation:x-slot-saved .7s var(--x-spring)}
+@keyframes x-slot-saved{40%{transform:scale(1.03);box-shadow:0 0 0 6px rgba(31,157,85,.15)}}
+html body.portal-body.design-workspace .x-slot-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+html body.portal-body.design-workspace .x-slot-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--x-chip);border:1px solid var(--x-chip-bd);color:var(--x-steel)}
+html body.portal-body.design-workspace .x-slot-icon svg{width:20px;height:20px}
+html body.portal-body.design-workspace .x-slot[data-state=done] .x-slot-icon{background:rgba(31,157,85,.1);border-color:rgba(31,157,85,.25);color:#1f9d55}
+html body.portal-body.design-workspace .x-slot-tag{padding:3px 9px;border-radius:999px;background:var(--x-chip);border:1px solid var(--x-chip-bd);font-size:11px;font-weight:700;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-slot-tag.is-key{background:rgba(255,0,0,.07);border-color:rgba(255,0,0,.2);color:var(--x-redt)}
+html body.portal-body.design-workspace .x-slot-ok{display:grid;place-items:center;width:24px;height:24px;margin-left:auto;border-radius:50%;background:var(--x-chip-bd);color:transparent;transform:scale(.7);transition:background .3s,color .3s,transform .45s var(--x-spring)}
+html body.portal-body.design-workspace .x-slot-ok svg{width:14px;height:14px}
+html body.portal-body.design-workspace .x-slot[data-state=done] .x-slot-ok{background:#1f9d55;color:#fff;transform:none}
+html body.portal-body.design-workspace .x-slot h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-slot>p{margin:0;font-size:13px;line-height:1.5;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-slot-files{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+html body.portal-body.design-workspace .x-slot-files:empty{display:none}
+html body.portal-body.design-workspace .x-slot-files li{display:flex;align-items:center;gap:8px;min-width:0;padding:6px 8px;border-radius:10px;background:var(--x-chip)}
+html body.portal-body.design-workspace .x-slot-files a{display:flex;align-items:center;gap:6px;min-width:0;flex:1;color:var(--x-ink)!important;font-size:12.5px;font-weight:600;text-decoration:none!important}
+html body.portal-body.design-workspace .x-slot-files a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.portal-body.design-workspace .x-slot-files a svg{width:15px;height:15px;flex:none;color:var(--x-red)}
+html body.portal-body.design-workspace .x-slot-files small{flex:none;font-size:11px;color:var(--x-dim)}
+html body.portal-body.design-workspace .x-slot-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:auto;min-height:44px;padding:9px 12px;border-radius:14px;border:1.5px dashed var(--x-chip-bd);color:var(--x-ink);font-size:13.5px;font-weight:600;cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+html body.portal-body.design-workspace .x-slot>.x-slot-files+.x-slot-btn,html body.portal-body.design-workspace .x-slot>p+.x-slot-files:empty+.x-slot-btn{margin-top:10px}
+html body.portal-body.design-workspace .x-slot-btn svg{width:17px;height:17px;color:var(--x-red)}
+html body.portal-body.design-workspace .x-slot-btn:hover,html body.portal-body.design-workspace .x-slot-btn:focus-within{border-color:var(--x-red);background:rgba(255,0,0,.04);color:var(--x-redt)}
+html body.portal-body.design-workspace #portal-root .x-slot-btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0}
+html body.portal-body.design-workspace .x-slot[data-state=empty]:has(.x-slot-tag.is-key) .x-slot-btn{border-style:solid;border-color:transparent;background:var(--x-red);color:#fff;box-shadow:0 12px 22px -14px rgba(255,0,0,.85)}
+html body.portal-body.design-workspace .x-slot[data-state=empty]:has(.x-slot-tag.is-key) .x-slot-btn svg{color:#fff}
+html body.portal-body.design-workspace .x-slot[data-state=empty]:has(.x-slot-tag.is-key) .x-slot-btn:hover{background:#e60000;color:#fff}
+html body.portal-body.design-workspace .x-slot[data-state=busy] .x-slot-btn{pointer-events:none;opacity:.6}
+html body.portal-body.design-workspace .x-slot[data-state=busy]::after{content:"";position:absolute;left:16px;right:16px;bottom:8px;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--x-red),transparent) 0 0/40% 100% no-repeat;animation:x-slot-busy 1.1s linear infinite}
+@keyframes x-slot-busy{from{background-position:-40% 0}to{background-position:140% 0}}
+html body.portal-body.design-workspace .x-slot-status{margin:0!important;font-size:12.5px;line-height:1.4;color:var(--x-redt)!important}
+html body.portal-body.design-workspace .x-slot[data-state=busy] .x-slot-status{color:var(--x-steel)!important}
+html body.portal-body.design-workspace .x-slot-status:empty{display:none}
+html body.portal-body.design-workspace .x-firm-foot{display:flex;align-items:center;gap:8px;margin:16px 0 0;font-size:12.5px;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-firm-foot svg{width:16px;height:16px;flex:none;color:#1f9d55}
+html body.portal-body.design-workspace .x-firm-link{display:flex;align-items:center;gap:14px;margin-bottom:20px;color:var(--x-ink)!important;text-decoration:none!important;transition:transform .4s var(--x-spring)}
+html body.portal-body.design-workspace .x-firm-link:hover{transform:translateY(-2px)}
+html body.portal-body.design-workspace .x-firm-link>span:nth-child(2){display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+html body.portal-body.design-workspace .x-firm-link strong{font-size:16px;font-weight:700}
+html body.portal-body.design-workspace .x-firm-link small{font-size:13px;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-firm-link>svg{width:20px;height:20px;color:var(--x-red)}
+html body.portal-body.design-workspace .x-firm-link-icon{display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:14px;background:rgba(255,0,0,.08);color:var(--x-red)}
+html body.portal-body.design-workspace .x-firm-link-icon svg{width:22px;height:22px}
+
+/* Firmendaten anzeigen & bearbeiten */
+html body.portal-body.design-workspace .portal-meta dd.x-empty{color:var(--x-dim)!important;font-weight:400}
+html body.portal-body.design-workspace .x-firm-edit{display:inline-flex;align-items:center;gap:7px;margin:0 10px 10px 0}
+html body.portal-body.design-workspace .x-firm-edit svg{width:16px;height:16px}
+html body.portal-body.design-workspace .x-firm-form{display:flex;flex-direction:column;gap:12px;margin:6px 0 4px;animation:x-quick-in .4s var(--x-ease) both}
+html body.portal-body.design-workspace .x-firm-form h3{margin:8px 0 0;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--x-steel)}
+html body.portal-body.design-workspace .x-firm-form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+html body.portal-body.design-workspace .x-field{display:flex;flex-direction:column;gap:6px;margin:0!important}
+html body.portal-body.design-workspace .x-field.is-wide{grid-column:1/-1}
+html body.portal-body.design-workspace .x-field>span{font-size:13px;font-weight:600;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-field>span em{font-style:normal;font-weight:500;font-size:11.5px;color:var(--x-dim);margin-left:4px}
+html body.portal-body.design-workspace #portal-root .x-field :is(input,select){width:100%;min-height:46px;box-sizing:border-box;padding:0 13px;border-radius:13px;border:1px solid var(--x-chip-bd);background:var(--x-bg);color:var(--x-ink);font:500 15px/1.3 var(--x-font);transition:border-color .2s,box-shadow .2s}
+html body.portal-body.design-workspace #portal-root .x-field :is(input,select):focus{outline:0;border-color:var(--x-red);box-shadow:0 0 0 4px rgba(255,0,0,.1)}
+html body.portal-body.design-workspace .x-firm-bank{border-radius:16px;border:1px dashed var(--x-chip-bd);padding:0 14px}
+html body.portal-body.design-workspace .x-firm-bank>summary{padding:14px 0;font-weight:700;font-size:14px;cursor:pointer;color:var(--x-ink)}
+html body.portal-body.design-workspace .x-firm-bank[open]>summary{padding-bottom:10px}
+html body.portal-body.design-workspace .x-firm-bank .x-firm-form-grid{padding-bottom:14px}
+html body.portal-body.design-workspace .x-firm-error{margin:0!important;padding:10px 14px;border-radius:12px;background:rgba(255,0,0,.07);color:var(--x-redt)!important;font-size:13.5px;font-weight:600}
+html body.portal-body.design-workspace .x-firm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+html body.portal-body.design-workspace .x-firm-actions small{font-size:12px;color:var(--x-steel)}
+
+@media(max-width:860px){
+  html body.portal-body.design-workspace .x-prefs-grid{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  html body.portal-body.design-workspace .x-firm-head{flex-direction:column-reverse;gap:10px}
+  html body.portal-body.design-workspace .x-firm-ring{width:64px;height:64px;align-self:flex-start}
+  html body.portal-body.design-workspace .x-firm-ring svg{width:64px;height:64px}
+  html body.portal-body.design-workspace .x-firm-ring span{font-size:16px;margin-top:-6px}
+  html body.portal-body.design-workspace .x-firm-ring small{bottom:14px;font-size:6.5px}
+  html body.portal-body.design-workspace .x-firm-grid{grid-template-columns:1fr}
+  html body.portal-body.design-workspace .x-firm-form-grid{grid-template-columns:1fr}
+  html body.portal-body.design-workspace .x-seg{align-self:stretch}
+  html body.portal-body.design-workspace .x-seg button{flex:1;justify-content:center;padding:7px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+  html body.portal-body.design-workspace :is(.x-msg-pop,.x-msg-alert,.x-slot,.x-msg-badge){transition:none!important;animation:none!important}
+  html body.portal-body.design-workspace .x-switch-ui::after{transition:none!important}
+  html body.portal-body.design-workspace .x-live-dot i::after{animation:none}
+}
+html body.portal-body.design-workspace[data-motion=off] :is(.x-msg-pop,.x-msg-alert,.x-msg-badge,.x-slot){transition:none!important;animation:none!important}
