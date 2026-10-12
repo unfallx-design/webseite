@@ -249,7 +249,7 @@
   }
 
   /* ---------- 3D: Karten neigen sich zum Zeiger, Seitenkopf mit Tiefe ---------- */
-  var TILT = '.uz-metric, .uz-pipeline > a, .ws-hub-link, .uz-settings-map a, .ws-task, .x-area-tabs a, .ws-board-card, .uz-board a, .ws-review-cards > *';
+  var TILT = '.uz-metric, .uz-pipeline > a, .ws-hub-link, .uz-settings-map a, .ws-task, .x-area-tabs a, .ws-board-card, .uz-board a, .ws-review-cards > *, .ws-case-row';
   var canTilt = function () { return window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches && !reduce() && document.body.dataset.motion === 'full'; };
   function bindTilt(el) {
     if (el.dataset.xTilt) return;
@@ -258,7 +258,7 @@
     el.addEventListener('pointermove', function (e) {
       if (!canTilt()) return;
       var r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      var max = r.width > 320 ? 3 : 7;
+      var max = r.width > 700 ? 1.2 : r.width > 320 ? 3 : 7;
       var ax = -y * max, ay = x * max, deg = Math.sqrt(ax * ax + ay * ay);
       el.style.setProperty('--x-rot', deg < 0.05 ? '0deg' : (ax / deg).toFixed(3) + ' ' + (ay / deg).toFixed(3) + ' 0 ' + deg.toFixed(2) + 'deg');
       el.classList.add('x-tilting');
@@ -334,6 +334,88 @@
   var darkTimer = 0;
   function queueDark() { clearTimeout(darkTimer); darkTimer = setTimeout(function () { try { darkPass(); } catch (e) {} }, 140); }
 
+
+  /* ---------- Chat: Gruppierung, Animation, Emojis & Schnellantworten ---------- */
+  var seenBubbles = new WeakSet(), seenHistories = new WeakSet();
+  var EMOJI_ONLY = /^(?:\p{Extended_Pictographic}|\p{Emoji_Component}|‍|️|\s)+$/u;
+  function enhanceBubbles() {
+    var hist = root.querySelector('#chat-history');
+    if (!hist) return;
+    var first = !seenHistories.has(hist);
+    seenHistories.add(hist);
+    var prev = null;
+    hist.querySelectorAll('.ws-chat-bubble, .ws-chat-day').forEach(function (b) {
+      if (b.classList.contains('ws-chat-day')) { prev = null; return; }
+      var author = (b.querySelector('.ws-chat-author') || {}).textContent || '';
+      var own = b.classList.contains('is-own');
+      var follow = prev && prev.own === own && prev.author === author;
+      b.classList.toggle('x-follow', !!follow);
+      prev = { own: own, author: author };
+      var p = b.querySelector('p');
+      var t = p ? p.textContent.trim() : '';
+      b.classList.toggle('x-emoji-only', !!t && t.length <= 12 && EMOJI_ONLY.test(t) && !b.querySelector('a, img, figure'));
+      if (!seenBubbles.has(b)) {
+        seenBubbles.add(b);
+        if (!first && !reduce()) b.classList.add('x-new');
+      }
+    });
+  }
+  var QUICK = ['Danke! 🙏', 'Erledigt ✅', 'Fotos folgen 📸', 'Unterlagen anbei 📄', 'Bitte um Rückruf 📞', 'Termin passt 📅'];
+  var EMOJIS = ['👍', '🙏', '✅', '👌', '😊', '🙂', '😀', '😅', '👋', '🤝', '📸', '📄', '📎', '🚗', '🔧', '\u{1F6E0}️', '📍', '📅', '⏱️', '📞', '💶', '✍️', '⚠️', '❗', '❓', '💪', '🎉', '👀', '🚚', '🏁', '🔥', '❤️'];
+  var activePanel = null;
+  document.addEventListener('click', function (e) {
+    if (activePanel && !activePanel.panel.contains(e.target) && !activePanel.toggle.contains(e.target)) activePanel.close();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && activePanel) { var t = activePanel.toggle; activePanel.close(); t.focus(); }
+  });
+  function insertAtCursor(area, text) {
+    var start = area.selectionStart == null ? area.value.length : area.selectionStart;
+    var end = area.selectionEnd == null ? start : area.selectionEnd;
+    var before = area.value.slice(0, start), after = area.value.slice(end);
+    var glue = before && !/\s$/.test(before) && /^[^\p{Extended_Pictographic}]/u.test(text) ? ' ' : '';
+    area.value = before + glue + text + after;
+    var pos = (before + glue + text).length;
+    try { area.setSelectionRange(pos, pos); } catch (e) {}
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+    area.focus();
+  }
+  function enhanceComposer() {
+    var form = root.querySelector('#case-message.ws-chat-composer');
+    if (!form || form.dataset.xChat) return;
+    var area = form.querySelector('textarea'), row = form.querySelector('.ws-chat-input-row');
+    if (!area || !row) return;
+    form.dataset.xChat = '1';
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'x-emoji-toggle';
+    toggle.setAttribute('aria-label', 'Emojis und Schnellantworten');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.textContent = '🙂';
+    var note = row.querySelector('.ws-chat-note');
+    row.insertBefore(toggle, note || row.firstChild);
+    var panel = document.createElement('div');
+    panel.className = 'x-emoji-panel';
+    panel.hidden = true;
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'Emojis und Schnellantworten');
+    var h1 = document.createElement('h4'); h1.textContent = 'Schnellantworten';
+    var quick = document.createElement('div'); quick.className = 'x-quick';
+    QUICK.forEach(function (q) { var b = document.createElement('button'); b.type = 'button'; b.textContent = q; b.addEventListener('click', function () { insertAtCursor(area, q); close(); }); quick.appendChild(b); });
+    var h2 = document.createElement('h4'); h2.textContent = 'Emojis';
+    var grid = document.createElement('div'); grid.className = 'x-emoji-grid';
+    EMOJIS.forEach(function (em) { var b = document.createElement('button'); b.type = 'button'; b.textContent = em; b.setAttribute('aria-label', 'Emoji ' + em + ' einfügen'); b.addEventListener('click', function () { insertAtCursor(area, em); }); grid.appendChild(b); });
+    panel.appendChild(h1); panel.appendChild(quick); panel.appendChild(h2); panel.appendChild(grid);
+    form.appendChild(panel);
+    function open() { panel.hidden = false; toggle.setAttribute('aria-expanded', 'true'); activePanel = { panel: panel, toggle: toggle, close: close }; }
+    function close() { panel.hidden = true; toggle.setAttribute('aria-expanded', 'false'); if (activePanel && activePanel.panel === panel) activePanel = null; }
+    toggle.addEventListener('click', function () { panel.hidden ? open() : close(); });
+    var ready = function () { form.classList.toggle('x-ready', !!area.value.trim() || !!form.querySelector('.ws-chat-selection li')); };
+    area.addEventListener('input', ready);
+    form.addEventListener('submit', function () { setTimeout(ready, 50); close(); });
+    ready();
+  }
+
   var queued = false;
   function enhance() {
     queued = false;
@@ -347,6 +429,9 @@
       root.querySelectorAll(TILT).forEach(bindTilt);
       applyInlineVars();
       root.querySelectorAll('.uz-pipeline a > strong').forEach(function (s) { if (!s.dataset.xFinal) s.dataset.xFinal = s.textContent.trim(); });
+      document.body.classList.toggle('x-route-chat', /^#chat/.test(location.hash || ''));
+      enhanceBubbles();
+      enhanceComposer();
       visualizePipeline();
       visualizeFilters();
       root.querySelectorAll('.uz-metric > strong, .uz-pipeline a > strong').forEach(countUp);
